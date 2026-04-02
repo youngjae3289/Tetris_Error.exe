@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tetris_Error.exe - Error Block Preview</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #0d0f12;
+      --panel: #151821;
+      --grid: #242838;
+      --accent: #c62828;
+      --text: #e6e9f0;
+      --muted: #9aa3b2;
+      --ok: #4caf50;
+      --warn: #ffb300;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #1f2231 0%, #0d0f12 60%);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: auto 320px;
+      gap: 24px;
+      align-items: start;
+      width: min(980px, 100%);
+    }
+
+    .board-wrap {
+      background: linear-gradient(180deg, #151821 0%, #0f1219 100%);
+      border: 1px solid #1f2434;
+      padding: 16px;
+      border-radius: 16px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    canvas {
+      display: block;
+      border: 1px solid var(--grid);
+      background: #0a0c11;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid #1f2434;
+      padding: 16px;
+      border-radius: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .panel h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .panel p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 13px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .row.stack {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .stats {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #10131b;
+      border: 1px solid #1b2131;
+      font-size: 13px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #10131b;
+      border: 1px solid #1b2131;
+      font-size: 13px;
+    }
+
+    .controls label {
+      display: grid;
+      gap: 6px;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .weight-list {
+      display: grid;
+      gap: 8px;
+      max-height: 240px;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    .weight-item {
+      display: grid;
+      grid-template-columns: 28px 1fr 44px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .weight-item input[type="number"] {
+      width: 44px;
+      background: #0c0f16;
+      color: var(--text);
+      border: 1px solid #20263a;
+      border-radius: 6px;
+      padding: 2px 4px;
+      text-align: center;
+    }
+
+    .stats span {
+      color: var(--muted);
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      background: var(--accent);
+      color: white;
+    }
+
+    button.secondary {
+      background: #22283a;
+      color: var(--text);
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    input[type="number"] {
+      background: #0c0f16;
+      color: var(--text);
+      border: 1px solid #20263a;
+      border-radius: 6px;
+      padding: 4px 6px;
+    }
+
+    .status {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #22283a;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status.ok {
+      color: var(--ok);
+      border: 1px solid rgba(76, 175, 80, 0.4);
+    }
+
+    .status.warn {
+      color: var(--warn);
+      border: 1px solid rgba(255, 179, 0, 0.4);
+    }
+
+    .status.bad {
+      color: #ff5252;
+      border: 1px solid rgba(255, 82, 82, 0.4);
+    }
+
+    .note {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .table {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 44px 1fr 56px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .bar {
+      height: 6px;
+      background: #1f2434;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #c62828, #f44336);
+    }
+
+    @media (max-width: 860px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="board-wrap">
+      <canvas id="board" width="300" height="690" aria-label="Error block board"></canvas>
+    </div>
+    <div class="panel">
+      <h1>Error Block Preview</h1>
+      <p>Standalone preview for the error-block expansion rules. Adjust the level and watch the generated patterns fall.</p>
+
+      <div class="stats">
+        <div class="row"><span>Level</span><strong id="levelValue">1</strong></div>
+        <div class="row"><span>ErrorLevel</span><strong id="errorLevelValue">0</strong></div>
+        <div class="row"><span>MaxCells</span><strong id="maxCellsValue">1</strong></div>
+        <div class="row"><span>Spawn Rate</span><strong id="spawnRateValue">14000ms</strong></div>
+        <div class="row"><span>Next Spawn In</span><strong id="spawnCountdown">--</strong></div>
+        <div class="row"><span>Status</span><span id="statusBadge" class="status ok">RUNNING</span></div>
+      </div>
+
+      <div class="controls">
+        <div class="row"><strong>Live Controls</strong><span class="note">Update instantly</span></div>
+        <label>
+          Level
+          <div class="control-row">
+            <input id="levelSlider" type="range" min="1" max="15" step="1" value="1" />
+            <input id="levelInput" type="number" min="1" max="15" step="1" value="1" />
+          </div>
+        </label>
+        <label>
+          Max Level (for slider)
+          <div class="control-row">
+            <input id="maxLevelSlider" type="range" min="10" max="30" step="1" value="15" />
+            <input id="maxLevelInput" type="number" min="10" max="30" step="1" value="15" />
+          </div>
+        </label>
+        <label>
+          Spawn Rate Base (ms)
+          <div class="control-row">
+            <input id="spawnBaseInput" type="number" min="8000" max="20000" step="500" value="15000" />
+            <span class="note">Base</span>
+          </div>
+        </label>
+        <label>
+          Spawn Rate Step (ms)
+          <div class="control-row">
+            <input id="spawnStepInput" type="number" min="500" max="2000" step="100" value="1000" />
+            <span class="note">Per level</span>
+          </div>
+        </label>
+        <label>
+          Spawn Rate Minimum (ms)
+          <div class="control-row">
+            <input id="spawnMinInput" type="number" min="5000" max="15000" step="500" value="10000" />
+            <span class="note">Floor</span>
+          </div>
+        </label>
+        <label>
+          Auto Weight Curve (Level-based)
+          <div class="control-row">
+            <input id="autoWeightsToggle" type="checkbox" checked />
+            <span class="note">Peak at 5~6, high levels favor big blocks</span>
+          </div>
+        </label>
+        <div class="row"><strong>Cell Weights (1~16)</strong><span class="note">Higher = more frequent</span></div>
+        <div id="weightList" class="weight-list"></div>
+        <div class="row">
+          <button id="randomizeWeights" class="secondary">Jitter Weights</button>
+          <button id="resetWeights">Reset Weights</button>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="row"><strong>Probability Preview</strong><span class="note" id="probabilityLabel">Level 1</span></div>
+        <div id="probabilityTable" class="table"></div>
+      </div>
+
+      <div class="row">
+        <button id="toggleButton">Pause</button>
+        <button id="resetButton" class="secondary">Reset</button>
+      </div>
+
+      <p class="note">Rules: 4x10 pattern, connected cells only, no full row patterns, weighted probability favors fewer cells, lock delay 1500ms, drop every 1000ms.</p>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("board");
+    const ctx = canvas.getContext("2d");
+    const levelSlider = document.getElementById("levelSlider");
+    const levelValue = document.getElementById("levelValue");
+    const errorLevelValue = document.getElementById("errorLevelValue");
+    const maxCellsValue = document.getElementById("maxCellsValue");
+    const spawnRateValue = document.getElementById("spawnRateValue");
+    const spawnCountdown = document.getElementById("spawnCountdown");
+    const statusBadge = document.getElementById("statusBadge");
+    const toggleButton = document.getElementById("toggleButton");
+    const resetButton = document.getElementById("resetButton");
+    const levelInput = document.getElementById("levelInput");
+    const maxLevelSlider = document.getElementById("maxLevelSlider");
+    const maxLevelInput = document.getElementById("maxLevelInput");
+    const spawnBaseInput = document.getElementById("spawnBaseInput");
+    const spawnStepInput = document.getElementById("spawnStepInput");
+    const spawnMinInput = document.getElementById("spawnMinInput");
+    const weightList = document.getElementById("weightList");
+    const randomizeWeights = document.getElementById("randomizeWeights");
+    const resetWeights = document.getElementById("resetWeights");
+    const probabilityTable = document.getElementById("probabilityTable");
+    const probabilityLabel = document.getElementById("probabilityLabel");
+    const autoWeightsToggle = document.getElementById("autoWeightsToggle");
+
+    const COLS = 10;
+    const ROWS = 23;
+    const CELL = 30;
+    const HIDDEN_ROWS = 3;
+    const PATTERN_COLS = 10;
+    const PATTERN_ROWS = 4;
+
+    const defaultWeights = [
+      0, 32, 24, 20, 16, 13, 11, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1,
+    ];
+    let weights = [...defaultWeights];
+
+    let board = createBoard();
+    let activePieces = [];
+    let lastDrop = 0;
+    let lockTimer = null;
+    let spawnDueAt = 0;
+    let running = true;
+    let crashed = false;
+
+    function createBoard() {
+      return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    }
+
+    function levelToMaxCells(level) {
+      return Math.min(16, 1 + Math.floor(15 * (level - 1) / 9));
+    }
+
+    function spawnRate(level) {
+      const base = Number(spawnBaseInput.value);
+      const step = Number(spawnStepInput.value);
+      const min = Number(spawnMinInput.value);
+      return Math.max(min, base - level * step);
+    }
+
+    function pickCellCount(maxCells) {
+      const usableWeights = weights.slice(1, maxCells + 1);
+      const total = usableWeights.reduce((sum, w) => sum + w, 0);
+      let roll = Math.random() * total;
+      for (let i = 0; i < usableWeights.length; i++) {
+        roll -= usableWeights[i];
+        if (roll <= 0) {
+          return i + 1;
+        }
+      }
+      return 1;
+    }
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateConnectedPattern(count) {
+      const maxAttempts = 200;
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        const cells = new Set();
+        const start = [randomInt(0, PATTERN_COLS - 1), randomInt(0, PATTERN_ROWS - 1)];
+        cells.add(start.join(","));
+
+        while (cells.size < count) {
+          const cellList = Array.from(cells);
+          const [cx, cy] = cellList[randomInt(0, cellList.length - 1)]
+            .split(",")
+            .map(Number);
+          const neighbors = [
+            [cx + 1, cy],
+            [cx - 1, cy],
+            [cx, cy + 1],
+            [cx, cy - 1],
+          ].filter(([x, y]) => x >= 0 && x < PATTERN_COLS && y >= 0 && y < PATTERN_ROWS);
+
+          if (neighbors.length === 0) {
+            continue;
+          }
+
+          const [nx, ny] = neighbors[randomInt(0, neighbors.length - 1)];
+          cells.add([nx, ny].join(","));
+        }
+
+        if (!hasFullRow(cells)) {
+          return Array.from(cells).map((item) => item.split(",").map(Number));
+        }
+      }
+
+      return [[0, 0]];
+    }
+
+    function hasFullRow(cells) {
+      const rowCounts = Array(PATTERN_ROWS).fill(0);
+      cells.forEach((cell) => {
+        const [, y] = cell.split(",").map(Number);
+        rowCounts[y] += 1;
+      });
+      return rowCounts.some((count) => count >= PATTERN_COLS);
+    }
+
+    function spawnPiece() {
+      if (crashed) {
+        return;
+      }
+
+      const level = Number(levelSlider.value);
+      const maxCells = levelToMaxCells(level);
+      const count = pickCellCount(maxCells);
+      const pattern = generateConnectedPattern(count);
+      const offsetX = randomInt(0, COLS - PATTERN_COLS);
+      const offsetY = -HIDDEN_ROWS;
+
+      const piece = {
+        cells: pattern,
+        x: offsetX,
+        y: offsetY,
+        count,
+        locked: false,
+      };
+
+      if (collides(piece, 0, 0)) {
+        crash("Spawn blocked");
+        return;
+      }
+
+      activePieces.push(piece);
+    }
+
+    function collides(piece, dx, dy) {
+      return piece.cells.some(([cx, cy]) => {
+        const x = piece.x + cx + dx;
+        const y = piece.y + cy + dy;
+        if (x < 0 || x >= COLS || y >= ROWS) {
+          return true;
+        }
+        if (y < 0) {
+          return false;
+        }
+        return board[y][x] !== 0;
+      });
+    }
+
+    function lockPiece(piece) {
+      if (!piece) {
+        return;
+      }
+
+      piece.cells.forEach(([cx, cy]) => {
+        const x = piece.x + cx;
+        const y = piece.y + cy;
+        if (y >= 0 && y < ROWS) {
+          board[y][x] = 1;
+        }
+      });
+
+      const hitsDeadZone = piece.cells.some(([cx, cy]) => {
+        const y = piece.y + cy;
+        return y >= 0 && y < HIDDEN_ROWS;
+      });
+
+      activePieces = activePieces.filter((item) => item !== piece);
+
+      if (hitsDeadZone) {
+        crash("Dead zone breached");
+      }
+    }
+
+    function updateSpawnTimer() {
+      const level = Number(levelSlider.value);
+      const rate = spawnRate(level);
+      const now = performance.now();
+      spawnRateValue.textContent = `${rate}ms`;
+
+      if (!spawnDueAt || spawnDueAt < now) {
+        spawnDueAt = now + rate;
+        return;
+      }
+
+      const nextDue = now + rate;
+      if (nextDue < spawnDueAt) {
+        spawnDueAt = nextDue;
+      }
+    }
+
+    function crash(reason) {
+      crashed = true;
+      running = false;
+      statusBadge.textContent = `CRASHED (${reason})`;
+      statusBadge.className = "status bad";
+      toggleButton.textContent = "Paused";
+    }
+
+    function reset() {
+      board = createBoard();
+      activePieces = [];
+      lastDrop = 0;
+      lockTimer = null;
+      crashed = false;
+      running = true;
+      statusBadge.textContent = "RUNNING";
+      statusBadge.className = "status ok";
+      toggleButton.textContent = "Pause";
+      updateStats();
+      updateSpawnTimer();
+    }
+
+    function updateStats() {
+      const level = Number(levelSlider.value);
+      const errorLevel = Math.max(0, level - 1);
+      const maxCells = levelToMaxCells(level);
+      if (autoWeightsToggle.checked) {
+        weights = buildAutoWeights(level, Number(maxLevelInput.value));
+        renderWeightControls();
+      }
+      levelValue.textContent = String(level);
+      levelInput.value = String(level);
+      errorLevelValue.textContent = String(errorLevel);
+      maxCellsValue.textContent = String(maxCells);
+      probabilityLabel.textContent = `Level ${level} (Max ${maxCells})`;
+      renderProbabilityTable(maxCells);
+    }
+
+    function renderWeightControls() {
+      weightList.innerHTML = "";
+      for (let i = 1; i <= 16; i++) {
+        const item = document.createElement("div");
+        item.className = "weight-item";
+
+        const label = document.createElement("span");
+        label.textContent = String(i);
+
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = "0";
+        slider.max = "40";
+        slider.step = "1";
+        slider.value = String(weights[i].toFixed(0));
+        slider.disabled = autoWeightsToggle.checked;
+
+        const number = document.createElement("input");
+        number.type = "number";
+        number.min = "0";
+        number.max = "40";
+        number.step = "1";
+        number.value = String(weights[i].toFixed(0));
+        number.disabled = autoWeightsToggle.checked;
+
+        const sync = (value) => {
+          weights[i] = Number(value);
+          slider.value = String(weights[i]);
+          number.value = String(weights[i]);
+          updateStats();
+        };
+
+        slider.addEventListener("input", (event) => sync(event.target.value));
+        number.addEventListener("input", (event) => sync(event.target.value || 0));
+
+        item.appendChild(label);
+        item.appendChild(slider);
+        item.appendChild(number);
+        weightList.appendChild(item);
+      }
+    }
+
+    function renderProbabilityTable(maxCells) {
+      probabilityTable.innerHTML = "";
+      const usableWeights = weights.slice(1, maxCells + 1);
+      const total = usableWeights.reduce((sum, w) => sum + w, 0) || 1;
+      usableWeights.forEach((weight, index) => {
+        const cellCount = index + 1;
+        const probability = (weight / total) * 100;
+        const row = document.createElement("div");
+        row.className = "table-row";
+
+        const label = document.createElement("span");
+        label.textContent = `${cellCount}c`;
+
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        const fill = document.createElement("span");
+        fill.style.width = `${Math.max(2, probability)}%`;
+        bar.appendChild(fill);
+
+        const value = document.createElement("span");
+        value.textContent = `${probability.toFixed(1)}%`;
+
+        row.appendChild(label);
+        row.appendChild(bar);
+        row.appendChild(value);
+        probabilityTable.appendChild(row);
+      });
+    }
+
+    function buildAutoWeights(level, maxLevel) {
+      const levelNorm = maxLevel > 1 ? (level - 1) / (maxLevel - 1) : 0;
+      const peak = 5.5;
+      const leftFall = 1.2 + 2.0 * levelNorm;
+      const rightFall = 0.7 - 0.35 * levelNorm;
+      const raw = [0];
+
+      for (let c = 1; c <= 16; c++) {
+        const dist = c <= peak ? (peak - c) : (c - peak);
+        const fall = c <= peak ? leftFall : rightFall;
+        let weight = Math.exp(-dist * fall * 0.6);
+
+        if (c <= 3) {
+          weight *= 1 - 0.9 * levelNorm;
+        }
+
+        if (c >= 8) {
+          const boost = 1 + levelNorm * 0.8 * ((c - 7) / 9);
+          weight *= boost;
+        }
+
+        raw.push(weight);
+      }
+
+      if (level >= maxLevel) {
+        const w16 = raw[16];
+        const total = raw.slice(1).reduce((sum, w) => sum + w, 0) || 1;
+        const target = 0.03;
+        const multiplier = (target * (total - w16)) / (w16 * (1 - target));
+        raw[16] = w16 * Math.max(0.1, multiplier);
+      }
+
+      return raw;
+    }
+
+    function update(timestamp) {
+      requestAnimationFrame(update);
+      updateStats();
+
+      if (!running || crashed) {
+        spawnCountdown.textContent = "--";
+        draw();
+        return;
+      }
+
+      const timeLeft = Math.max(0, Math.ceil((spawnDueAt - timestamp) / 100) * 100);
+      spawnCountdown.textContent = `${timeLeft}ms`;
+
+      if (timestamp >= spawnDueAt && !crashed) {
+        spawnPiece();
+        spawnDueAt = timestamp + spawnRate(Number(levelSlider.value));
+      }
+
+      if (activePieces.length > 0) {
+        if (timestamp - lastDrop >= 1000) {
+          lastDrop = timestamp;
+          activePieces.forEach((piece) => {
+            if (!collides(piece, 0, 1)) {
+              piece.y += 1;
+            }
+          });
+        }
+
+        activePieces.slice().forEach((piece) => {
+          if (collides(piece, 0, 1)) {
+            if (!piece.locked) {
+              piece.locked = true;
+              piece.lockStart = timestamp;
+            } else if (timestamp - piece.lockStart >= 1500) {
+              lockPiece(piece);
+            }
+          } else if (piece.locked) {
+            piece.locked = false;
+            piece.lockStart = 0;
+          }
+        });
+      }
+
+      draw();
+    }
+
+    function drawCell(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+      ctx.strokeStyle = "#1b2131";
+      ctx.strokeRect(x * CELL + 0.5, y * CELL + 0.5, CELL - 1, CELL - 1);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          if (board[y][x]) {
+            drawCell(x, y, "#7b1b1b");
+          } else {
+            ctx.strokeStyle = "#1a1f2b";
+            ctx.strokeRect(x * CELL + 0.5, y * CELL + 0.5, CELL - 1, CELL - 1);
+          }
+        }
+      }
+
+      activePieces.forEach((piece) => {
+        piece.cells.forEach(([cx, cy]) => {
+          const x = piece.x + cx;
+          const y = piece.y + cy;
+          if (y >= 0 && y < ROWS) {
+            drawCell(x, y, "#c62828");
+          }
+        });
+      });
+
+      ctx.strokeStyle = "rgba(255, 68, 68, 0.4)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(1, 1, canvas.width - 2, HIDDEN_ROWS * CELL - 2);
+      ctx.lineWidth = 1;
+    }
+
+    levelSlider.addEventListener("input", () => {
+      levelInput.value = levelSlider.value;
+      updateStats();
+      updateSpawnTimer();
+    });
+
+    levelInput.addEventListener("input", () => {
+      const value = Math.min(Number(levelInput.max), Math.max(Number(levelInput.min), Number(levelInput.value || 1)));
+      levelSlider.value = String(value);
+      updateStats();
+      updateSpawnTimer();
+    });
+
+    maxLevelSlider.addEventListener("input", () => {
+      maxLevelInput.value = maxLevelSlider.value;
+      levelSlider.max = maxLevelSlider.value;
+      levelInput.max = maxLevelSlider.value;
+      updateStats();
+    });
+
+    maxLevelInput.addEventListener("input", () => {
+      const value = Math.min(30, Math.max(10, Number(maxLevelInput.value || 15)));
+      maxLevelSlider.value = String(value);
+      levelSlider.max = String(value);
+      levelInput.max = String(value);
+      updateStats();
+    });
+
+    [spawnBaseInput, spawnStepInput, spawnMinInput].forEach((input) => {
+      input.addEventListener("input", () => {
+        updateSpawnTimer();
+      });
+    });
+
+    toggleButton.addEventListener("click", () => {
+      if (crashed) {
+        return;
+      }
+      running = !running;
+      statusBadge.textContent = running ? "RUNNING" : "PAUSED";
+      statusBadge.className = `status ${running ? "ok" : "warn"}`;
+      toggleButton.textContent = running ? "Pause" : "Resume";
+    });
+
+    resetButton.addEventListener("click", reset);
+
+    resetWeights.addEventListener("click", () => {
+      weights = [...defaultWeights];
+      renderWeightControls();
+      updateStats();
+    });
+
+    randomizeWeights.addEventListener("click", () => {
+      weights = weights.map((value, index) => {
+        if (index === 0) {
+          return 0;
+        }
+        const jitter = Math.max(0, value + randomInt(-3, 3));
+        return Math.min(40, jitter);
+      });
+      renderWeightControls();
+      updateStats();
+    });
+
+    autoWeightsToggle.addEventListener("change", () => {
+      renderWeightControls();
+      updateStats();
+    });
+
+    renderWeightControls();
+    updateStats();
+    updateSpawnTimer();
+    spawnPiece();
+    requestAnimationFrame(update);
+  </script>
+</body>
+</html>
