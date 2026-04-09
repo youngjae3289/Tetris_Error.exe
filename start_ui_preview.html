@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tetris_Error.exe - Start UI Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #120d12;
+      --bg-deep: #0a0508;
+      --panel: rgba(20, 12, 16, 0.9);
+      --accent: #ff99cc;
+      --danger: #ff2b2b;
+      --danger-dark: #8b0000;
+      --text: #f1f1f1;
+      --scanline: rgba(255, 255, 255, 0.05);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% 10%, #2a1a22 0%, var(--bg) 40%, var(--bg-deep) 100%);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      font-family: "Press Start 2P", cursive;
+      image-rendering: pixelated;
+    }
+
+    .noise {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(transparent 50%, rgba(0, 0, 0, 0.22) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.08), rgba(0, 255, 0, 0.03), rgba(0, 0, 255, 0.08));
+      background-size: 100% 4px, 3px 100%;
+      pointer-events: none;
+      z-index: 3;
+      opacity: 0.55;
+      mix-blend-mode: screen;
+    }
+
+    #bg-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    canvas { image-rendering: pixelated; }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      padding: 40px;
+    }
+
+    .title-wrap {
+      position: relative;
+      text-align: center;
+      padding: 24px 40px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    .title {
+      font-family: "Press Start 2P", cursive;
+      font-size: clamp(40px, 6.5vw, 96px);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      position: relative;
+      color: var(--accent);
+      line-height: 1.05;
+      transform-origin: center;
+      transition: color 0.3s ease;
+      text-shadow: 3px 3px 0 #000, 0 0 12px rgba(255, 0, 0, 0.35);
+    }
+
+    .title .suffix {
+      display: inline-block;
+      margin-left: 10px;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease;
+      color: var(--danger);
+    }
+
+    .title.glitching {
+      text-shadow: 2px 0 var(--danger), -2px 0 #00ffff, 0 0 12px rgba(255, 0, 0, 0.4);
+    }
+
+    .title.glitching::before,
+    .title.glitching::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+    .title.glitching::before {
+      color: #ff2b2b;
+      transform: translateX(-2px);
+    }
+    .title.glitching::after {
+      color: #00ffff;
+      transform: translateX(2px);
+    }
+
+    .title-noise {
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0 1px, rgba(0, 0, 0, 0) 1px 3px),
+        repeating-linear-gradient(90deg, rgba(255, 0, 0, 0.12) 0 1px, rgba(0, 0, 0, 0) 1px 4px);
+      mix-blend-mode: screen;
+      opacity: 0.3;
+      pointer-events: none;
+      animation: noiseShift 1.2s steps(2) infinite;
+    }
+
+    .title-texture {
+      position: absolute;
+      inset: 0;
+      color: transparent;
+      background-image:
+        radial-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1.6px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.2) 0 1px, rgba(0, 0, 0, 0) 1px 3px);
+      background-size: 4px 4px, 100% 4px;
+      -webkit-background-clip: text;
+      background-clip: text;
+      opacity: 0.55;
+      animation: textureFlicker 1.2s steps(2) infinite;
+      pointer-events: none;
+    }
+
+    .subtitle {
+      margin-top: 14px;
+      font-size: clamp(10px, 1.2vw, 16px);
+      color: rgba(255, 255, 255, 0.7);
+      letter-spacing: 2px;
+    }
+
+    .start-btn {
+      margin-top: 24px;
+      font-family: "Press Start 2P", cursive;
+      font-size: 12px;
+      padding: 16px 26px;
+      border: 3px solid #fff;
+      background: var(--accent);
+      color: #120d12;
+      cursor: pointer;
+      box-shadow: 6px 6px 0 #000;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .start-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 4px 4px 0 #000;
+    }
+
+    .flash {
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+      transition: opacity 0.25s ease;
+    }
+
+    .controls {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      width: min(360px, 92vw);
+      background: var(--panel);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      padding: 14px;
+      z-index: 6;
+      font-size: 10px;
+      box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.6);
+    }
+
+    .controls h3 {
+      margin: 0 0 10px;
+      font-size: 10px;
+      color: var(--accent);
+    }
+
+    .controls label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 6px 0;
+      gap: 10px;
+    }
+
+    .controls input[type="range"] {
+      flex: 1;
+    }
+
+    .pill {
+      font-size: 9px;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 6px;
+      border-radius: 4px;
+      min-width: 56px;
+      text-align: right;
+    }
+
+    .glitch-burst {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.2) 0 2px, rgba(0, 0, 0, 0) 2px 6px),
+        repeating-linear-gradient(90deg, rgba(255, 0, 0, 0.18) 0 2px, rgba(0, 0, 0, 0) 2px 10px);
+      mix-blend-mode: screen;
+    }
+
+    .glitch-burst.active {
+      opacity: 1;
+      animation: burst 0.35s ease-out forwards;
+    }
+
+    @keyframes noiseShift {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(1px); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes textureFlicker {
+      0% { opacity: 0.35; }
+      50% { opacity: 0.6; }
+      100% { opacity: 0.4; }
+    }
+
+    @keyframes burst {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @media (max-width: 640px) {
+      .title-wrap { padding: 18px; }
+      .controls { position: static; margin: 20px auto 0; }
+      .overlay { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+  <div class="noise"></div>
+  <div class="flash" id="flash"></div>
+  <div class="glitch-burst" id="burst"></div>
+
+  <div class="overlay">
+    <div class="title-wrap">
+      <div class="title" id="title" data-text="TETRIS">
+        <span class="main" id="title-main">TETRIS</span>
+        <span class="suffix" id="title-suffix">_ERROR.EXE</span>
+        <div class="title-texture"></div>
+        <div class="title-noise"></div>
+      </div>
+      <div class="subtitle">SYSTEM BOOT SEQUENCE</div>
+      <button class="start-btn" id="start-btn">LET'S FIX!</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <h3>Preview Controls</h3>
+    <label>
+      Title In (ms)
+      <input id="in-time" type="range" min="200" max="2000" step="50" value="800" />
+      <span class="pill" id="in-val">800</span>
+    </label>
+    <label>
+      Glitch (ms)
+      <input id="glitch-time" type="range" min="200" max="2000" step="50" value="600" />
+      <span class="pill" id="glitch-val">600</span>
+    </label>
+    <label>
+      Suffix (ms)
+      <input id="suffix-time" type="range" min="200" max="2000" step="50" value="400" />
+      <span class="pill" id="suffix-val">400</span>
+    </label>
+    <label>
+      Glitch Interval (ms)
+      <input id="idle-time" type="range" min="1000" max="5000" step="100" value="2800" />
+      <span class="pill" id="idle-val">2800</span>
+    </label>
+    <label>
+      Rain Speed
+      <input id="rain-speed" type="range" min="0.2" max="2" step="0.1" value="0.6" />
+      <span class="pill" id="rain-val">0.6</span>
+    </label>
+  </div>
+
+  <script>
+    const title = document.getElementById("title");
+    const titleMain = document.getElementById("title-main");
+    const titleSuffix = document.getElementById("title-suffix");
+    const startBtn = document.getElementById("start-btn");
+    const flash = document.getElementById("flash");
+    const burst = document.getElementById("burst");
+
+    const inInput = document.getElementById("in-time");
+    const glitchInput = document.getElementById("glitch-time");
+    const suffixInput = document.getElementById("suffix-time");
+    const idleInput = document.getElementById("idle-time");
+    const rainInput = document.getElementById("rain-speed");
+
+    const inVal = document.getElementById("in-val");
+    const glitchVal = document.getElementById("glitch-val");
+    const suffixVal = document.getElementById("suffix-val");
+    const idleVal = document.getElementById("idle-val");
+    const rainVal = document.getElementById("rain-val");
+
+    const canvas = document.getElementById("bg-canvas");
+    const ctx = canvas.getContext("2d");
+
+    let blocks = [];
+    let lastTime = 0;
+    let idleTimer;
+    const pixelSnap = 2;
+    const enemyBase = "#8B0000";
+    const enemyLight = "rgba(255, 255, 255, 0.18)";
+    const enemyShadow = "rgba(0, 0, 0, 0.35)";
+    const pieceColors = {
+      I: "#A3E4D7",
+      J: "#AED6F1",
+      L: "#FAD7A0",
+      O: "#F9E79F",
+      S: "#ABEBC6",
+      T: "#D2B4DE",
+      Z: "#F1948A"
+    };
+    const tetrominoes = [
+      { type: "I", shape: [[1, 1, 1, 1]] },
+      { type: "J", shape: [[1, 0, 0], [1, 1, 1]] },
+      { type: "L", shape: [[0, 0, 1], [1, 1, 1]] },
+      { type: "O", shape: [[1, 1], [1, 1]] },
+      { type: "S", shape: [[0, 1, 1], [1, 1, 0]] },
+      { type: "T", shape: [[0, 1, 0], [1, 1, 1]] },
+      { type: "Z", shape: [[1, 1, 0], [0, 1, 1]] }
+    ];
+    const driftAngle = 40 * (Math.PI / 180);
+    let blocksMode = "normal";
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      ctx.imageSmoothingEnabled = false;
+      buildErrorField();
+    }
+
+    function buildErrorField() {
+      blocks = [];
+      const blockSize = Math.max(18, Math.min(30, Math.floor(canvas.width / 12)));
+      const gap = Math.max(6, Math.round(blockSize * 0.35));
+      const step = blockSize + gap;
+      const cols = Math.ceil(canvas.width / step) + 2;
+      const rows = Math.ceil(canvas.height / step) + 2;
+      const occupied = new Set();
+      const targetCells = Math.floor(cols * rows * 0.4);
+      let placedCells = 0;
+      let attempts = 0;
+
+      while (placedCells < targetCells && attempts < cols * rows * 10) {
+        attempts++;
+        const originX = Math.floor(Math.random() * cols);
+        const originY = Math.floor(Math.random() * rows);
+        const piece = tetrominoes[Math.floor(Math.random() * tetrominoes.length)];
+        const shape = piece.shape;
+        const cells = [];
+        let valid = true;
+
+        for (let y = 0; y < shape.length; y++) {
+          for (let x = 0; x < shape[y].length; x++) {
+            if (shape[y][x] !== 1) continue;
+            const gx = originX + x;
+            const gy = originY + y;
+            if (gx < 0 || gx >= cols || gy < 0 || gy >= rows) {
+              valid = false;
+              break;
+            }
+            const key = `${gx},${gy}`;
+            if (occupied.has(key)) {
+              valid = false;
+              break;
+            }
+            cells.push({ gx, gy });
+          }
+          if (!valid) break;
+        }
+
+        if (!valid) continue;
+        cells.forEach(cell => occupied.add(`${cell.gx},${cell.gy}`));
+        placedCells += cells.length;
+        cells.forEach(cell => {
+          blocks.push({
+            x: cell.gx * step,
+            y: cell.gy * step,
+            size: blockSize,
+            type: piece.type
+          });
+        });
+      }
+    }
+
+    function updateBlocks(delta) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const speed = parseFloat(rainInput.value);
+      const drift = speed * delta * 0.02;
+      const dx = Math.cos(driftAngle) * drift;
+      const dy = Math.sin(driftAngle) * drift;
+      blocks.forEach(block => {
+        block.x += dx;
+        block.y += dy;
+        if (block.y > canvas.height + block.size) {
+          block.y = -block.size;
+        }
+        if (block.x > canvas.width + block.size) {
+          block.x = -block.size;
+        }
+        const px = Math.round(block.x / pixelSnap) * pixelSnap;
+        const py = Math.round(block.y / pixelSnap) * pixelSnap;
+        const ps = Math.max(pixelSnap, Math.round(block.size / pixelSnap) * pixelSnap);
+        const baseColor = blocksMode === "error" ? enemyBase : (pieceColors[block.type] || "#ffffff");
+        const light = blocksMode === "error" ? enemyLight : "rgba(255, 255, 255, 0.5)";
+        const shadow = blocksMode === "error" ? enemyShadow : "rgba(0, 0, 0, 0.3)";
+        ctx.fillStyle = baseColor;
+        ctx.fillRect(px, py, ps, ps);
+        ctx.fillStyle = light;
+        ctx.fillRect(px, py, ps, Math.max(2, Math.floor(ps * 0.12)));
+        ctx.fillRect(px, py, Math.max(2, Math.floor(ps * 0.12)), ps);
+        ctx.fillStyle = shadow;
+        ctx.fillRect(px, py + ps - Math.max(2, Math.floor(ps * 0.12)), ps, Math.max(2, Math.floor(ps * 0.12)));
+        ctx.fillRect(px + ps - Math.max(2, Math.floor(ps * 0.12)), py, Math.max(2, Math.floor(ps * 0.12)), ps);
+      });
+    }
+
+    function loop(timestamp) {
+      const delta = timestamp - lastTime;
+      lastTime = timestamp;
+      updateBlocks(delta);
+      requestAnimationFrame(loop);
+    }
+
+    function setRanges() {
+      inVal.textContent = inInput.value;
+      glitchVal.textContent = glitchInput.value;
+      suffixVal.textContent = suffixInput.value;
+      idleVal.textContent = idleInput.value;
+      rainVal.textContent = rainInput.value;
+    }
+
+    function playSequence() {
+      blocksMode = "normal";
+      buildErrorField();
+      titleMain.textContent = "TETRIS";
+      title.dataset.text = "TETRIS";
+      title.style.color = "var(--accent)";
+      title.style.transform = "scale(1.05)";
+      titleSuffix.style.opacity = "0";
+      titleSuffix.style.transform = "translateX(-10px)";
+
+      setTimeout(() => {
+        title.style.transform = "scale(1.0)";
+      }, 120);
+
+      setTimeout(() => {
+        title.classList.add("glitching");
+        blocksMode = "error";
+      }, parseInt(inInput.value, 10));
+
+      setTimeout(() => {
+        title.classList.remove("glitching");
+        titleSuffix.style.opacity = "1";
+        titleSuffix.style.transform = "translateX(0)";
+        title.style.color = "var(--danger)";
+      }, parseInt(inInput.value, 10) + parseInt(glitchInput.value, 10));
+
+      setTimeout(() => {
+        title.dataset.text = "TETRIS_ERROR.EXE";
+      }, parseInt(inInput.value, 10) + parseInt(glitchInput.value, 10) + parseInt(suffixInput.value, 10));
+
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(triggerIdleGlitch, parseInt(idleInput.value, 10));
+    }
+
+    function triggerIdleGlitch() {
+      title.classList.add("glitching");
+      setTimeout(() => title.classList.remove("glitching"), 220);
+      idleTimer = setTimeout(triggerIdleGlitch, parseInt(idleInput.value, 10) + Math.random() * 800);
+    }
+
+    startBtn.addEventListener("click", () => {
+      burst.classList.remove("active");
+      void burst.offsetWidth;
+      burst.classList.add("active");
+      flash.style.opacity = "1";
+      setTimeout(() => { flash.style.opacity = "0"; }, 180);
+    });
+
+    [inInput, glitchInput, suffixInput, idleInput, rainInput].forEach(input => {
+      input.addEventListener("input", () => {
+        setRanges();
+        playSequence();
+      });
+    });
+
+    window.addEventListener("resize", resizeCanvas);
+
+    resizeCanvas();
+    setRanges();
+    playSequence();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
