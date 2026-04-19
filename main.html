@@ -3,1199 +3,965 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris_Error.exe - v1.2.8</title>
+    <title>Tetris_Error.exe - Vibe Prototype</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-        :root {
-            --bg-color: #1a1a2e;
-            --danger-bg: #4a0404;
-            --panel-bg: rgba(22, 22, 40, 0.9);
-            --border-color: #444;
-            --accent-color: #ff99cc;
-            --enemy-color: #4a0404;
-            --danger-color: #ff0000;
+        
+        body { 
+            background-color: #1a1a2e; 
+            color: #eee; 
+            font-family: 'Press Start 2P', cursive; 
+            overflow: hidden; 
+            margin: 0; 
+            image-rendering: pixelated; 
         }
-
-        body {
-            background-color: var(--bg-color);
-            color: #eee;
-            font-family: 'Press Start 2P', cursive;
-            overflow: hidden;
-            touch-action: none;
-            margin: 0;
-            image-rendering: pixelated;
-            transition: background-color 0.5s ease;
-        }
-
-        body.critical-zone {
-            background-color: var(--danger-bg);
-            animation: pulseDanger 2s infinite;
-        }
-
-        body.warning-zone {
-            background-color: #2d0a11;
-            animation: pulseWarning 3s infinite;
-        }
-
-        @keyframes pulseDanger {
-            0% { background-color: #4a0404; }
-            50% { background-color: #2a0202; }
-            100% { background-color: #4a0404; }
-        }
-
-        @keyframes pulseWarning {
-            0% { background-color: #2d0a11; }
-            50% { background-color: #1a0f18; }
-            100% { background-color: #2d0a11; }
-        }
-
+        
         body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
+            content: " "; 
+            display: block; 
+            position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
                         linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 200;
-            background-size: 100% 4px, 3px 100%;
+            z-index: 200; 
+            background-size: 100% 4px, 3px 100%; 
             pointer-events: none;
         }
 
-        #danger-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 150px;
-            background: linear-gradient(to bottom, rgba(255, 0, 0, 0.3), transparent);
-            pointer-events: none;
-            z-index: 150;
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-        body.warning-zone #danger-overlay { opacity: 0.4; }
-        body.critical-zone #danger-overlay { opacity: 1; }
-
-        #stats-panel {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 300;
-            text-align: left;
-            pointer-events: none;
+        #game-wrapper { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
         }
 
-        .stat-item {
-            font-size: 10px;
-            color: #fff;
-            margin-bottom: 8px;
-            text-shadow: 2px 2px #000;
+        .canvas-outer { 
+            position: relative; 
+            padding: 10px; 
+            background: #222; 
+            border: 4px solid #444; 
+            box-shadow: 10px 10px 0px #000; 
+            z-index: 10; 
         }
 
-        .stat-label {
-            color: var(--accent-color);
+        .canvas-container { 
+            position: relative; 
+            background: #000; 
+            overflow: hidden; 
+            border: 2px solid #111; 
         }
 
-        #game-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        canvas { 
+            display: block; 
+            cursor: crosshair;
         }
 
-        #game-container {
-            display: flex;
-            gap: 20px;
-            align-items: flex-end; 
-            will-change: transform;
-            z-index: 10;
-            padding-bottom: 50px;
+        #game-over-overlay {
+            position: absolute; top:0; left:0; right:0; bottom:0;
+            background: rgba(139, 0, 0, 0.85); 
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; 
+            z-index: 100;
+            display: none;
         }
 
-        .canvas-outer {
-            position: relative;
-            padding: 10px;
-            background: #222;
-            border: 4px solid #444;
-            box-shadow: 10px 10px 0px #000;
+        #game-over-overlay h1 { 
+            color: #fff; 
+            font-size: 20px; 
+            text-shadow: 4px 4px 0 #000; 
+            margin-bottom: 24px;
         }
 
-        #main-outer {
-            border-top: none;
-            background: transparent;
-            padding-top: 0;
-            box-shadow: 10px 10px 0px #000;
+        .btn { 
+            background: #ff99cc; 
+            color: #000; 
+            padding: 15px 25px; 
+            font-size: 12px; 
+            border: 4px solid #fff; 
+            box-shadow: 4px 4px 0px #000;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
         }
 
-        .canvas-container {
-            position: relative;
-            background: #000;
-            overflow: hidden;
-            border: 2px solid #111;
-        }
-
-        #main-container {
-            height: 600px;
-            transition: height 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            background: transparent;
-        }
-
-        body.critical-zone #main-container {
-            height: 690px;
-        }
-
-        canvas { display: block; }
-
-        .side-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            align-items: center;
-            margin-bottom: 10px; 
-        }
-
-        .info-box {
-            background: var(--panel-bg);
-            border: 4px solid #444;
-            padding: 12px 10px;
-            text-align: center;
-            box-shadow: 6px 6px 0px #000;
-            width: 140px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .info-label {
-            font-size: 8px;
-            color: var(--accent-color);
-            margin-bottom: 12px;
-            letter-spacing: 1px;
-            width: 100%;
-        }
-
-        .info-value { font-size: 12px; color: #fff; width: 100%; }
-
-        #overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0, 0, 0, 0.85);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; text-align: center; transition: opacity 1.5s ease-in-out; opacity: 0;
-            padding: 20px;
-        }
-
-        #overlay.show { opacity: 1; }
-
-        #overlay-title {
-            font-size: 14px; 
-            margin-bottom: 1rem;
-            color: var(--accent-color);
-            line-height: 1.4;
-            word-break: break-all;
-            width: 100%;
-        }
-
-        .btn {
-            background: var(--accent-color); color: #000; padding: 15px 25px;
-            font-size: 10px; cursor: pointer; border: 4px solid #fff;
-            box-shadow: 4px 4px 0px #000; transition: all 0.1s; margin-top: 20px;
-        }
-
-        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
-        .hidden { display: none !important; }
-
-        .controls-hint {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            color: #666; font-size: 8px; text-align: center; line-height: 2;
-        }
     </style>
 </head>
 <body>
-
-    <div id="danger-overlay"></div>
-
-    <div id="stats-panel">
-        <div class="stat-item">
-            <span class="stat-label">PIECES</span> <span id="pieces-stat">0, 0.00/S</span>
+    <div id="game-wrapper" style="gap: 20px;">
+        
+        <!-- HOLD UI -->
+        <div style="background: rgba(22, 22, 40, 0.9); border: 4px solid #444; padding: 10px; text-align: center; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-200px);">
+            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px;">HOLD (F)</div>
+            <canvas id="holdCanvas" width="90" height="90" style="background: #000; border: 2px solid #111;"></canvas>
         </div>
-        <div class="stat-item" id="playtime-stat">0:00.000</div>
-    </div>
 
-    <div id="game-wrapper">
-        <div id="game-container">
-            <div class="side-panel">
-                <div class="info-box">
-                    <div class="info-label">HOLD</div>
-                    <div class="canvas-container" style="border: 1px solid #333; height: auto;">
-                        <canvas id="holdCanvas" width="90" height="90"></canvas>
-                    </div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">LEVEL</div>
-                    <div id="level" class="info-value">1</div>
-                </div>
-                <div class="info-box" id="combo-box">
-                    <div id="combo-label" class="info-label">COMBO</div>
-                    <div id="combo-count" class="info-value" style="font-size: 20px; color: #fff; margin-bottom: 5px;">0</div>
-                    <div style="width: 100%; height: 4px; background: #222; margin-top: 5px; overflow: hidden; border-radius: 2px;">
-                        <div id="combo-bar" style="width: 0%; height: 100%; background: #00ffff; transition: width 0.1s linear;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="canvas-outer" id="main-outer">
-                <div class="canvas-container" id="main-container">
-                    <canvas id="tetris" width="300" height="690"></canvas>
-                    <div id="overlay">
-                        <h1 id="overlay-title">Tetris_Error.exe</h1>
-                        <p id="final-stats" class="text-[8px] text-gray-400 hidden leading-loose"></p>
-                        <button id="start-btn" class="btn">LET's FIX!</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="side-panel">
-                <div class="info-box">
-                    <div class="info-label">NEXT</div>
-                    <div class="canvas-container" style="border: 1px solid #333; height: auto;">
-                        <canvas id="nextCanvas" width="90" height="240"></canvas>
-                    </div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">SCORE</div>
-                    <div id="score" class="info-value">0</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">LINES</div>
-                    <div id="lines" class="info-value">0</div>
+        <div class="canvas-outer">
+            <div class="canvas-container">
+                <canvas id="tetris" width="300" height="690"></canvas>
+                <div id="game-over-overlay">
+                    <h1 id="crash-title" style="color: #fff;">CRUSHED!</h1>
+                    <p id="crash-desc" style="display: none; color: #ff3333; margin-bottom: 30px; text-align: center;">YOUR SOUL HAS BEEN STOLEN.</p>
+                    <button class="btn" id="restart-btn" onclick="resetGame()">SYSTEM REBOOT</button>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="controls-hint">
-        ARROWS: MOVE &bull; UP/Z: ROTATE &bull; SPACE: DROP &bull; C: HOLD
-    </div>
-
+    
     <script>
-        const canvas = document.getElementById('tetris');
-        const ctx = canvas.getContext('2d');
-        const holdCanvas = document.getElementById('holdCanvas');
-        const hCtx = holdCanvas.getContext('2d');
-        const nextCanvas = document.getElementById('nextCanvas');
-        const nCtx = nextCanvas.getContext('2d');
-        const gameContainer = document.getElementById('game-container');
-        const overlay = document.getElementById('overlay');
-
-        const ROWS = 23; 
-        const HIDDEN_ROWS = 3; 
-        const COLS = 10;
-        const BLOCK_SIZE = 30;
-
-        const COLORS = {
-            I: '#A3E4D7', J: '#AED6F1', L: '#FAD7A0',
-            O: '#F9E79F', S: '#ABEBC6', T: '#D2B4DE', Z: '#F1948A',
-            ENEMY: '#8B0000'
-        };
-
-        const PIECES = {
-            I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
-            J: [[1,0,0],[1,1,1],[0,0,0]],
-            L: [[0,0,1],[1,1,1],[0,0,0]],
-            O: [[1,1],[1,1]],
-            S: [[0,1,1],[1,1,0],[0,0,0]],
-            T: [[0,1,0],[1,1,1],[0,0,0]],
-            Z: [[1,1,0],[0,1,1],[0,0,0]]
-        };
-
-        const DAS = 160; 
-        const ARR = 30;  
-        const SOFT_DROP_INTERVAL = 25;
-        const LOCK_DELAY = 1000; 
-        const ENEMY_LOCK_DELAY = 1500;
-
-        class Particle {
-            constructor(x, y, color, sizeMultiplier = 1, lifeTime = 1.0) {
-                this.x = x; this.y = y; this.color = color;
-                this.size = (Math.random() * 5 + 3) * sizeMultiplier; 
-                this.speedX = (Math.random() - 0.5) * 20 * sizeMultiplier;
-                this.speedY = (Math.random() - 0.5) * 20 * sizeMultiplier;
-                this.gravity = 0.3; this.alpha = 1; 
-                this.decay = (0.005 * (Math.random() * 0.5 + 0.8)) / lifeTime;
-            }
-            update() { this.x += this.speedX; this.y += this.speedY; this.speedY += this.gravity; this.alpha -= this.decay; }
-            draw(context) {
-                if (this.alpha <= 0) return;
-                context.save();
-                context.globalAlpha = this.alpha;
-                context.fillStyle = this.color;
-                context.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
-                context.restore();
-            }
-        }
-
-        class StarParticle extends Particle {
-            constructor(x, y, color = '#FFFF00', sizeMultiplier = 1.5, lifeTime = 1.0) {
-                super(x, y, color, sizeMultiplier, lifeTime);
-                this.speedX = (Math.random() - 0.5) * 15 * (sizeMultiplier / 1.5);
-                this.speedY = (Math.random() - 0.5) * 15 * (sizeMultiplier / 1.5) - 5;
-                this.rotation = Math.random() * Math.PI * 2;
-                this.rotSpeed = (Math.random() - 0.5) * 0.2;
-            }
-            draw(context) {
-                if (this.alpha <= 0) return;
-                context.save();
-                context.translate(this.x, this.y);
-                context.rotate(this.rotation);
-                context.globalAlpha = this.alpha;
-                context.fillStyle = this.color;
-                context.beginPath();
-                for (let i = 0; i < 5; i++) {
-                    context.lineTo(Math.cos((18 + i * 72) / 180 * Math.PI) * this.size, -Math.sin((18 + i * 72) / 180 * Math.PI) * this.size);
-                    context.lineTo(Math.cos((54 + i * 72) / 180 * Math.PI) * (this.size/2), -Math.sin((54 + i * 72) / 180 * Math.PI) * (this.size/2));
+    const canvas = document.getElementById('tetris');
+    const ctx = canvas.getContext('2d');
+    const holdCanvas = document.getElementById('holdCanvas');
+    const hCtx = holdCanvas.getContext('2d');
+    const overlay = document.getElementById('game-over-overlay');
+    
+    const ROWS = 23; 
+    const COLS = 10; 
+    const BLOCK_SIZE = 30;
+    
+    const PIECES = {
+        I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+        J: [[1,0,0],[1,1,1],[0,0,0]],
+        L: [[0,0,1],[1,1,1],[0,0,0]],
+        O: [[1,1],[1,1]],
+        S: [[0,1,1],[1,1,0],[0,0,0]],
+        T: [[0,1,0],[1,1,1],[0,0,0]],
+        Z: [[1,1,0],[0,1,1],[0,0,0]]
+    };
+    
+    const ENEMY_COLOR = '#8B0000';
+    const GHOST_COLOR = 'rgba(139, 0, 0, 0.5)';
+    const PLAYER_COLOR = '#A3E4D7';
+    
+    let board = [];
+    let enemies = [];
+    let particles = [];
+    let player = null;
+    let controlMode = 'CHARACTER';
+    let selectedBlock = null;
+    let heldPieceType = null;
+    
+    function drawHoldUI() {
+        hCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
+        if (!heldPieceType) return;
+        let matrix = PIECES[heldPieceType];
+        let bs = 20; 
+        let offsetX = (holdCanvas.width - matrix[0].length * bs) / 2;
+        let offsetY = (holdCanvas.height - matrix.length * bs) / 2;
+        hCtx.fillStyle = ENEMY_COLOR;
+        hCtx.strokeStyle = '#000';
+        for (let r = 0; r < matrix.length; r++) {
+            for (let c = 0; c < matrix[r].length; c++) {
+                if (matrix[r][c]) {
+                    hCtx.fillRect(offsetX + c * bs, offsetY + r * bs, bs, bs);
+                    hCtx.strokeRect(offsetX + c * bs, offsetY + r * bs, bs, bs);
+                    hCtx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    hCtx.fillRect(offsetX + c * bs + 2, offsetY + r * bs + 2, bs - 4, 4);
+                    hCtx.fillStyle = ENEMY_COLOR;
                 }
-                context.closePath();
-                context.fill();
-                context.restore();
-                this.rotation += this.rotSpeed;
             }
         }
-
-        class FloatingText {
-            constructor(text, x, y, color = '#00ffff', size = 16, duration = 0.8) {
-                this.text = text; this.color = color;
-                this.alpha = 1; this.life = duration; this.maxLife = duration;
-                this.shake = 0; this.size = size;
-                const estimatedWidth = text.length * size * 0.8;
-                this.x = Math.max(estimatedWidth / 2, Math.min(canvas.width - estimatedWidth / 2, x));
-                this.y = y;
-            }
-            update(deltaTime) {
-                this.life -= deltaTime / 1000;
-                this.alpha = Math.max(0, this.life / this.maxLife); 
-                this.y -= 0.3; 
-                this.shake = (Math.random() - 0.5) * (this.maxLife > 1 ? 40 : 15) * this.alpha; 
-            }
-            draw(context) {
-                if (this.alpha <= 0) return;
-                context.save();
-                context.globalAlpha = this.alpha;
-                context.fillStyle = this.color;
-                context.font = `${this.size}px "Press Start 2P"`;
-                context.textAlign = 'center';
-                context.shadowColor = '#000';
-                context.shadowBlur = 4;
-                context.fillText(this.text, this.x + this.shake, this.y);
-                context.restore();
-            }
+    }
+    
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x; this.y = y; this.color = color;
+            this.size = Math.random() * 4 + 3;
+            this.speedX = (Math.random() - 0.5) * 18;
+            this.speedY = (Math.random() - 0.5) * 18;
+            this.alpha = 1;
+            this.decay = 0.008 + Math.random() * 0.012; // 수명을 훨씬 길게 연장 (잔류감 향상)
         }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.speedX *= 0.94; // 공기 저항(마찰력)
+            this.speedY *= 0.94; // 공기 저항
+            this.speedY += 0.4;  // 게임 물리와 어울리게 파티클에도 중력 적용
+            this.alpha -= this.decay;
+        }
+        draw(context) {
+            if (this.alpha <= 0) return;
+            context.save();
+            context.globalAlpha = this.alpha;
+            context.fillStyle = this.color;
+            context.fillRect(this.x, this.y, this.size, this.size);
+            context.restore();
+        }
+    }
 
-        class EnemyPiece {
-            constructor(type, matrix, x) {
-                this.type = 'ENEMY'; this.matrix = matrix; this.pos = { x: x, y: -4 };
-                this.dropCounter = 0; this.dropInterval = 1000; 
-                this.isLocking = false; this.lockTimer = 0;
+    let isGameOver = false;
+    let isDying = false;
+    let isSoulStolen = false;
+    let deathTimer = 0;
+    const DEATH_DURATION = 1.6; // 1.6초 카메라 연출 지속시간
+    
+    let lastTime = 0;
+    let enemySpawnTimer = 0;
+    let shakeAmount = 0;
+    let canHold = true;
+    
+    let glitchIntensity = 0;
+    
+    function updateGlitchLoop() {
+        let desc = document.getElementById('crash-desc');
+        if (!isGameOver) {
+            if (desc) {
+                desc.style.transform = 'none';
+                desc.style.textShadow = 'none';
+                desc.style.opacity = 1;
             }
-            update(deltaTime, arena, collideFn) {
-                while (collideFn(this.matrix, this.pos)) { this.pos.y--; }
-                if (this.isLocking) {
-                    this.pos.y++;
-                    const stillColliding = collideFn(this.matrix, this.pos);
-                    this.pos.y--;
-                    if (!stillColliding) { this.isLocking = false; this.lockTimer = 0; }
-                    else {
-                        this.lockTimer += deltaTime;
-                        if (this.lockTimer >= ENEMY_LOCK_DELAY) return true; 
-                    }
-                } else {
-                    this.dropCounter += deltaTime;
-                    if (this.dropCounter >= this.dropInterval) {
-                        this.pos.y++; this.dropCounter = 0;
-                        if (collideFn(this.matrix, this.pos)) { this.pos.y--; this.isLocking = true; this.lockTimer = 0; }
-                    }
+            return; // 게임 재시작 시 글리치 루프 즉시 정지
+        }
+        
+        if (desc) {
+            if (glitchIntensity > 0) {
+                glitchIntensity -= 0.15; // 60프레임 기준 1.5초만에 서서히 0으로 감쇠
+                if (glitchIntensity < 0) glitchIntensity = 0;
+            } else {
+                // 완전히 잦아든 후, 아주 가끔씩 랜덤하게 지지직 거림 (1.5% 확률)
+                if (Math.random() < 0.015) {
+                    // 강도가 약한 랜덤 지지직
+                    glitchIntensity = Math.random() * 6 + 2; 
                 }
-                return false;
             }
-            getBlinkAlpha() {
-                let blinkInterval = 200;
-                if (this.isLocking) {
-                    const ratio = Math.min(this.lockTimer / ENEMY_LOCK_DELAY, 0.99);
-                    const intervals = [300, 300, 200, 200, 100];
-                    blinkInterval = intervals[Math.floor(ratio * 5)];
-                }
-                return Math.floor(performance.now() / blinkInterval) % 2 === 0 ? 1.0 : 0.3;
-            }
-        }
-
-        class Game {
-            constructor() {
-                this.arena = this.createMatrix(COLS, ROWS);
-                this.player = { 
-                    pos: {x: 0, y: 0}, 
-                    matrix: null, 
-                    type: null, 
-                    next: [], 
-                    hold: null, 
-                    canHold: true,
-                    lastMoveRotation: false,
-                    isTSpin: false
-                };
-                this.enemies = []; this.enemySpawnCounter = 0; this.level = 1; this.particles = [];
-                this.floatingTexts = []; this.shakeAmount = 0; this.flashAlpha = 0; this.flashColor = '#ffffff';
-                this.dropCounter = 0; this.dropInterval = 1000; this.lockTimer = 0; this.isTouchingBottom = false;
-                this.comboCount = 0; this.comboTimer = 0; this.maxComboTimer = 0; this.lastTime = 0;
+            
+            if (glitchIntensity > 0) {
+                let s = Math.max(0, glitchIntensity);
+                let skew = (Math.random() - 0.5) * 2 * s * 1.5;
+                let tx = (Math.random() - 0.5) * s * 1.2;
+                let c1 = (Math.random() - 0.5) * 2 * s;
+                let c2 = -c1;
                 
-                this.targetScore = 0; 
-                this.displayScore = 0; 
-
-                this.lines = 0; this.gameOver = true; this.bag = []; this.keyStates = {};
-                this.dasTimers = { left: 0, right: 0 }; this.arrTimers = { left: 0, right: 0 }; this.softDropTimer = 0;
-                this.timeScoreCounter = 0; 
-
-                this.piecesPlaced = 0;
-                this.playTimeMs = 0;
-
-                this.init();
-                overlay.classList.add('show');
-                this.animate();
+                desc.style.transform = `skewX(${skew}deg) translate(${tx}px, 0)`;
+                desc.style.textShadow = `${c1}px 0 red, ${c2}px 0 cyan`;
+                
+                if (Math.random() < s * 0.05) desc.style.opacity = Math.random() * 0.5 + 0.4;
+                else desc.style.opacity = 1;
+            } else {
+                desc.style.transform = 'none';
+                desc.style.textShadow = 'none';
+                desc.style.opacity = 1;
             }
-
-            createMatrix(w, h) {
-                const matrix = [];
-                while (h--) matrix.push(new Array(w).fill(0));
-                return matrix;
-            }
-
-            init() { this.resetPlayer(); this.updateComboUI(); }
-
-            fillBag() {
-                const types = 'IJLOSTZ'.split('');
-                while (types.length > 0) {
-                    const random = Math.floor(Math.random() * types.length);
-                    this.bag.push(types.splice(random, 1)[0]);
+        }
+        
+        requestAnimationFrame(updateGlitchLoop);
+    }
+    
+    function startDeathSequence() {
+        if (!isDying && !isGameOver) {
+            isDying = true;
+            deathTimer = 0;
+            shakeAmount = Math.max(shakeAmount, 30); // 충격적인 카메라 흔들림 
+        }
+    }
+    
+    function triggerFinalDeath() {
+        if (!isSoulStolen) {
+            isSoulStolen = true;
+            isGameOver = true;
+            isDying = false;
+            
+            let title = document.getElementById('crash-title');
+            let desc = document.getElementById('crash-desc');
+            let overlay = document.getElementById('game-over-overlay');
+            let btn = document.getElementById('restart-btn');
+            
+            title.style.display = 'none'; // CRUSHED 텍스트 숨김 (유저 요청 반영)
+            desc.innerText = 'YOUR SOUL HAS BEEN STOLEN.';
+            desc.style.display = 'block';
+            desc.style.fontSize = '26px';
+            desc.style.fontWeight = 'bold';
+            desc.style.letterSpacing = '2px';
+            
+            btn.style.borderColor = '#ff3333';
+            btn.style.color = '#ff3333';
+            btn.style.background = 'transparent';
+            
+            overlay.style.background = '#000'; 
+            overlay.style.display = 'flex';
+            
+            glitchIntensity = 20; // 찢어지는 듯한 최고 강도에서 시작
+            requestAnimationFrame(updateGlitchLoop);
+        }
+    }
+    
+    let keys = {};
+    let keysPressed = {};
+    
+    window.addEventListener('keydown', e => { 
+        keys[e.code] = true; 
+        keysPressed[e.code] = true; 
+    });
+    
+    window.addEventListener('keyup', e => { 
+        keys[e.code] = false; 
+    });
+    
+    // 마우스 클릭으로 에러 블록 선택 로직
+    canvas.addEventListener('mousedown', e => {
+        if (isGameOver) return;
+        
+        let rect = canvas.getBoundingClientRect();
+        let scaleX = canvas.width / rect.width;
+        let scaleY = canvas.height / rect.height;
+        let mx = (e.clientX - rect.left) * scaleX;
+        let my = (e.clientY - rect.top) * scaleY;
+        
+        let hitPattern = null;
+        for (let enemy of enemies) {
+            for (let r of enemy.getRects()) {
+                if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) {
+                    hitPattern = enemy; 
+                    break;
                 }
             }
+            if (hitPattern) break;
+        }
+        
+        if (hitPattern) {
+            if (selectedBlock) selectedBlock.isGhost = false;
+            selectedBlock = hitPattern;
+            selectedBlock.isGhost = true;
+            controlMode = 'BLOCK';
+        } else {
+            if (selectedBlock) selectedBlock.isGhost = false;
+            selectedBlock = null;
+            controlMode = 'CHARACTER';
+        }
+    });
 
-            getNextPiece() { if (this.bag.length < 7) this.fillBag(); return this.bag.shift(); }
-
-            resetPlayer() {
-                if (this.player.next.length === 0) { for(let i=0; i<6; i++) this.player.next.push(this.getNextPiece()); }
-                this.player.type = this.player.next.shift();
-                this.player.next.push(this.getNextPiece());
-                this.player.matrix = JSON.parse(JSON.stringify(PIECES[this.player.type]));
-                this.player.pos.y = 0; 
-                this.player.pos.x = (this.arena[0].length / 2 | 0) - (this.player.matrix[0].length / 2 | 0);
-                this.player.canHold = true;
-                this.player.lastMoveRotation = false;
-                this.player.isTSpin = false;
-                this.lockTimer = 0;
-                this.isTouchingBottom = false;
-            }
-
-            spawnEnemy() {
-                const types = Object.keys(PIECES);
-                const type = types[Math.floor(Math.random() * types.length)];
-                const matrix = JSON.parse(JSON.stringify(PIECES[type]));
-                const x = Math.floor(Math.random() * (COLS - matrix[0].length + 1));
-                this.enemies.push(new EnemyPiece(type, matrix, x));
-            }
-
-            holdPiece() {
-                if (!this.player.canHold) return;
-                this.applyShake(1); 
-                if (!this.player.hold) { this.player.hold = this.player.type; this.resetPlayer(); }
-                else {
-                    const temp = this.player.type;
-                    this.player.type = this.player.hold;
-                    this.player.hold = temp;
-                    this.player.matrix = JSON.parse(JSON.stringify(PIECES[this.player.type]));
-                    this.player.pos.y = 0;
-                    this.player.pos.x = (this.arena[0].length / 2 | 0) - (this.player.matrix[0].length / 2 | 0);
-                }
-                this.player.canHold = false;
-                this.player.lastMoveRotation = false;
-                this.player.isTSpin = false;
-                this.lockTimer = 0; this.isTouchingBottom = false;
-            }
-
-            collide(matrix = this.player.matrix, pos = this.player.pos) {
-                if (!matrix) return false;
-                for (let y = 0; y < matrix.length; ++y) {
-                    for (let x = 0; x < matrix[y].length; ++x) {
-                        if (matrix[y][x] !== 0) {
-                            const ay = y + pos.y;
-                            const ax = x + pos.x;
-                            if (ay >= ROWS || ax < 0 || ax >= COLS || (ay >= 0 && this.arena[ay][ax] !== 0)) return true;
-                        }
+    class Player {
+        constructor() {
+            this.w = 26; 
+            this.h = 26; // 타이트한 충돌 처리를 위해 칸(30)보다 약간 작게
+            this.x = (300 / 2) - (this.w / 2); 
+            this.y = 690 - this.h - 1;
+            this.vx = 0; 
+            this.vy = 0;
+            this.speed = 220; // 픽셀 단위 속도
+            this.jumpForce = -450;
+            this.gravity = 1400;
+            this.fastFallGravity = 3000;
+            this.isGrounded = false;
+        }
+        
+        update(dt) {
+            if (isGameOver) return;
+            
+            // 프레임 시작 시점: 이미 단단한 블록 내부에 박혀있다면 압사 (하드드롭 등)
+            if (!isDying) {
+                let initialObstacles = getAllSolidRects();
+                for (let o of initialObstacles) {
+                    let overlapY = Math.min(this.y + this.h, o.y + o.h) - Math.max(this.y, o.y);
+                    let overlapX = Math.min(this.x + this.w, o.x + o.w) - Math.max(this.x, o.x);
+                    if (overlapX > 2 && overlapY > 2) {
+                        startDeathSequence();
                     }
                 }
-                return false;
             }
-
-            checkTSpin() {
-                if (this.player.type !== 'T') return false;
-                const corners = [
-                    {x: this.player.pos.x, y: this.player.pos.y},
-                    {x: this.player.pos.x + 2, y: this.player.pos.y},
-                    {x: this.player.pos.x, y: this.player.pos.y + 2},
-                    {x: this.player.pos.x + 2, y: this.player.pos.y + 2}
-                ];
-                let occupied = 0;
-                corners.forEach(c => {
-                    if (c.x < 0 || c.x >= COLS || c.y >= ROWS || (c.y >= 0 && this.arena[c.y][c.x] !== 0)) occupied++;
-                });
-                return occupied >= 3;
+            
+            if (isDying) {
+                // 죽어가는 동안에는 좌표 보정으로 튕겨나가는 것을 막고 제자리에서 깔리도록 강제 결빙
+                this.vx = 0;
+                this.vy = 0;
+                return; 
             }
-
-            pushPlayerOut() {
-                if (!this.collide()) return;
-                const originalPos = { ...this.player.pos };
-                for (let i = 1; i <= 23; i++) { this.player.pos.y--; if (!this.collide()) return; }
-                this.player.pos = originalPos;
+            
+            // 조작 모드에 따른 분기
+            if (controlMode === 'CHARACTER') {
+                if (keys['KeyA']) this.vx = -this.speed;
+                else if (keys['KeyD']) this.vx = this.speed;
+                else this.vx = 0;
+                
+                // 점프 
+                if ((keys['KeyW'] || keys['Space']) && this.isGrounded) {
+                    this.vy = this.jumpForce;
+                    this.isGrounded = false;
+                }
+                
+                // 급강하
+                if (keys['KeyS'] && !this.isGrounded) {
+                    this.vy += this.fastFallGravity * dt;
+                } else {
+                    this.vy += this.gravity * dt;
+                }
+            } else {
+                // 블록 모드일 때는 이동 불가, 중력만 작용
+                this.vx = 0; 
+                this.vy += this.gravity * dt;
             }
-
-            merge(matrix, pos, type) {
-                matrix.forEach((row, y) => {
-                    row.forEach((value, x) => {
-                        if (value !== 0) {
-                            const ay = y + pos.y;
-                            const ax = x + pos.x;
-                            if (this.arena[ay]) {
-                                this.arena[ay][ax] = type;
-                                this.createExplosion(ax * BLOCK_SIZE + BLOCK_SIZE/2, ay * BLOCK_SIZE + BLOCK_SIZE/2, COLORS[type] || COLORS.ENEMY, 8, 0.6);
+            
+            // 터미널 벨로시티 제한
+            if (this.vy > 800) this.vy = 800;
+            
+            // ---- X축(좌우) 물리 이동 및 충돌 체크 ----
+            this.x += this.vx * dt;
+            if (this.x < 0) this.x = 0;
+            if (this.x + this.w > canvas.width) this.x = canvas.width - this.w;
+            
+            let obstacles = getAllSolidRects();
+            for (let o of obstacles) {
+                if (rectIntersect(this, o)) {
+                    if (this.vx > 0) this.x = o.x - this.w;
+                    else if (this.vx < 0) this.x = o.x + o.w;
+                }
+            }
+            
+            // ---- Y축(상하) 물리 이동 및 충돌 체크 ----
+            this.y += this.vy * dt;
+            this.isGrounded = false;
+            
+            for (let o of obstacles) {
+                if (rectIntersect(this, o)) {
+                    if (this.vy > 0) { // 하강 중 바닥/블록에 닿음
+                        this.y = o.y - this.h;
+                        this.vy = 0;
+                        this.isGrounded = true;
+                    } else if (this.vy < 0) { // 천장에 박음
+                        this.y = o.y + o.h;
+                        this.vy = 0;
+                    }
+                }
+            }
+            
+            // 맨 밑 바닥 판정
+            if (this.y + this.h > canvas.height) {
+                this.y = canvas.height - this.h;
+                this.vy = 0;
+                this.isGrounded = true;
+            }
+        }
+        
+        draw(ctx) {
+            ctx.shadowColor = PLAYER_COLOR;
+            ctx.shadowBlur = ((Date.now() / 150) % 2 > 1) ? 8 : 12; // 네온 깜빡임
+            ctx.fillStyle = PLAYER_COLOR;
+            ctx.fillRect(this.x, this.y, this.w, this.h);
+            ctx.shadowBlur = 0;
+        }
+    }
+    
+    class EnemyPiece {
+        constructor() {
+            const types = Object.keys(PIECES);
+            this.type = types[Math.floor(Math.random() * types.length)];
+            this.matrix = PIECES[this.type];
+            this.gridX = Math.floor(Math.random() * (COLS - this.matrix[0].length));
+            this.y = -BLOCK_SIZE * this.matrix.length; 
+            this.isGhost = false;
+            this.dropTimer = 0;
+            this.dropInterval = 0.8; // 0.8초마다 한 칸(30px) 위치 이동
+            this.locked = false;
+        }
+        
+        getRects() {
+            return this.getRectsAt(this.y);
+        }
+        
+        getRectsAt(targetY) {
+            let rects = [];
+            for (let r = 0; r < this.matrix.length; r++) {
+                for(let c = 0; c < this.matrix[r].length; c++) {
+                    if (this.matrix[r][c]) {
+                        rects.push({
+                            x: (this.gridX + c) * BLOCK_SIZE, 
+                            y: targetY + r * BLOCK_SIZE, 
+                            w: BLOCK_SIZE, 
+                            h: BLOCK_SIZE
+                        });
+                    }
+                }
+            }
+            return rects;
+        }
+        
+        // 그리드 단위의 가상 오버랩 체크 (겹치면 true 반환)
+        checkOverlap(gx, checkPixelY, mat = this.matrix) {
+            let gy = Math.ceil(checkPixelY / BLOCK_SIZE);
+            for (let r = 0; r < mat.length; r++) {
+                for (let c = 0; c < mat[r].length; c++) {
+                    if (mat[r][c]) {
+                        let ny = gy + r;
+                        let nx = gx + c;
+                        // 벽 넘어갔는지 체크
+                        if (ny >= ROWS || nx < 0 || nx >= COLS) return true;
+                        // 기존에 설치된 보드와 겹치는지 체크
+                        if (ny >= 0 && board[ny][nx]) return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        update(dt) {
+            if (this.locked) return;
+            
+            if (this.isGhost) {
+                // ---- 블록 선택(해킹) 모드 시 테트리스 조작 ----
+                if (keysPressed['KeyA'] && !this.checkOverlap(this.gridX - 1, this.y)) this.gridX--;
+                if (keysPressed['KeyD'] && !this.checkOverlap(this.gridX + 1, this.y)) this.gridX++;
+                
+                // 회전 (W)
+                if (keysPressed['KeyW']) {
+                    let newMat = rotateMatrix(this.matrix);
+                    if (!this.checkOverlap(this.gridX, this.y, newMat)) {
+                        this.matrix = newMat;
+                    }
+                }
+                
+                // 홀드 보관 기능 (F)
+                if (keysPressed['KeyF']) {
+                    keysPressed['KeyF'] = false; // 중복 프레임 입력 소모
+                    
+                    if (canHold && !heldPieceType) {
+                        // 현재 블록을 홀드 UI에 저장 후 블록은 삭제 플래그 처리
+                        heldPieceType = this.type;
+                        this.deleted = true; 
+                        canHold = false; // 한번 홀드했으므로 강하해서 놓기 전까진 더 이상 불가
+                        drawHoldUI();
+                        
+                        // 즉시 캐릭터 조종 모드로 복귀
+                        controlMode = 'CHARACTER';
+                        selectedBlock = null;
+                        return;
+                    }
+                }
+                
+                // 하드 드롭 (Space)
+                if (keysPressed['Space']) {
+                    while(!this.checkOverlap(this.gridX, this.y + BLOCK_SIZE)) {
+                        this.y += BLOCK_SIZE;
+                    }
+                    this.lock();
+                    return;
+                }
+                
+                // 소프트 드롭 (S키 누르면 강하 주기 짧아짐, 속도 절반으로 완화)
+                let curInterval = keys['KeyS'] ? 0.1 : this.dropInterval;
+                this.dropTimer += dt;
+                
+                if (this.dropTimer >= curInterval) {
+                    this.dropTimer -= curInterval;
+                    let newY = this.y + BLOCK_SIZE;
+                    if (this.checkOverlap(this.gridX, newY)) {
+                        this.lock();
+                    } else {
+                        this.y = newY;
+                    }
+                }
+            } else {
+                // ---- 일반 에러 모드 낙하 (한 칸씩 뚝뚝) ----
+                this.dropTimer += dt;
+                
+                if (this.dropTimer >= this.dropInterval) {
+                    // 낙하 프레임 초기화
+                    this.dropTimer -= this.dropInterval;
+                    let newY = this.y + BLOCK_SIZE;
+                    
+                    if (this.checkOverlap(this.gridX, newY)) {
+                        this.lock();
+                    } else {
+                        this.y = newY; // 30px 이동(낙하)
+                        
+                        // 플레이어 압사 체크 (낙하하면서 캐릭터를 강제로 내리누름)
+                        if (player) {
+                            let pRect = {x: player.x, y: player.y, w: player.w, h: player.h};
+                            for(let r of this.getRects()) {
+                                if (rectIntersect(pRect, r)) {
+                                    player.y = r.y + r.h; // 블록 밑으로 플레이어 강제 이동
+                                    checkCrush(); 
+                                }
                             }
                         }
-                    });
-                });
-                this.applyShake(5); 
+                    }
+                }
             }
-
-            applyShake(intensity) { this.shakeAmount = Math.max(this.shakeAmount, intensity); }
-
-            createExplosion(x, y, color, count, multiplier) {
-                for(let i=0; i<count; i++) this.particles.push(new Particle(x, y, color, multiplier));
+        }
+        
+        lock() {
+            this.locked = true;
+            if (this.isGhost) {
+                this.isGhost = false;
+                controlMode = 'CHARACTER';
+                selectedBlock = null;
+                // 하드드롭(스페이스바) 잔여 입력으로 인해 캐릭터 모드로 전환되자마자 점프하는 현상 방지
+                keys['Space'] = false;
+                keys['KeyW'] = false;
             }
-
-            createComboStars(x, y, count, color = '#FFFF00', sizeMultiplier = 1.5, lifeTime = 1.0) {
-                for(let i=0; i<count; i++) this.particles.push(new StarParticle(x, y, color, sizeMultiplier, lifeTime));
+            canHold = true; // 블록을 보드에 놓았으므로 다시 홀드 가능
+            
+            // 블록 안착 시 가벼운 화면 흔들림 (하드드롭 등에 타격감 부여)
+            shakeAmount = Math.max(shakeAmount, 12); 
+            
+            // 보드에 그리드 데이터 병합
+            let gy = Math.round(this.y / BLOCK_SIZE);
+            for (let r = 0; r < this.matrix.length; r++) {
+                for (let c = 0; c < this.matrix[r].length; c++) {
+                    if (this.matrix[r][c]) {
+                        let ny = gy + r;
+                        let nx = this.gridX + c;
+                        if (ny >= 0 && ny < ROWS && nx >=0 && nx < COLS) {
+                            board[ny][nx] = 1;
+                        }
+                    }
+                }
             }
-
-            rotate(dir) {
-                const originalMatrix = JSON.parse(JSON.stringify(this.player.matrix));
-                const originalPos = { ...this.player.pos };
-                
-                this._rotateMatrix(this.player.matrix, dir);
-                
-                let kicked = false;
-                const kickOffsets = [
-                    [0, 0], [1, 0], [-1, 0], [0, -1], [1, -1], [-1, -1],
-                    [0, -2], [2, 0], [-2, 0], [2, -1], [-2, -1]
-                ];
-                
-                for (let i = 0; i < kickOffsets.length; i++) {
-                    const [dx, dy] = kickOffsets[i];
-                    this.player.pos.x = originalPos.x + dx;
-                    this.player.pos.y = originalPos.y + dy;
-                    if (!this.collide()) {
-                        kicked = true;
+            
+            // 라인 클리어 (가로 한 줄이 모두 채워지면 파괴) 및 이펙트 연출
+            let clearedLines = 0;
+            for (let r = ROWS - 1; r >= 0; r--) {
+                let isFull = true;
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c] === 0) {
+                        isFull = false;
                         break;
                     }
                 }
                 
-                if (!kicked) {
-                    this.player.matrix = originalMatrix;
-                    this.player.pos = originalPos;
-                } else {
-                    this.player.lastMoveRotation = true;
-                    this.player.isTSpin = this.checkTSpin();
-                    if (this.player.isTSpin) { this.applyShake(3); this.flashAlpha = 0.2; this.flashColor = COLORS.T; }
-                    this.checkBottomStatus();
-                }
-            }
-
-            _rotateMatrix(matrix, dir) {
-                for (let y = 0; y < matrix.length; ++y) {
-                    for (let x = 0; x < y; ++x) [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-                }
-                if (dir > 0) matrix.forEach(row => row.reverse());
-                else matrix.reverse();
-            }
-
-            playerMove(dir) {
-                this.player.pos.x += dir;
-                if (this.collide()) { this.player.pos.x -= dir; return false; }
-                this.player.lastMoveRotation = false;
-                this.player.isTSpin = false;
-                this.checkBottomStatus();
-                this.applyShake(0.5); 
-                return true;
-            }
-
-            checkBottomStatus() {
-                this.player.pos.y++;
-                if (this.collide()) this.isTouchingBottom = true; 
-                else { this.isTouchingBottom = false; this.lockTimer = 0; }
-                this.player.pos.y--;
-            }
-
-            drop() {
-                this.player.pos.y++;
-                if (this.collide()) { this.player.pos.y--; this.isTouchingBottom = true; } 
-                else { this.isTouchingBottom = false; this.lockTimer = 0; this.player.lastMoveRotation = false; this.player.isTSpin = false; }
-                this.dropCounter = 0;
-            }
-
-            hardDrop() {
-                let dist = 0;
-                while (!this.collide()) { this.player.pos.y++; dist++; }
-                this.player.pos.y--;
-                this.applyShake(Math.min(dist * 1, 2)); 
-                this.lockPiece();
-            }
-
-            lockPiece() {
-                const nextType = this.player.next[0];
-                const nextMatrix = PIECES[nextType];
-                const spawnX = (COLS / 2 | 0) - (nextMatrix[0].length / 2 | 0);
-                const spawnY = 0;
-
-                const deadZoneMask = new Set();
-                nextMatrix.forEach((row, y) => {
-                    row.forEach((val, x) => {
-                        if (val !== 0) {
-                            deadZoneMask.add(`${spawnX + x},${spawnY + y}`);
-                        }
-                    });
-                });
-
-                let hitDeadZone = false;
-                this.player.matrix.forEach((row, y) => {
-                    row.forEach((val, x) => {
-                        if (val !== 0) {
-                            const ax = this.player.pos.x + x;
-                            const ay = this.player.pos.y + y;
-                            if (deadZoneMask.has(`${ax},${ay}`)) {
-                                hitDeadZone = true;
-                            }
-                        }
-                    });
-                });
-
-                if (hitDeadZone) {
-                    this.endGame();
-                    return;
-                }
-
-                this.merge(this.player.matrix, this.player.pos, this.player.type);
-                this.piecesPlaced++; 
-                this.arenaSweep(); 
-                this.resetPlayer(); 
-                this.updateUI(); 
-                this.dropCounter = 0;
-            }
-
-            getComboThreshold(count) { return count > 5 ? 1500 : 5000 - (count * 500); }
-
-            updateDropInterval() {
-                // 부드러운 속도 증가 곡선 (지수 감쇠 방식)
-                // 레벨 1: ~1000ms, 레벨 10: ~250ms, 레벨 20: ~100ms
-                this.dropInterval = Math.max(50, 1000 * Math.pow(0.85, this.level - 1));
-            }
-
-            arenaSweep() {
-                let rowCount = 0;
-                let lastClearedY = 0;
-                outer: for (let y = this.arena.length - 1; y >= 0; --y) {
-                    for (let x = 0; x < this.arena[y].length; ++x) if (this.arena[y][x] === 0) continue outer;
-                    const row = this.arena.splice(y, 1)[0].fill(0);
-                    for(let x=0; x<COLS; x++) this.createExplosion(x * BLOCK_SIZE + BLOCK_SIZE/2, y * BLOCK_SIZE + BLOCK_SIZE/2, '#ffffff', 3, 0.5);
-                    this.arena.unshift(row);
-                    lastClearedY = y;
-                    ++y; rowCount++;
-                }
-                
-                if (rowCount > 0) {
-                    let moveBonus = 1;
-                    let textMsg = `COMBO! ${this.comboCount + 1}`;
-                    let textColor = '#00ffff';
-
-                    if (this.player.isTSpin && this.player.lastMoveRotation) {
-                        moveBonus = 4;
-                        textColor = COLORS.T;
-                        const tSpinType = rowCount === 1 ? 'SINGLE' : rowCount === 2 ? 'DOUBLE' : 'TRIPLE';
-                        textMsg = `T-SPIN ${tSpinType}!`;
-                        this.createComboStars(canvas.width / 2, canvas.height / 2, 20, COLORS.T);
-                        this.applyShake(10);
-                    }
-
-                    this.comboCount++;
-                    this.maxComboTimer = this.getComboThreshold(this.comboCount);
-                    this.comboTimer = this.maxComboTimer;
-                    
-                    this.floatingTexts.push(new FloatingText(textMsg, canvas.width / 2, canvas.height / 3, textColor));
-                    if (!this.player.isTSpin) this.createComboStars(canvas.width / 2, canvas.height / 3, 15);
-
-                    const gainedScore = rowCount * 100 * rowCount * moveBonus * Math.max(1, this.comboCount);
-                    const feedbackX = (this.player.pos.x + 1.5) * BLOCK_SIZE;
-                    const feedbackY = lastClearedY * BLOCK_SIZE;
-                    
-                    this.floatingTexts.push(new FloatingText(`+${gainedScore}`, feedbackX, feedbackY, "#ffffff", 14, 2.5));
-
-                    if (this.comboCount >= 5) { this.explosiveRelief(); this.comboCount = 0; this.comboTimer = 0; } 
-                    else if (this.comboCount > 1 && !this.player.isTSpin) this.triggerComboExplosion();
-                    
-                    this.updateComboUI();
-                    this.targetScore += gainedScore; 
-                    this.lines += rowCount;
-                    
-                    this.level = Math.floor(this.targetScore / 3000) + 1;
-                    this.updateDropInterval();
-                    
-                    this.applyShake(rowCount * 5); 
-
-                    const isAllClear = this.arena.every(row => row.every(val => val === 0));
-                    if (isAllClear) this.triggerAllClear();
-                }
-            }
-
-            triggerAllClear() {
-                const acScore = 500;
-                this.targetScore += acScore;
-                this.applyShake(60); 
-                this.flashAlpha = 1.0;
-                this.flashColor = '#ffffff';
-                this.floatingTexts.push(new FloatingText("ALL CLEAR!!", canvas.width / 2, canvas.height / 2 - 25, "#ffcc00", 18, 2.5));
-                this.floatingTexts.push(new FloatingText(`+${acScore}`, canvas.width / 2, canvas.height / 2 + 25, "#00ff00", 16, 2.5));
-                for (let i = 0; i < 220; i++) {
-                    const rx = Math.random() * canvas.width;
-                    const ry = Math.random() * canvas.height;
-                    this.createComboStars(rx, ry, 1, "#ffcc00", 3.0, 3.0); 
-                    if (i % 2 === 0) this.createComboStars(rx, ry, 1, "#ffffff", 2.0, 2.5);
-                }
-                this.enemies = []; 
-            }
-
-            explosiveRelief() {
-                let highestY = ROWS;
-                for (let y = 0; y < ROWS; y++) {
-                    for (let x = 0; x < COLS; x++) if (this.arena[y][x] !== 0) { highestY = y; break; }
-                    if (highestY !== ROWS) break;
-                }
-                if (highestY === ROWS) return; 
-                this.flashAlpha = 0.8; 
-                this.flashColor = '#00ffff';
-                this.applyShake(30);
-                this.floatingTexts.push(new FloatingText("5-COMBO RELIEF!", canvas.width / 2, canvas.height / 2, "#00ffff"));
-                const linesToRemove = 5;
-                const startY = highestY;
-                const endY = Math.min(ROWS - 1, startY + linesToRemove - 1);
-                const countToRemove = endY - startY + 1;
-                for (let i = 0; i < countToRemove; i++) {
-                    const targetY = startY; 
-                    for (let x = 0; x < COLS; x++) {
-                        if (this.arena[targetY][x] !== 0) {
-                             this.createExplosion(x * BLOCK_SIZE + BLOCK_SIZE/2, targetY * BLOCK_SIZE + BLOCK_SIZE/2, '#00ffff', 15, 3);
-                        }
-                    }
-                    this.arena.splice(targetY, 1);
-                    this.arena.unshift(new Array(COLS).fill(0));
-                }
-                this.enemies = []; 
-                const reliefScore = 1500;
-                this.targetScore += reliefScore;
-                this.floatingTexts.push(new FloatingText(`+${reliefScore}`, canvas.width / 2, canvas.height / 2 + 40, "#00ffff", 14, 2.5));
-            }
-
-            updateComboUI() {
-                const labelEl = document.getElementById('combo-label');
-                const countEl = document.getElementById('combo-count');
-                countEl.innerText = this.comboCount;
-                if (this.comboCount > 0) {
-                    labelEl.innerText = "COMBO!";
-                    countEl.style.transform = 'scale(1.5)';
-                    setTimeout(() => { countEl.style.transform = 'scale(1)'; }, 150);
-                } else {
-                    labelEl.innerText = "COMBO";
-                    document.getElementById('combo-bar').style.width = '0%';
-                }
-            }
-
-            triggerComboExplosion() {
-                this.flashAlpha = 0.3; this.flashColor = '#00ffff'; this.applyShake(10); 
-                let linesDeleted = 0;
-                for (let y = 0; y < ROWS; y++) {
-                    let hasContent = false;
-                    for (let x = 0; x < COLS; x++) if (this.arena[y][x] !== 0) { hasContent = true; break; }
-                    if (hasContent) {
-                        const row = this.arena.splice(y, 1)[0].fill(0);
-                        for (let x = 0; x < COLS; x++) this.createExplosion(x * BLOCK_SIZE + BLOCK_SIZE/2, y * BLOCK_SIZE + BLOCK_SIZE/2, '#00ffff', 3, 1);
-                        this.arena.unshift(row); linesDeleted++;
-                        if (linesDeleted >= 2) break;
-                    }
-                }
-            }
-
-            updateScoreRolling(deltaTime) {
-                if (this.displayScore < this.targetScore) {
-                    const diff = this.targetScore - this.displayScore;
-                    const speed = Math.max(1, Math.ceil(diff * 0.1)); 
-                    this.displayScore += speed;
-                    if (this.displayScore > this.targetScore) this.displayScore = this.targetScore;
-                    document.getElementById('score').innerText = Math.floor(this.displayScore);
-                }
-            }
-
-            updateUI() {
-                document.getElementById('lines').innerText = this.lines;
-                document.getElementById('level').innerText = this.level;
-                this.updateStatsUI();
-            }
-
-            updateStatsUI() {
-                const pps = this.playTimeMs > 0 ? (this.piecesPlaced / (this.playTimeMs / 1000)).toFixed(2) : "0.00";
-                document.getElementById('pieces-stat').innerText = `${this.piecesPlaced}, ${pps}/S`;
-                
-                const totalSeconds = this.playTimeMs / 1000;
-                const minutes = Math.floor(totalSeconds / 60);
-                const seconds = (totalSeconds % 60).toFixed(3).padStart(6, '0');
-                document.getElementById('playtime-stat').innerText = `${minutes}:${seconds}`;
-            }
-
-            handleInput(deltaTime) {
-                if (this.keyStates['ArrowLeft']) this.continuousInput('left', -1, deltaTime);
-                else { this.dasTimers.left = 0; this.arrTimers.left = 0; }
-                if (this.keyStates['ArrowRight']) this.continuousInput('right', 1, deltaTime);
-                else { this.dasTimers.right = 0; this.arrTimers.right = 0; }
-                if (this.keyStates['ArrowDown']) {
-                    this.softDropTimer += deltaTime;
-                    if (this.softDropTimer >= SOFT_DROP_INTERVAL) { this.drop(); this.softDropTimer = 0; }
-                } else { this.softDropTimer = 0; }
-            }
-
-            continuousInput(key, dir, deltaTime) {
-                if (this.dasTimers[key] === 0) { this.playerMove(dir); this.dasTimers[key] = deltaTime; } 
-                else if (this.dasTimers[key] < DAS) { this.dasTimers[key] += deltaTime; } 
-                else {
-                    this.arrTimers[key] += deltaTime;
-                    while (this.arrTimers[key] >= ARR) { this.playerMove(dir); this.arrTimers[key] -= ARR; }
-                }
-            }
-
-            updateEnemies(deltaTime) {
-                this.enemySpawnCounter += deltaTime;
-                const spawnRate = Math.max(10000, 15000 - (this.level * 1000));
-                if (this.enemySpawnCounter >= spawnRate) { this.spawnEnemy(); this.enemySpawnCounter = 0; }
-                for (let i = this.enemies.length - 1; i >= 0; i--) {
-                    const enemy = this.enemies[i];
-                    if (enemy.update(deltaTime, this.arena, this.collide.bind(this))) {
-                        const nextType = this.player.next[0];
-                        const nextMatrix = PIECES[nextType];
-                        const spawnX = (COLS / 2 | 0) - (nextMatrix[0].length / 2 | 0);
-                        const spawnY = 0;
-
-                        const deadZoneMask = new Set();
-                        nextMatrix.forEach((row, y) => { row.forEach((val, x) => { if (val !== 0) deadZoneMask.add(`${spawnX + x},${spawnY + y}`); }); });
-
-                        let enemyHitDeadZone = false;
-                        enemy.matrix.forEach((row, y) => {
-                            row.forEach((val, x) => {
-                                if (val !== 0) {
-                                    const ax = enemy.pos.x + x;
-                                    const ay = enemy.pos.y + y;
-                                    if (deadZoneMask.has(`${ax},${ay}`)) enemyHitDeadZone = true;
-                                }
-                            });
-                        });
-                        
-                        if (enemyHitDeadZone) {
-                            this.endGame();
-                        } else {
-                            this.merge(enemy.matrix, enemy.pos, 'ENEMY');
-                            this.pushPlayerOut();
-                            this.arenaSweep(); 
-                            this.updateUI();
-                        }
-                        this.enemies.splice(i, 1);
-                    }
-                }
-            }
-
-            updateParticles(deltaTime) {
-                for (let i = this.particles.length - 1; i >= 0; i--) { this.particles[i].update(); if (this.particles[i].alpha <= 0) this.particles.splice(i, 1); }
-                for (let i = this.floatingTexts.length - 1; i >= 0; i--) { this.floatingTexts[i].update(deltaTime); if (this.floatingTexts[i].alpha <= 0) this.floatingTexts.splice(i, 1); }
-            }
-
-            checkCriticalZone() {
-                let highestRow = ROWS;
-                for (let y = 0; y < ROWS; y++) { 
-                    for (let x = 0; x < COLS; x++) if (this.arena[y][x] !== 0) { highestRow = y; break; }
-                    if (highestRow !== ROWS) break;
-                }
-                
-                document.body.classList.remove('critical-zone', 'warning-zone');
-                
-                if (highestRow < HIDDEN_ROWS + 3) {
-                    document.body.classList.add('critical-zone');
-                } else if (highestRow < HIDDEN_ROWS + 6) {
-                    document.body.classList.add('warning-zone');
-                }
-            }
-
-            drawDeadZone() {
-                if (this.gameOver || this.player.next.length === 0) return;
-                if (!document.body.classList.contains('critical-zone')) return;
-
-                const nextType = this.player.next[0];
-                const nextMatrix = PIECES[nextType];
-                const spawnX = (COLS / 2 | 0) - (nextMatrix[0].length / 2 | 0);
-                const spawnY = 0; 
-
-                const pulse = Math.sin(Date.now() / 150) * 0.4 + 0.6;
-                
-                ctx.save();
-                ctx.globalAlpha = 1.0; 
-                nextMatrix.forEach((row, y) => {
-                    row.forEach((value, x) => {
-                        if (value !== 0) {
-                            const px = (spawnX + x) * BLOCK_SIZE;
-                            const py = (spawnY + y) * BLOCK_SIZE;
-                            
-                            ctx.strokeStyle = `rgba(255, 0, 0, ${pulse})`;
-                            ctx.lineWidth = 3;
-                            ctx.beginPath();
-                            ctx.moveTo(px + 6, py + 6);
-                            ctx.lineTo(px + BLOCK_SIZE - 6, py + BLOCK_SIZE - 6);
-                            ctx.moveTo(px + BLOCK_SIZE - 6, py + 6);
-                            ctx.lineTo(px + 6, py + BLOCK_SIZE - 6);
-                            ctx.stroke();
-                        }
-                    });
-                });
-                
-                ctx.fillStyle = `rgba(255, 0, 0, ${pulse})`;
-                ctx.font = '8px "Press Start 2P"';
-                ctx.textAlign = 'left';
-                ctx.fillText("DEAD ZONE", 5, 20);
-                ctx.restore();
-            }
-
-            draw() {
-                if (this.shakeAmount > 0) {
-                    const sx = (Math.random() - 0.5) * this.shakeAmount * 2.5;
-                    const sy = (Math.random() - 0.5) * this.shakeAmount * 2.5;
-                    gameContainer.style.transform = `translate(${sx}px, ${sy}px)`;
-                    this.shakeAmount *= 0.9; 
-                    if (this.shakeAmount < 0.1) { this.shakeAmount = 0; gameContainer.style.transform = `translate(0,0)`; }
-                }
-                
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                const currentBg = getComputedStyle(document.body).backgroundColor;
-                ctx.fillStyle = currentBg;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                ctx.fillStyle = '#000';
-                ctx.fillRect(0, HIDDEN_ROWS * BLOCK_SIZE, canvas.width, canvas.height - HIDDEN_ROWS * BLOCK_SIZE);
-                
-                const gradient = ctx.createLinearGradient(0, 0, 0, HIDDEN_ROWS * BLOCK_SIZE);
-                gradient.addColorStop(0, currentBg);
-                gradient.addColorStop(1, '#000');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, HIDDEN_ROWS * BLOCK_SIZE);
-
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-                for (let x = 0; x < canvas.width; x += BLOCK_SIZE) {
-                    for (let y = HIDDEN_ROWS * BLOCK_SIZE; y < canvas.height; y += BLOCK_SIZE) ctx.fillRect(x, y, 2, 2);
-                }
-
-                ctx.globalAlpha = 1.0; 
-
-                this.drawDeadZone();
-                this.drawMatrix(this.arena, {x: 0, y: 0});
-                
-                if (!this.gameOver) {
-                    this.drawGhost();
-                    let playerBlinkInterval = 200;
-                    if (this.isTouchingBottom) {
-                        const ratio = Math.min(this.lockTimer / LOCK_DELAY, 0.99);
-                        const intervals = [300, 300, 200, 200, 100];
-                        playerBlinkInterval = intervals[Math.floor(ratio * 5)];
-                    }
-                    const tSpinPulsate = this.player.isTSpin ? (Math.sin(Date.now() / 50) * 0.3 + 0.7) : 1.0;
-                    const baseAlpha = (Math.floor(performance.now() / playerBlinkInterval) % 2 === 0) ? 1.0 : 0.4;
-                    this.drawMatrix(this.player.matrix, this.player.pos, false, false, baseAlpha * tSpinPulsate);
-                }
-                
-                this.enemies.forEach(enemy => this.drawMatrix(enemy.matrix, enemy.pos, false, true, enemy.getBlinkAlpha()));
-
-                this.particles.forEach(p => p.draw(ctx));
-                this.floatingTexts.forEach(t => t.draw(ctx));
-
-                if (this.flashAlpha > 0) {
-                    ctx.save(); ctx.globalAlpha = this.flashAlpha; ctx.fillStyle = this.flashColor;
-                    ctx.fillRect(0, HIDDEN_ROWS * BLOCK_SIZE, canvas.width, canvas.height - HIDDEN_ROWS * BLOCK_SIZE); ctx.restore();
-                    this.flashAlpha -= 0.01; 
-                }
-                this.drawSidePanels();
-            }
-
-            drawGhost() {
-                const ghostPos = { x: this.player.pos.x, y: this.player.pos.y };
-                if (!this.player.matrix) return;
-                while (!this.collide(this.player.matrix, ghostPos)) ghostPos.y++;
-                ghostPos.y--;
-                if(ghostPos.y >= this.player.pos.y) this.drawMatrix(this.player.matrix, ghostPos, true);
-            }
-
-            drawMatrix(matrix, offset, isGhost = false, isEnemy = false, alpha = 1.0) {
-                if (!matrix) return;
-                ctx.save();
-                matrix.forEach((row, y) => {
-                    row.forEach((value, x) => {
-                        if (value !== 0) {
-                            const px = (x + offset.x) * BLOCK_SIZE;
-                            const py = (y + offset.y) * BLOCK_SIZE;
-                            if (py < -BLOCK_SIZE && !isEnemy) return;
-                            ctx.globalAlpha = alpha;
-                            if (isGhost) {
-                                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                                ctx.setLineDash([4, 4]); ctx.strokeRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
-                            } else {
-                                const baseColor = isEnemy || value === 'ENEMY' ? COLORS.ENEMY : COLORS[value] || COLORS[this.player.type];
-                                ctx.fillStyle = baseColor; ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
-                                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.fillRect(px, py, BLOCK_SIZE, 3); ctx.fillRect(px, py, 3, BLOCK_SIZE);
-                                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; ctx.fillRect(px, py + BLOCK_SIZE - 3, BLOCK_SIZE, 3); ctx.fillRect(px + BLOCK_SIZE - 3, py, 3, BLOCK_SIZE);
-                                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'; ctx.fillRect(px + 6, py + 6, BLOCK_SIZE - 12, BLOCK_SIZE - 12);
-                            }
-                        }
-                    });
-                });
-                ctx.restore();
-            }
-
-            drawSidePanels() {
-                hCtx.fillStyle = '#000'; hCtx.fillRect(0, 0, holdCanvas.width, holdCanvas.height);
-                if (this.player.hold) this.drawMiniPiece(hCtx, PIECES[this.player.hold], this.player.hold, holdCanvas.width, holdCanvas.height);
-                nCtx.fillStyle = '#000'; nCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-                const nextSpacing = nextCanvas.height / 3;
-                this.player.next.slice(0, 3).forEach((type, i) => this.drawMiniPiece(nCtx, PIECES[type], type, nextCanvas.width, nextSpacing, i * nextSpacing));
-            }
-
-            drawMiniPiece(context, matrix, type, areaW, areaH, yOffset = 0) {
-                const blockSize = 18;
-                let minX = 4, maxX = 0, minY = 4, maxY = 0;
-                matrix.forEach((row, y) => row.forEach((v, x) => { if(v !== 0) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); } }));
-                const pieceW = (maxX - minX + 1) * blockSize;
-                const pieceH = (maxY - minY + 1) * blockSize;
-                const startX = (areaW - pieceW) / 2 - (minX * blockSize);
-                const startY = yOffset + (areaH - pieceH) / 2 - (minY * blockSize);
-                matrix.forEach((row, y) => row.forEach((v, x) => {
-                    if (v !== 0) {
-                        const px = startX + x * blockSize; const py = startY + y * blockSize;
-                        context.fillStyle = COLORS[type]; context.fillRect(px, py, blockSize, blockSize);
-                        context.fillStyle = 'rgba(255, 255, 255, 0.4)'; context.fillRect(px, py, blockSize, 2); context.fillRect(px, py, 2, blockSize);
-                        context.fillStyle = 'rgba(0, 0, 0, 0.3)'; context.fillRect(px, py + blockSize - 2, blockSize, 2); context.fillRect(px + blockSize - 2, py, 2, blockSize);
-                    }
-                }));
-            }
-
-            start() {
-                this.arena.forEach(row => row.fill(0));
-                this.targetScore = 0; this.displayScore = 0; 
-                this.lines = 0; this.level = 1; this.gameOver = false;
-                this.bag = []; this.player.next = []; this.player.hold = null;
-                this.enemies = []; this.enemySpawnCounter = 0; this.comboCount = 0; this.comboTimer = 0;
-                this.timeScoreCounter = 0;
-                this.piecesPlaced = 0;
-                this.playTimeMs = 0;
-                this.updateDropInterval();
-                this.resetPlayer(); this.updateUI(); this.updateComboUI();
-                overlay.classList.add('hidden'); this.lastTime = performance.now();
-                document.body.classList.remove('critical-zone', 'warning-zone');
-                document.getElementById('score').innerText = "0";
-            }
-
-            endGame() {
-                if(this.gameOver) return;
-                this.gameOver = true; this.applyShake(200); 
-                this.flashColor = '#ff0000'; this.flashAlpha = 1.0;
-                for (let y = ROWS - 1; y >= 0; y--) {
-                    setTimeout(() => {
-                        this.applyShake(15); 
-                        for (let x = 0; x < COLS; x++) {
-                            if (this.arena[y][x] !== 0) {
-                                const type = this.arena[y][x];
-                                const color = type === 'ENEMY' ? COLORS.ENEMY : (COLORS[type] || '#ffffff');
-                                this.createExplosion(x * BLOCK_SIZE + BLOCK_SIZE/2, y * BLOCK_SIZE + BLOCK_SIZE/2, color, 12, 4);
-                                this.arena[y][x] = 0; 
-                            }
-                        }
-                        if (y === 0) { this.createExplosion(canvas.width / 2, canvas.height / 2, '#ff0000', 80, 10); this.flashAlpha = 0.8; }
-                    }, (ROWS - 1 - y) * 70);
-                }
-                const title = document.getElementById('overlay-title');
-                title.innerHTML = "Tetris_Error.exe<br>CRASHED";
-                document.getElementById('final-stats').innerText = `LEVEL: ${this.level}\nSCORE: ${Math.floor(this.targetScore)}\nLINES: ${this.lines}`;
-                document.getElementById('final-stats').classList.remove('hidden');
-                overlay.classList.remove('hidden');
-                setTimeout(() => overlay.classList.add('show'), 500);
-            }
-
-            animate(time = 0) {
-                const deltaTime = time - this.lastTime;
-                this.lastTime = time;
-                if (!this.gameOver) { 
-                    this.playTimeMs += deltaTime; 
-                    this.handleInput(deltaTime); 
-                    this.updateEnemies(deltaTime); 
-                    this.checkCriticalZone(); 
-
-                    this.timeScoreCounter += deltaTime;
-                    if (this.timeScoreCounter >= 10) {
-                        this.targetScore += 1;
-                        this.timeScoreCounter -= 10;
-                        this.level = Math.floor(this.targetScore / 3000) + 1;
-                        this.updateDropInterval();
+                if (isFull) {
+                    // 폭발 파티클 생성
+                    for (let c = 0; c < COLS; c++) {
+                        let px = c * BLOCK_SIZE + 15;
+                        let py = r * BLOCK_SIZE + 15;
+                        for(let p = 0; p < 8; p++) particles.push(new Particle(px, py, '#ffffff'));
+                        for(let p = 0; p < 4; p++) particles.push(new Particle(px, py, ENEMY_COLOR));
                     }
                     
-                    this.updateScoreRolling(deltaTime);
-                    this.updateUI();
-                } else {
-                    document.body.classList.remove('critical-zone', 'warning-zone');
+                    board.splice(r, 1);
+                    board.unshift(Array(COLS).fill(0));
+                    clearedLines++;
+                    r++; // 줄 삭제 후 윗 줄들이 한 칸씩 내려왔으므로 인덱스 동일하게 한 번 더 검사
                 }
-                this.updateParticles(deltaTime);
-                if (this.comboTimer > 0) {
-                    this.comboTimer -= deltaTime;
-                    if (this.comboTimer <= 0) { this.comboCount = 0; this.updateComboUI(); }
-                    else document.getElementById('combo-bar').style.width = (this.comboTimer / this.maxComboTimer) * 100 + '%';
-                }
-                if (!this.gameOver) {
-                    if (this.isTouchingBottom) { this.lockTimer += deltaTime; if (this.lockTimer >= LOCK_DELAY) this.lockPiece(); } 
-                    else { this.dropCounter += deltaTime; if (this.dropCounter > this.dropInterval) this.drop(); }
-                }
-                this.draw();
-                requestAnimationFrame(t => this.animate(t));
+            }
+            if (clearedLines > 0) {
+                shakeAmount = Math.min(clearedLines * 25, 50); // 흔들림 강도를 이전보다 약 1.5배 상향
             }
         }
-
-        const game = new Game();
-        window.addEventListener('keydown', e => {
-            if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code)) e.preventDefault();
-            if (game.gameOver) return;
-            if (!game.keyStates[e.code]) {
-                if (e.code === 'ArrowUp') game.rotate(1);
-                if (e.code === 'KeyZ') game.rotate(-1);
-                if (e.code === 'Space') game.hardDrop();
-                if (e.code === 'KeyC') game.holdPiece();
+        
+        draw(ctx) {
+            if (this.isGhost) {
+                // ---- 미리보기 (고스트/스트라이프 섀도우) tetr.io 스타일 ----
+                let previewY = this.y;
+                while (!this.checkOverlap(this.gridX, previewY + BLOCK_SIZE)) {
+                    previewY += BLOCK_SIZE;
+                }
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.shadowBlur = 0;
+                
+                for (let r = 0; r < this.matrix.length; r++) {
+                    for (let c = 0; c < this.matrix[r].length; c++) {
+                        if (this.matrix[r][c]) {
+                            let px = (this.gridX + c) * BLOCK_SIZE;
+                            let py = previewY + r * BLOCK_SIZE;
+                            ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                            ctx.strokeRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                        }
+                    }
+                }
+                
+                // ---- 실제 조종 중인 메인 글로우 블록 ----
+                ctx.shadowColor = '#ff99cc';
+                ctx.shadowBlur = (Date.now() % 600 < 300) ? 15 : 5;
+                ctx.fillStyle = 'rgba(255, 153, 204, 0.4)';
+                ctx.strokeStyle = '#ff99cc';
+            } else {
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = ENEMY_COLOR;
+                ctx.strokeStyle = '#000';
             }
-            game.keyStates[e.code] = true;
-        });
-        window.addEventListener('keyup', e => game.keyStates[e.code] = false);
-        document.getElementById('start-btn').addEventListener('click', () => game.start());
+            
+            for (let r = 0; r < this.matrix.length; r++) {
+                for (let c = 0; c < this.matrix[r].length; c++) {
+                    if (this.matrix[r][c]) {
+                        let px = (this.gridX + c) * BLOCK_SIZE;
+                        let py = this.y + r * BLOCK_SIZE;
+                        ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                        ctx.strokeRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                        
+                        // 레트로 스캔라인 빛 반사 효과 (CRT Inner highlight)
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                        ctx.fillRect(px + 2, py + 2, 26, 4);
+                        ctx.fillStyle = this.isGhost ? 'rgba(255, 153, 204, 0.4)' : ENEMY_COLOR; // 기존 색 복구
+                    }
+                }
+            }
+            ctx.shadowBlur = 0; // 글로벌 그림자 초기화
+
+        }
+    }
+    
+    // 행렬 회전 (Right)
+    function rotateMatrix(matrix) {
+        const N = matrix.length;
+        let res = matrix.map(row => [...row]);
+        for (let y = 0; y < N; ++y) {
+            for (let x = 0; x < y; ++x) {
+                [res[x][y], res[y][x]] = [res[y][x], res[x][y]];
+            }
+        }
+        res.forEach(r => r.reverse());
+        return res;
+    }
+    
+    // AABB 충돌 체크
+    function rectIntersect(r1, r2) {
+        return r1.x < r2.x + r2.w && r1.x + r1.w > r2.x &&
+               r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
+    }
+    
+    // 플레이어 압사 판정 함수
+    function checkCrush() {
+        if (!player) return;
+        let pRect = {x: player.x, y: player.y, w: player.w, h: player.h};
+        
+        // 캐릭터가 맵의 바닥 밑으로 강제로 밀려났다면 사망 연출
+        if (player.y + player.h > canvas.height) { 
+            startDeathSequence(); 
+            return; 
+        }
+        
+        // 이동된 위치가 다른 고정 블록과 겹치는지 체크
+        let solids = getAllSolidRects();
+        for (let o of solids) {
+            if (rectIntersect(pRect, o)) {
+                startDeathSequence();
+                return;
+            }
+        }
+    }
+    
+    // 조작이 불가능한 모든 단단한 요소(벽돌, 보드)를 수집
+    function getAllSolidRects() {
+        let rects = [];
+        
+        // 1. 이미 굳어진 그리드 보드
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (board[r][c]) {
+                    rects.push({x: c * BLOCK_SIZE, y: r * BLOCK_SIZE, w: BLOCK_SIZE, h: BLOCK_SIZE});
+                }
+            }
+        }
+        
+        // 2. 바닥으로 내려오고 있는 중인 일반 에러 블록들 (Ghost 제외)
+        for (let enemy of enemies) {
+            if (!enemy.locked && !enemy.isGhost) {
+                rects = rects.concat(enemy.getRects());
+            }
+        }
+        
+        return rects;
+    }
+    
+    function resetGame() {
+        board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+        enemies = [];
+        particles = [];
+        player = new Player();
+        controlMode = 'CHARACTER';
+        selectedBlock = null;
+        isGameOver = false;
+        isDying = false;
+        isSoulStolen = false;
+        deathTimer = 0;
+        
+        let title = document.getElementById('crash-title');
+        let desc = document.getElementById('crash-desc');
+        let overlay = document.getElementById('game-over-overlay');
+        let btn = document.getElementById('restart-btn');
+        
+        if (title) {
+            title.style.display = 'block';
+            title.innerText = 'CRUSHED!';
+            title.style.color = '#fff';
+            desc.style.display = 'none';
+            btn.style.borderColor = '#fff';
+            btn.style.color = '#fff';
+            overlay.style.background = 'rgba(139, 0, 0, 0.85)';
+        }
+        overlay.style.display = 'none';
+        lastTime = performance.now();
+        enemySpawnTimer = 0;
+        keys = {}; 
+        keysPressed = {};
+        canHold = true;
+        requestAnimationFrame(gameLoop);
+    }
+    
+    function update(dt) {
+        if (isGameOver) return;
+        
+        // 에러 사이클 1.5초마다 떨어트림
+        enemySpawnTimer -= dt;
+        if (enemySpawnTimer <= 0) {
+            enemies.push(new EnemyPiece());
+            enemySpawnTimer = 4.0; 
+        }
+        
+        player.update(dt);
+        
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            enemies[i].update(dt);
+            // 굳어진 블록이나 삭제(홀드 등)된 블록 안전하게 제거
+            if (enemies[i].locked || enemies[i].deleted) {
+                enemies.splice(i, 1);
+            }
+        }
+        
+        for (let i = particles.length - 1; i >= 0; i--) {
+            particles[i].update();
+            if (particles[i].alpha <= 0) particles.splice(i, 1);
+        }
+        
+        if (shakeAmount > 0) {
+            shakeAmount *= 0.95; // 0.9에서 0.95로 변경하여 흔들림 유지 시간을 훨씬 길게 연장
+            if (shakeAmount < 0.5) shakeAmount = 0;
+        }
+
+        // 플레이어 모드일 때 F키 누르면 홀드된 블록 꺼내어 조종 모드 변환
+        if (controlMode === 'CHARACTER' && keysPressed['KeyF'] && heldPieceType) {
+            keysPressed['KeyF'] = false; // 키 입력 이벤트 소모
+            let newEnemy = new EnemyPiece();
+            newEnemy.type = heldPieceType;
+            newEnemy.matrix = PIECES[heldPieceType];
+            newEnemy.gridX = Math.floor(COLS / 2) - Math.floor(newEnemy.matrix[0].length / 2);
+            
+            newEnemy.y = 0; // 보이지 않는 보드 밖이 아닌 무조건 보이도록 화면 젤 위에서 스폰 
+            
+            // 만약 기존에 깔려있는 에러 블록들과 해당 위치가 겹친다면 밀어내어 온전히 보일 때까지 밑으로 강하
+            while (newEnemy.checkOverlap(newEnemy.gridX, newEnemy.y)) {
+                newEnemy.y += BLOCK_SIZE;
+                if (newEnemy.y > ROWS * BLOCK_SIZE) break; // 혹시라도 무한 루프 방지용 바닥 안전체크
+            }
+            
+            newEnemy.isGhost = true;
+            enemies.push(newEnemy);
+            
+            selectedBlock = newEnemy;
+            controlMode = 'BLOCK';
+            heldPieceType = null;
+            canHold = false; // 블록을 새로 하나 뺐으므로 이 블록을 놓을 때까지는 다시 홀드 불가
+            drawHoldUI();
+        }
+
+        if (isGameOver) {
+            overlay.style.display = 'flex';
+        }
+        
+        keysPressed = {}; // 단일 프레임 키 입력 클리어
+    }
+    
+    function draw() {
+        if (isSoulStolen) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height); // 완전 블랙 아웃
+            return;
+        }
+
+        // 배경 클리어
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.save();
+        
+        if (isDying) {
+            // 사망 시 극단적 줌 인
+            let progress = deathTimer / DEATH_DURATION;
+            let ease = 1 - Math.pow(1 - progress, 3); // 부드러운 스피드 이징
+            
+            let px = player ? player.x + player.w/2 : canvas.width/2;
+            let py = player ? player.y + player.h/2 : canvas.height/2;
+            
+            let zoom = 1 + ease * 2.5; // 최대 배율 (3.5배)
+            let angle = ease * (15 * Math.PI / 180); // 최대 회전각 (15도)
+            
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(angle);
+            ctx.scale(zoom, zoom);
+            ctx.translate(-px, -py);
+        }
+        
+        let activeShake = isDying ? Math.max(shakeAmount, 60) : shakeAmount; // 사망 씬 돌입 시 폭주하는 진동 추가
+        if (activeShake > 0) {
+            let dx = (Math.random() - 0.5) * activeShake;
+            let dy = (Math.random() - 0.5) * activeShake;
+            ctx.translate(dx, dy);
+        }
+        
+        // 백그라운드 그리드 선 그리기
+        ctx.strokeStyle = '#111';
+        ctx.beginPath();
+        for(let i=0; i<=COLS; i++) { ctx.moveTo(i*BLOCK_SIZE, 0); ctx.lineTo(i*BLOCK_SIZE, canvas.height); }
+        for(let i=0; i<=ROWS; i++) { ctx.moveTo(0, i*BLOCK_SIZE); ctx.lineTo(canvas.width, i*BLOCK_SIZE); }
+        ctx.stroke();
+        
+        // 굳어진 보드 블록 그리기
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (board[r][c]) {
+                    let px = c * BLOCK_SIZE; 
+                    let py = r * BLOCK_SIZE;
+                    ctx.fillStyle = ENEMY_COLOR;
+                    ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                    ctx.strokeStyle = '#000';
+                    ctx.strokeRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                    ctx.fillRect(px + 2, py + 2, 26, 4);
+                }
+            }
+        }
+        
+        // 에러 블록 그리기
+        for (let e of enemies) e.draw(ctx);
+        
+        // 플레이어 그리기 (영혼 뺏겨서 완전 블랙아웃 되기 전까지는 시체 유지)
+        if (player) player.draw(ctx);
+        
+        // 파티클 그리기
+        for (let p of particles) p.draw(ctx);
+        
+        ctx.restore(); // 화면 흔들림 복구
+        
+        // 좌측 상단 모드 HUD 
+        ctx.fillStyle = controlMode === 'BLOCK' ? '#ff99cc' : '#eee';
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillText(`MODE: ${controlMode === 'BLOCK' ? 'HACKING' : 'SURVIVAL'}`, 10, 20);
+        
+        // 삭제된 전역 글로우 오버레이 자리
+    }
+    
+    function gameLoop(timestamp) {
+        let dt = (timestamp - lastTime) / 1000;
+        if (dt > 0.1) dt = 0.1; // 브라우저 백그라운드 등 스파이크 방지
+        lastTime = timestamp;
+        
+        // 사망 전조(깔림 대기) 슬로우모션 모드 파이프라인
+        if (isDying && !isGameOver) {
+            let unscaledDt = dt;
+            deathTimer += unscaledDt;
+            dt = unscaledDt * 0.05; // 5% 초극단적 슬로우 모션
+            if (deathTimer >= DEATH_DURATION) {
+                triggerFinalDeath(); // 타이머 끝나면 무조건 블랙아웃 및 사망
+            }
+        }
+        
+        update(dt);
+        draw();
+        
+        if (!isGameOver) {
+            requestAnimationFrame(gameLoop);
+        }
+    }
+    
+    // 초기 시작
+    resetGame();
     </script>
 </body>
 </html>
