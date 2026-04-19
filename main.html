@@ -201,7 +201,6 @@
     let lastTime = 0;
     let enemySpawnTimer = 0;
     let shakeAmount = 0;
-    let wallBumpX = 0; // 벽 충돌 시 오프셋
     let canHold = true;
     
     let glitchIntensity = 0;
@@ -347,6 +346,76 @@
             this.gravity = 1400;
             this.fastFallGravity = 3000;
             this.isGrounded = false;
+            
+            // 애니메이션/스프라이트 상태
+            this.lastDir = 1;
+            this.currentFrame = 0;
+            this.frameTimer = 0;
+            this.frames = [];
+            
+            // 유저가 요청해 제공한 이미지 적용 
+            this.spriteImg = new Image();
+            this.spriteImg.src = 'character.png'; // 로컬 폴더에 character.png 로 저장 필수
+            this.spriteImg.onload = () => this.cutSprites();
+        }
+        
+        // 이미지의 투명 영역을 기준으로 3x2 스프라이트를 자동으로 자르고 중앙을 정렬시킴
+        cutSprites() {
+            let cols = 3;
+            let rows = 2;
+            let cellW = this.spriteImg.width / cols;
+            let cellH = this.spriteImg.height / rows;
+            
+            let tempCanvas = document.createElement('canvas');
+            let tCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+            tempCanvas.width = cellW;
+            tempCanvas.height = cellH;
+            
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    tCtx.clearRect(0, 0, cellW, cellH);
+                    tCtx.drawImage(this.spriteImg, c * cellW, r * cellH, cellW, cellH, 0, 0, cellW, cellH);
+                    
+                    try {
+                        let imgData = tCtx.getImageData(0, 0, cellW, cellH);
+                        let data = imgData.data;
+                        let minX = cellW, minY = cellH, maxX = 0, maxY = 0;
+                        let found = false;
+                        
+                        for (let y = 0; y < cellH; y++) {
+                            for (let x = 0; x < cellW; x++) {
+                                let alpha = data[(y * cellW + x) * 4 + 3];
+                                if (alpha > 10) {
+                                    if (x < minX) minX = x;
+                                    if (x > maxX) maxX = x;
+                                    if (y < minY) minY = y;
+                                    if (y > maxY) maxY = y;
+                                    found = true;
+                                }
+                            }
+                        }
+                        
+                        if (found) {
+                            let fW = maxX - minX + 1;
+                            let fH = maxY - minY + 1;
+                            let frameCanvas = document.createElement('canvas');
+                            frameCanvas.width = fW;
+                            frameCanvas.height = fH;
+                            let fCtx = frameCanvas.getContext('2d');
+                            fCtx.drawImage(tempCanvas, minX, minY, fW, fH, 0, 0, fW, fH);
+                            this.frames.push(frameCanvas);
+                        }
+                    } catch (e) {
+                        // 로컬(file://) 환경에서 CORS 오류로 픽셀을 읽지 못할 경우의 폴백 처리
+                        let frameCanvas = document.createElement('canvas');
+                        frameCanvas.width = cellW;
+                        frameCanvas.height = cellH;
+                        let fCtx = frameCanvas.getContext('2d');
+                        fCtx.drawImage(tempCanvas, 0, 0);
+                        this.frames.push(frameCanvas);
+                    }
+                }
+            }
         }
         
         update(dt) {
@@ -424,13 +493,7 @@
                 }
             }
             
-            if (bumped !== 0) {
-                // 부딪힌 방향으로 카메라가 밀렸다가 미세하게 떨리는 럼블(Rumble) 생성
-                wallBumpX = bumped * (Math.random() * 2 + 1.5);
-            } else {
-                wallBumpX *= 0.5; // 즉시 감쇠
-                if (Math.abs(wallBumpX) < 0.1) wallBumpX = 0;
-            }
+            this.bumpDir = bumped;
             
             // ---- Y축(상하) 물리 이동 및 충돌 체크 ----
             this.y += this.vy * dt;
@@ -455,13 +518,87 @@
                 this.vy = 0;
                 this.isGrounded = true;
             }
+            
+            // 스프라이트 애니메이션 상태 업데이트 부분
+            if (this.vx > 0) this.lastDir = 1;
+            else if (this.vx < 0) this.lastDir = -1;
+
+            if (this.vx === 0 && this.isGrounded) {
+                // IDLE 상태 (정지 & 바닥 착지) 일때 애니메이션 플레이 (0.15초 간격)
+                this.frameTimer += dt;
+                if (this.frameTimer >= 0.15) {
+                    this.frameTimer -= 0.15;
+                    this.currentFrame++;
+                }
+            } else {
+                // 이동중이거나 점프중이면 첫 프레임으로 대동 단결 
+                this.currentFrame = 0; 
+                this.frameTimer = 0;
+            }
         }
         
         draw(ctx) {
             ctx.shadowColor = PLAYER_COLOR;
             ctx.shadowBlur = ((Date.now() / 150) % 2 > 1) ? 8 : 12; // 네온 깜빡임
             ctx.fillStyle = PLAYER_COLOR;
-            ctx.fillRect(this.x, this.y, this.w, this.h);
+            
+            let drawX = this.x;
+            let drawY = this.y;
+            let drawW = this.w;
+            let drawH = this.h;
+            
+            if (this.bumpDir !== 0) {
+                // 부딪히는 쪽에 스쿼시(압축) 효과 생성 
+                let squeeze = 6;
+                drawW -= squeeze;
+                drawH += squeeze / 2; // 캐릭터가 살짝 길어짐
+                drawY -= squeeze / 2;
+                
+                if (this.bumpDir === -1) {
+                    drawX += squeeze; // 왼쪽 벽 부딪힘: 오른쪽으로 형태가 밀림
+                }
+                
+                // 마찰 파티클 (스파크)
+                if (Math.random() < 0.25) {
+                    let px = (this.bumpDir === -1) ? this.x : this.x + this.w;
+                    let py = this.y + this.h - Math.random() * (this.h * 0.8);
+                    let spark = new Particle(px, py, '#ffffff');
+                    spark.speedX = -this.bumpDir * (Math.random() * 3 + 1);
+                    spark.speedY = -Math.random() * 4 - 1;
+                    spark.size = Math.random() * 2 + 1.5;
+                    particles.push(spark);
+                }
+            }
+            
+            if (this.frames && this.frames.length > 0) {
+                let fIdx = this.currentFrame % this.frames.length;
+                let frame = this.frames[fIdx];
+                
+                // 30px 타일에 맞게 스케일 조정 (1.3배 정도로 조금 귀엽게 강조)
+                let scale = 1.3; 
+                let dw = frame.width * scale;
+                let dh = frame.height * scale;
+                
+                // 캐릭터 박스 중앙과 발 밑면에 붙여서 렌더링
+                let dx = drawX + (drawW - dw) / 2;
+                let dy = drawY + drawH - dh + 2; 
+                
+                ctx.save();
+                if (this.lastDir === -1) {
+                    ctx.translate(drawX + drawW/2, 0);
+                    ctx.scale(-1, 1);
+                    ctx.translate(-(drawX + drawW/2), 0);
+                }
+                
+                // 픽셀아트가 선명하게 유지되도록
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(frame, dx, dy, dw, dh);
+                ctx.restore();
+            } else {
+                // 이미지가 아직 안 불러와졌으면 기존 박스
+                ctx.fillRect(drawX, drawY, drawW, drawH);
+            }
+            
             ctx.shadowBlur = 0;
         }
     }
@@ -995,10 +1132,7 @@
             ctx.translate(dx, dy);
         }
         
-        // 벽 충돌 시 방향성 피드백 럼블
-        if (wallBumpX !== 0) {
-            ctx.translate(wallBumpX, 0);
-        }
+        // (벽 충돌 럼블 삭제: UI 밀림 현상 통째로 방지)
         
         // 백그라운드 그리드 선 그리기
         ctx.strokeStyle = '#111';
