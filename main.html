@@ -15,6 +15,29 @@
             overflow: hidden; 
             margin: 0; 
             image-rendering: pixelated; 
+            transition: background-color 0.35s ease;
+        }
+
+        body.warning-zone {
+            background-color: #2d0a11;
+            animation: pulseWarning 3s infinite;
+        }
+
+        body.critical-zone {
+            background-color: #4a0404;
+            animation: pulseDanger 2s infinite;
+        }
+
+        @keyframes pulseWarning {
+            0% { background-color: #2d0a11; }
+            50% { background-color: #1a0f18; }
+            100% { background-color: #2d0a11; }
+        }
+
+        @keyframes pulseDanger {
+            0% { background-color: #4a0404; }
+            50% { background-color: #2a0202; }
+            100% { background-color: #4a0404; }
         }
         
         body::before {
@@ -27,6 +50,22 @@
             background-size: 100% 4px, 3px 100%; 
             pointer-events: none;
         }
+
+        #danger-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to bottom, rgba(255, 0, 0, 0.3), transparent);
+            pointer-events: none;
+            z-index: 150;
+            opacity: 0;
+            transition: opacity 0.35s;
+        }
+
+        body.warning-zone #danger-overlay { opacity: 0.4; }
+        body.critical-zone #danger-overlay { opacity: 1; }
 
         #game-wrapper { 
             display: flex; 
@@ -49,6 +88,18 @@
             background: #000; 
             overflow: hidden; 
             border: 2px solid #111; 
+        }
+
+        #main-container {
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            transition: height 0.45s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        body.critical-zone #main-container {
+            height: 690px;
         }
 
         canvas { 
@@ -90,6 +141,7 @@
     </style>
 </head>
 <body>
+    <div id="danger-overlay"></div>
     <div id="game-wrapper" style="gap: 20px;">
         
         <!-- HOLD UI -->
@@ -99,7 +151,7 @@
         </div>
 
         <div class="canvas-outer">
-            <div class="canvas-container">
+            <div class="canvas-container" id="main-container">
                 <canvas id="tetris" width="300" height="690"></canvas>
                 <div id="game-over-overlay">
                     <h1 id="crash-title" style="color: #fff;">CRUSHED!</h1>
@@ -120,6 +172,8 @@
     const ROWS = 23; 
     const COLS = 10; 
     const BLOCK_SIZE = 30;
+    const HIDDEN_ROWS = 3;
+    const DEAD_ZONE_ROWS = 1;
     
     const PIECES = {
         I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
@@ -195,6 +249,7 @@
     let isGameOver = false;
     let isDying = false;
     let isSoulStolen = false;
+    let deathCause = null;
     let deathTimer = 0;
     const DEATH_DURATION = 1.6; // 1.6초 카메라 연출 지속시간
     
@@ -202,6 +257,109 @@
     let enemySpawnTimer = 0;
     let shakeAmount = 0;
     let canHold = true;
+
+    let laserAttack = {
+        phase: 'idle',
+        cooldown: 6,
+        timer: 0,
+        row: HIDDEN_ROWS,
+        y: HIDDEN_ROWS * BLOCK_SIZE + BLOCK_SIZE / 2,
+        x: -180,
+        width: 180,
+        thickness: 10,
+        speed: 950
+    };
+
+    function getRandomLaserCooldown() {
+        return 5 + Math.random() * 4;
+    }
+
+    function startLaserTelegraph() {
+        laserAttack.phase = 'telegraph';
+        laserAttack.timer = 0;
+        laserAttack.row = Math.floor(Math.random() * (ROWS - (HIDDEN_ROWS + 1))) + (HIDDEN_ROWS + 1);
+        laserAttack.y = laserAttack.row * BLOCK_SIZE + BLOCK_SIZE / 2;
+    }
+
+    function startLaserFire() {
+        laserAttack.phase = 'fire';
+        laserAttack.timer = 0;
+        laserAttack.x = -laserAttack.width;
+    }
+
+    function finishLaserAttack() {
+        laserAttack.phase = 'idle';
+        laserAttack.cooldown = getRandomLaserCooldown();
+        laserAttack.timer = 0;
+    }
+
+    function updateLaserAttack(dt) {
+        if (isGameOver || isDying) return;
+
+        if (laserAttack.phase === 'idle') {
+            laserAttack.cooldown -= dt;
+            if (laserAttack.cooldown <= 0) {
+                startLaserTelegraph();
+            }
+            return;
+        }
+
+        if (laserAttack.phase === 'telegraph') {
+            laserAttack.timer += dt;
+            if (laserAttack.timer >= 0.7) {
+                startLaserFire();
+            }
+            return;
+        }
+
+        if (laserAttack.phase === 'fire') {
+            laserAttack.timer += dt;
+            laserAttack.x += laserAttack.speed * dt;
+
+            if (player) {
+                let beamRect = {
+                    x: laserAttack.x,
+                    y: laserAttack.y - laserAttack.thickness / 2,
+                    w: laserAttack.width,
+                    h: laserAttack.thickness
+                };
+                let pRect = { x: player.x, y: player.y, w: player.w, h: player.h };
+                if (rectIntersect(beamRect, pRect)) {
+                    startDeathSequence('laser');
+                }
+            }
+
+            if (laserAttack.x > canvas.width + laserAttack.width) {
+                finishLaserAttack();
+            }
+        }
+    }
+
+    function getHighestOccupiedRow() {
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (board[r][c]) return r;
+            }
+        }
+        return ROWS;
+    }
+
+    function updateDangerZoneState() {
+        document.body.classList.remove('warning-zone', 'critical-zone');
+        let highestRow = getHighestOccupiedRow();
+        if (highestRow < HIDDEN_ROWS + 3) {
+            document.body.classList.add('critical-zone');
+        } else if (highestRow < HIDDEN_ROWS + 6) {
+            document.body.classList.add('warning-zone');
+        }
+    }
+
+    function checkDeadZoneLockRows(rows) {
+        for (let r of rows) {
+            if (r >= 0 && r < DEAD_ZONE_ROWS) return true;
+        }
+        return false;
+    }
     
     let glitchIntensity = 0;
     
@@ -250,8 +408,9 @@
         requestAnimationFrame(updateGlitchLoop);
     }
     
-    function startDeathSequence() {
+    function startDeathSequence(cause = 'crush') {
         if (!isDying && !isGameOver) {
+            deathCause = cause;
             isDying = true;
             deathTimer = 0;
             shakeAmount = Math.max(shakeAmount, 30); // 충격적인 카메라 흔들림 
@@ -335,8 +494,10 @@
 
     class Player {
         constructor() {
-            this.w = 26; 
+            this.w = 18; // 스프라이트 실루엣에 맞춘 슬림 히트박스
             this.h = 26; // 타이트한 충돌 처리를 위해 칸(30)보다 약간 작게
+            this.renderW = 24; // 시각 크기는 기존 감각을 유지
+            this.renderH = 26;
             this.x = (300 / 2) - (this.w / 2); 
             this.y = 690 - this.h - 1;
             this.vx = 0; 
@@ -542,10 +703,10 @@
             ctx.shadowBlur = ((Date.now() / 150) % 2 > 1) ? 8 : 12; // 네온 깜빡임
             ctx.fillStyle = PLAYER_COLOR;
             
-            let drawX = this.x;
+            let drawX = this.x - (this.renderW - this.w) / 2;
             let drawY = this.y;
-            let drawW = this.w;
-            let drawH = this.h;
+            let drawW = this.renderW;
+            let drawH = this.renderH;
             
             if (this.bumpDir !== 0) {
                 // 부딪히는 쪽에 스쿼시(압축) 효과 생성 
@@ -574,8 +735,8 @@
                 let fIdx = this.currentFrame % this.frames.length;
                 let frame = this.frames[fIdx];
                 
-                // 30px 타일에 맞게 스케일 조정 (1.3배 정도로 조금 귀엽게 강조)
-                let scale = 1.3; 
+                // 기존 플레이어 박스 크기(약 26x26)에 맞춰 비율 유지 축소 렌더링
+                let scale = Math.min(drawW / frame.width, drawH / frame.height) * 0.95;
                 let dw = frame.width * scale;
                 let dh = frame.height * scale;
                 
@@ -594,9 +755,21 @@
                 ctx.imageSmoothingEnabled = false;
                 ctx.drawImage(frame, dx, dy, dw, dh);
                 ctx.restore();
-            } else {
-                // 이미지가 아직 안 불러와졌으면 기존 박스
-                ctx.fillRect(drawX, drawY, drawW, drawH);
+            } else if (this.spriteImg.complete && this.spriteImg.naturalWidth > 0) {
+                // 프레임 추출 전 로딩 구간에는 스프라이트 시트의 첫 칸만 임시 렌더
+                let cols = 3;
+                let rows = 2;
+                let cellW = this.spriteImg.width / cols;
+                let cellH = this.spriteImg.height / rows;
+                ctx.save();
+                if (this.lastDir === -1) {
+                    ctx.translate(drawX + drawW/2, 0);
+                    ctx.scale(-1, 1);
+                    ctx.translate(-(drawX + drawW/2), 0);
+                }
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(this.spriteImg, 0, 0, cellW, cellH, drawX, drawY, drawW, drawH);
+                ctx.restore();
             }
             
             ctx.shadowBlur = 0;
@@ -824,6 +997,7 @@
             
             // 보드에 그리드 데이터 병합
             let gy = Math.round(this.y / BLOCK_SIZE);
+            let lockedRows = [];
             for (let r = 0; r < this.matrix.length; r++) {
                 for (let c = 0; c < this.matrix[r].length; c++) {
                     if (this.matrix[r][c]) {
@@ -831,9 +1005,14 @@
                         let nx = this.gridX + c;
                         if (ny >= 0 && ny < ROWS && nx >=0 && nx < COLS) {
                             board[ny][nx] = 1;
+                            lockedRows.push(ny);
                         }
                     }
                 }
+            }
+
+            if (checkDeadZoneLockRows(lockedRows)) {
+                startDeathSequence('deadzone');
             }
             
             // 라인 클리어 (가로 한 줄이 모두 채워지면 파괴) 및 이펙트 연출
@@ -865,6 +1044,8 @@
             if (clearedLines > 0) {
                 shakeAmount = Math.min(clearedLines * 25, 50); // 흔들림 강도를 이전보다 약 1.5배 상향
             }
+
+            updateDangerZoneState();
         }
         
         draw(ctx) {
@@ -1005,6 +1186,7 @@
         isGameOver = false;
         isDying = false;
         isSoulStolen = false;
+        deathCause = null;
         deathTimer = 0;
         
         let title = document.getElementById('crash-title');
@@ -1017,21 +1199,31 @@
             title.innerText = 'CRUSHED!';
             title.style.color = '#fff';
             desc.style.display = 'none';
+            desc.style.transform = 'none';
+            desc.style.textShadow = 'none';
+            desc.style.opacity = 1;
             btn.style.borderColor = '#fff';
             btn.style.color = '#fff';
             overlay.style.background = 'rgba(139, 0, 0, 0.85)';
         }
         overlay.style.display = 'none';
+        document.body.classList.remove('warning-zone', 'critical-zone');
         lastTime = performance.now();
         enemySpawnTimer = 0;
         keys = {}; 
         keysPressed = {};
         canHold = true;
+        laserAttack.phase = 'idle';
+        laserAttack.cooldown = getRandomLaserCooldown();
+        laserAttack.timer = 0;
         requestAnimationFrame(gameLoop);
     }
     
     function update(dt) {
         if (isGameOver) return;
+
+        updateDangerZoneState();
+        updateLaserAttack(dt);
         
         // 에러 사이클 연속 스폰 및 4초 주기 스폰
         enemySpawnTimer -= dt;
@@ -1140,6 +1332,28 @@
         for(let i=0; i<=COLS; i++) { ctx.moveTo(i*BLOCK_SIZE, 0); ctx.lineTo(i*BLOCK_SIZE, canvas.height); }
         for(let i=0; i<=ROWS; i++) { ctx.moveTo(0, i*BLOCK_SIZE); ctx.lineTo(canvas.width, i*BLOCK_SIZE); }
         ctx.stroke();
+
+        // 히든영역 최상단 데드존(1행) UI: 붉은 X 패턴 + 경계선
+        for (let c = 0; c < COLS; c++) {
+            let px = c * BLOCK_SIZE;
+            let py = 0;
+            ctx.fillStyle = 'rgba(120, 0, 0, 0.22)';
+            ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+            ctx.strokeStyle = 'rgba(255, 60, 60, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(px + 4, py + 4);
+            ctx.lineTo(px + BLOCK_SIZE - 4, py + BLOCK_SIZE - 4);
+            ctx.moveTo(px + BLOCK_SIZE - 4, py + 4);
+            ctx.lineTo(px + 4, py + BLOCK_SIZE - 4);
+            ctx.stroke();
+        }
+        ctx.strokeStyle = 'rgba(255, 70, 70, 0.95)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, DEAD_ZONE_ROWS * BLOCK_SIZE);
+        ctx.lineTo(canvas.width, DEAD_ZONE_ROWS * BLOCK_SIZE);
+        ctx.stroke();
         
         // 굳어진 보드 블록 그리기
         for (let r = 0; r < ROWS; r++) {
@@ -1160,6 +1374,29 @@
         
         // 에러 블록 그리기
         for (let e of enemies) e.draw(ctx);
+
+        // 레이저 공격 렌더링
+        if (laserAttack.phase === 'telegraph') {
+            let blinkOn = Math.floor(performance.now() / 80) % 2 === 0;
+            if (blinkOn) {
+                ctx.strokeStyle = 'rgba(255, 60, 60, 0.9)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 6]);
+                ctx.beginPath();
+                ctx.moveTo(0, laserAttack.y);
+                ctx.lineTo(canvas.width, laserAttack.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        } else if (laserAttack.phase === 'fire') {
+            let beamY = laserAttack.y - laserAttack.thickness / 2;
+            ctx.fillStyle = 'rgba(255, 20, 20, 0.9)';
+            ctx.fillRect(laserAttack.x, beamY, laserAttack.width, laserAttack.thickness);
+            ctx.fillStyle = 'rgba(255, 220, 220, 0.9)';
+            ctx.fillRect(laserAttack.x, beamY + 3, laserAttack.width, 4);
+            ctx.fillStyle = 'rgba(255, 80, 80, 0.25)';
+            ctx.fillRect(laserAttack.x - 40, beamY - 8, laserAttack.width + 40, laserAttack.thickness + 16);
+        }
         
         // 플레이어 그리기 (영혼 뺏겨서 완전 블랙아웃 되기 전까지는 시체 유지)
         if (player) player.draw(ctx);
