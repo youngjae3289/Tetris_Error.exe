@@ -4,27 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tetris_Error.exe - Vibe Prototype</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        
+
+        html, body { 
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
         body { 
             background-color: #1a1a2e; 
             color: #eee; 
-            font-family: 'Press Start 2P', cursive; 
-            overflow: hidden; 
-            margin: 0; 
+            font-family: 'Courier New', Consolas, monospace; 
+            overflow: hidden;
             image-rendering: pixelated; 
             transition: background-color 0.35s ease;
         }
 
         body.warning-zone {
-            background-color: #2d0a11;
+            background-color: #241018;
             animation: pulseWarning 3s infinite;
         }
 
         body.critical-zone {
-            background-color: #4a0404;
+            background-color: #3a0509;
             animation: pulseDanger 2s infinite;
         }
 
@@ -53,25 +58,50 @@
 
         #danger-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 150px;
-            background: linear-gradient(to bottom, rgba(255, 0, 0, 0.3), transparent);
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 35%, rgba(255, 70, 70, 0.12), rgba(255, 0, 0, 0) 60%),
+                linear-gradient(180deg, rgba(255, 45, 45, 0.08), rgba(255, 0, 0, 0.02) 55%, rgba(120, 0, 0, 0.06));
             pointer-events: none;
             z-index: 150;
             opacity: 0;
             transition: opacity 0.35s;
         }
 
-        body.warning-zone #danger-overlay { opacity: 0.4; }
-        body.critical-zone #danger-overlay { opacity: 1; }
+        body.warning-zone #danger-overlay { opacity: 0.55; }
+        body.critical-zone #danger-overlay { opacity: 0.95; }
 
         #game-wrapper { 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             height: 100vh; 
+            width: 100%;
+            position: relative;
+        }
+
+        .canvas-outer {
+            position: absolute;
+            display: none;
+        }
+
+        body.playing .canvas-outer {
+            display: flex;
+            position: relative;
+        }
+
+        .canvas-container {
+            display: flex;
+        }
+
+        .hold-panel {
+            position: absolute;
+            display: none;
+        }
+
+        body.playing .hold-panel {
+            display: flex;
+            position: relative;
         }
 
         .canvas-outer { 
@@ -108,26 +138,172 @@
         }
 
         #game-over-overlay {
-            position: absolute; top:0; left:0; right:0; bottom:0;
+            position: fixed; 
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
             background: rgba(139, 0, 0, 0.85); 
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
             z-index: 100;
+            margin: 0;
+            padding: 0;
+        }
+
+        body.playing #game-over-overlay {
             display: none;
         }
 
-        #game-over-overlay h1 { 
-            color: #fff; 
-            font-size: 20px; 
-            text-shadow: 4px 4px 0 #000; 
-            margin-bottom: 24px;
+        #crash-title,
+        #crash-desc {
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .ui-shell {
+            width: min(86vw, 720px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .ui-screen {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 32px;
+            border: 4px solid #fff;
+            background: linear-gradient(180deg, rgba(8, 8, 16, 0.96), rgba(22, 22, 40, 0.92));
+            box-shadow: 10px 10px 0 #000;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .ui-screen.active {
+            display: flex;
+        }
+
+        .ui-badge {
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: #ff99cc;
+        }
+
+        .ui-screen h1 {
+            color: #fff;
+            font-size: 32px;
+            line-height: 1.5;
+            margin: 0;
+            text-shadow: 4px 4px 0 #000;
+        }
+
+        .ui-copy {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #d8d8ff;
+            margin: 0;
+        }
+
+        .ui-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-cta {
+            background: #fff06a;
+        }
+
+        .level-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 8px;
+            overflow: visible;
+            padding-right: 0;
+        }
+
+        .level-card {
+            appearance: none;
+            border: 2px solid #fff;
+            background: rgba(255, 153, 204, 0.12);
+            color: #fff;
+            padding: 10px 6px;
+            min-height: 54px;
+            text-align: center;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 7px;
+            line-height: 1.35;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 #000;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            justify-content: center;
+        }
+
+        .level-card:hover:not(:disabled) {
+            transform: translate(-1px, -1px);
+            background: rgba(255, 153, 204, 0.22);
+        }
+
+        .level-card:disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+            background: rgba(80, 80, 100, 0.15);
+        }
+
+        .level-chip {
+            display: inline-block;
+            font-size: 7px;
+            color: #ff99cc;
+        }
+
+        .level-chip.locked {
+            color: #999;
+        }
+
+        .level-meta {
+            font-size: 8px;
+            color: #ddd;
+        }
+
+        .progress-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #ff99cc;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            border: 2px solid #fff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 0 2px #000;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff99cc, #fff06a);
         }
 
         .btn { 
             background: #ff99cc; 
             color: #000; 
-            padding: 15px 25px; 
-            font-size: 12px; 
+            padding: 14px 26px; 
+            font-size: 13px; 
             border: 4px solid #fff; 
             box-shadow: 4px 4px 0px #000;
             cursor: pointer;
@@ -145,7 +321,7 @@
     <div id="game-wrapper" style="gap: 20px;">
         
         <!-- HOLD UI -->
-        <div style="background: rgba(22, 22, 40, 0.9); border: 4px solid #444; padding: 10px; text-align: center; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-200px);">
+        <div class="hold-panel" style="background: rgba(22, 22, 40, 0.9); border: 4px solid #444; padding: 10px; text-align: center; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-200px);">
             <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px;">HOLD (F)</div>
             <canvas id="holdCanvas" width="90" height="90" style="background: #000; border: 2px solid #111;"></canvas>
         </div>
@@ -153,10 +329,47 @@
         <div class="canvas-outer">
             <div class="canvas-container" id="main-container">
                 <canvas id="tetris" width="300" height="690"></canvas>
-                <div id="game-over-overlay">
+            </div>
+        </div>
+
+        <div id="game-over-overlay">
+            <div class="ui-shell">
+                <div class="ui-screen active" id="menu-screen">
+                    <div class="ui-badge">TETRIS_ERROR.EXE</div>
+                    <h1>MAIN START</h1>
+                    <p class="ui-copy">10 STAGES / SCORE CLEAR / LEVEL 01 FROM HERE</p>
+                    <div class="ui-actions">
+                        <button class="btn btn-cta" id="start-btn" onclick="openLevelSelect()">LET'S FIX</button>
+                    </div>
+                </div>
+
+                <div class="ui-screen" id="level-screen">
+                    <h1 style="font-size: 24px; margin-bottom: 10px;">LEVEL</h1>
+                    <div class="level-grid" id="level-grid"></div>
+                    <div class="ui-actions">
+                        <button class="btn" onclick="showMenuScreen()">BACK</button>
+                    </div>
+                </div>
+
+                <div class="ui-screen" id="clear-screen">
+                    <div class="ui-badge">LEVEL CLEAR</div>
+                    <h1 id="clear-title">LEVEL 01 CLEAR!</h1>
+                    <p class="ui-copy" id="clear-desc">TARGET SCORE REACHED</p>
+                    <div class="progress-bar"><div class="progress-fill" id="clear-progress"></div></div>
+                    <div class="ui-actions">
+                        <button class="btn btn-cta" id="next-level-btn" onclick="goToNextLevel()">NEXT LEVEL</button>
+                        <button class="btn" onclick="openLevelSelect()">LEVEL LIST</button>
+                    </div>
+                </div>
+
+                <div class="ui-screen" id="gameover-screen">
+                    <div class="ui-badge">SYSTEM FAILURE</div>
                     <h1 id="crash-title" style="color: #fff;">CRUSHED!</h1>
-                    <p id="crash-desc" style="display: none; color: #ff3333; margin-bottom: 30px; text-align: center;">YOUR SOUL HAS BEEN STOLEN.</p>
-                    <button class="btn" id="restart-btn" onclick="resetGame()">SYSTEM REBOOT</button>
+                    <p id="crash-desc" style="display: none; color: #ff3333; margin-bottom: 10px; text-align: center;">YOUR SOUL HAS BEEN STOLEN.</p>
+                    <div class="ui-actions">
+                        <button class="btn" id="restart-btn" onclick="retryCurrentLevel()">RETRY LEVEL</button>
+                        <button class="btn" onclick="openLevelSelect()">LEVEL LIST</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,6 +381,14 @@
     const holdCanvas = document.getElementById('holdCanvas');
     const hCtx = holdCanvas.getContext('2d');
     const overlay = document.getElementById('game-over-overlay');
+    const menuScreen = document.getElementById('menu-screen');
+    const levelScreen = document.getElementById('level-screen');
+    const clearScreen = document.getElementById('clear-screen');
+    const gameoverScreen = document.getElementById('gameover-screen');
+    const levelGrid = document.getElementById('level-grid');
+    const clearTitle = document.getElementById('clear-title');
+    const clearDesc = document.getElementById('clear-desc');
+    const clearProgress = document.getElementById('clear-progress');
     
     const ROWS = 23; 
     const COLS = 10; 
@@ -188,14 +409,35 @@
     const ENEMY_COLOR = '#8B0000';
     const GHOST_COLOR = 'rgba(139, 0, 0, 0.5)';
     const PLAYER_COLOR = '#A3E4D7';
+
+    const LEVELS = [
+        { name: 'BOOT SECTOR', targetScore: 500, spawnInterval: 4.2, dropInterval: 0.85, laserMin: 5.0, laserMax: 9.0, scoreMultiplier: 1.0 },
+        { name: 'PATCH ONE', targetScore: 1200, spawnInterval: 4.0, dropInterval: 0.82, laserMin: 4.8, laserMax: 8.6, scoreMultiplier: 1.1 },
+        { name: 'GLITCH HALL', targetScore: 2000, spawnInterval: 3.8, dropInterval: 0.80, laserMin: 4.6, laserMax: 8.2, scoreMultiplier: 1.2 },
+        { name: 'ERROR CHAMBER', targetScore: 3200, spawnInterval: 3.6, dropInterval: 0.78, laserMin: 4.4, laserMax: 7.8, scoreMultiplier: 1.3 },
+        { name: 'NIGHTMARE FILE', targetScore: 4700, spawnInterval: 3.4, dropInterval: 0.76, laserMin: 4.2, laserMax: 7.4, scoreMultiplier: 1.4 },
+        { name: 'RUPTURE CORE', targetScore: 6500, spawnInterval: 3.2, dropInterval: 0.74, laserMin: 4.0, laserMax: 7.0, scoreMultiplier: 1.5 },
+        { name: 'BLACKOUT GRID', targetScore: 8600, spawnInterval: 3.0, dropInterval: 0.72, laserMin: 3.8, laserMax: 6.6, scoreMultiplier: 1.6 },
+        { name: 'VOID STACK', targetScore: 11000, spawnInterval: 2.8, dropInterval: 0.70, laserMin: 3.6, laserMax: 6.2, scoreMultiplier: 1.7 },
+        { name: 'DEVIL BIAS', targetScore: 13800, spawnInterval: 2.6, dropInterval: 0.68, laserMin: 3.4, laserMax: 5.8, scoreMultiplier: 1.8 },
+        { name: 'FINAL REBOOT', targetScore: 17000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2.0 }
+    ];
+
+    const LINE_SCORE_TABLE = [0, 100, 300, 500, 800];
     
-    let board = [];
+    let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
     let enemies = [];
     let particles = [];
     let player = null;
     let controlMode = 'CHARACTER';
     let selectedBlock = null;
     let heldPieceType = null;
+    let gameState = 'menu';
+    let currentLevelIndex = 0;
+    let highestUnlockedLevel = 0;
+    let score = 0;
+    let currentLevel = LEVELS[0];
+    let levelClearShown = false;
     
     function drawHoldUI() {
         hCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
@@ -255,6 +497,8 @@
     
     let lastTime = 0;
     let enemySpawnTimer = 0;
+    let enemySpawnWarningTimer = 0;
+    let enemySpawnWarningPiece = null;
     let shakeAmount = 0;
     let canHold = true;
 
@@ -271,7 +515,7 @@
     };
 
     function getRandomLaserCooldown() {
-        return 5 + Math.random() * 4;
+        return currentLevel.laserMin + Math.random() * (currentLevel.laserMax - currentLevel.laserMin);
     }
 
     function startLaserTelegraph() {
@@ -293,6 +537,178 @@
         laserAttack.timer = 0;
     }
 
+    function setOverlayScreen(screen) {
+        [menuScreen, levelScreen, clearScreen, gameoverScreen].forEach(element => {
+            if (element) element.classList.remove('active');
+        });
+        if (screen) screen.classList.add('active');
+        overlay.style.display = 'flex';
+    }
+
+    function padLevelNumber(value) {
+        return String(value).padStart(2, '0');
+    }
+
+    function updateLevelHeader() {
+        // unlockLabel and selectedLabel removed in simplified UI
+    }
+
+    function renderLevelList() {
+        if (!levelGrid) return;
+        levelGrid.innerHTML = '';
+
+        LEVELS.forEach((level, index) => {
+            let card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'level-card';
+            let unlocked = index <= highestUnlockedLevel;
+            if (!unlocked) card.disabled = true;
+
+            card.innerHTML = `
+                <span class="level-chip ${unlocked ? '' : 'locked'}">${padLevelNumber(index + 1)}</span>
+                <span style="font-size: 7px; opacity: 0.9;">${level.name}</span>
+            `;
+
+            if (unlocked) {
+                card.addEventListener('click', () => startLevel(index));
+            }
+
+            levelGrid.appendChild(card);
+        });
+    }
+
+    function showMenuScreen() {
+        gameState = 'menu';
+        overlay.style.background = 'rgba(5, 5, 12, 0.92)';
+        document.body.classList.remove('playing');
+        setOverlayScreen(menuScreen);
+        updateLevelHeader();
+    }
+
+    function openLevelSelect() {
+        gameState = 'levelSelect';
+        overlay.style.background = 'rgba(5, 5, 12, 0.92)';
+        document.body.classList.remove('playing');
+        renderLevelList();
+        updateLevelHeader();
+        setOverlayScreen(levelScreen);
+    }
+
+    function updateClearPanel() {
+        if (clearTitle) {
+            clearTitle.textContent = `LEVEL ${padLevelNumber(currentLevelIndex + 1)} CLEAR!`;
+        }
+        if (clearDesc) {
+            clearDesc.textContent = `${score.toLocaleString()} / ${currentLevel.targetScore.toLocaleString()} SCORE`;
+        }
+        if (clearProgress) {
+            let ratio = Math.min(score / currentLevel.targetScore, 1);
+            clearProgress.style.width = `${Math.round(ratio * 100)}%`;
+        }
+        let nextLevelBtn = document.getElementById('next-level-btn');
+        if (nextLevelBtn) {
+            nextLevelBtn.textContent = currentLevelIndex < LEVELS.length - 1 ? 'NEXT LEVEL' : 'FINISH';
+        }
+    }
+
+    function showLevelClear() {
+        if (gameState === 'levelClear') return;
+        gameState = 'levelClear';
+        levelClearShown = true;
+        if (currentLevelIndex === highestUnlockedLevel && currentLevelIndex < LEVELS.length - 1) {
+            highestUnlockedLevel = currentLevelIndex + 1;
+        }
+        overlay.style.background = 'rgba(5, 5, 12, 0.94)';
+        document.body.classList.remove('playing');
+        updateClearPanel();
+        updateLevelHeader();
+        setOverlayScreen(clearScreen);
+    }
+
+    function showGameOverScreen() {
+        gameState = 'gameOver';
+        overlay.style.background = '#000';
+        document.body.classList.remove('playing');
+        setOverlayScreen(gameoverScreen);
+        let title = document.getElementById('crash-title');
+        let desc = document.getElementById('crash-desc');
+        let btn = document.getElementById('restart-btn');
+
+        if (title) {
+            title.style.display = 'none';
+        }
+        if (desc) {
+            desc.innerText = 'YOUR SOUL HAS BEEN STOLEN.';
+            desc.style.display = 'block';
+            desc.style.fontSize = '26px';
+            desc.style.fontWeight = 'bold';
+            desc.style.letterSpacing = '2px';
+            desc.style.transform = 'none';
+            desc.style.textShadow = 'none';
+            desc.style.opacity = 1;
+        }
+        if (btn) {
+            btn.style.borderColor = '#ff3333';
+            btn.style.color = '#ff3333';
+            btn.style.background = 'transparent';
+        }
+    }
+
+    function resetRunState() {
+        board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+        enemies = [];
+        particles = [];
+        player = new Player();
+        controlMode = 'CHARACTER';
+        selectedBlock = null;
+        heldPieceType = null;
+        score = 0;
+        levelClearShown = false;
+        isGameOver = false;
+        isDying = false;
+        isSoulStolen = false;
+        deathCause = null;
+        deathTimer = 0;
+        canHold = true;
+        laserAttack.phase = 'idle';
+        laserAttack.cooldown = getRandomLaserCooldown();
+        laserAttack.timer = 0;
+        enemySpawnTimer = currentLevel.spawnInterval;
+        enemySpawnWarningTimer = 0;
+        enemySpawnWarningPiece = null;
+        shakeAmount = 0;
+        document.body.classList.remove('warning-zone', 'critical-zone');
+        keys = {};
+        keysPressed = {};
+        lastTime = performance.now();
+        drawHoldUI();
+    }
+
+    function startLevel(levelIndex) {
+        currentLevelIndex = levelIndex;
+        currentLevel = LEVELS[currentLevelIndex];
+        if (currentLevelIndex > highestUnlockedLevel) {
+            highestUnlockedLevel = currentLevelIndex;
+        }
+        resetRunState();
+        gameState = 'playing';
+        overlay.style.display = 'none';
+        document.body.classList.add('playing');
+        updateLevelHeader();
+    }
+
+    function retryCurrentLevel() {
+        startLevel(currentLevelIndex);
+    }
+
+    function goToNextLevel() {
+        if (currentLevelIndex < LEVELS.length - 1) {
+            startLevel(currentLevelIndex + 1);
+        } else {
+            showMenuScreen();
+        }
+    }
+
     function updateLaserAttack(dt) {
         if (isGameOver || isDying) return;
 
@@ -306,7 +722,7 @@
 
         if (laserAttack.phase === 'telegraph') {
             laserAttack.timer += dt;
-            if (laserAttack.timer >= 0.7) {
+            if (laserAttack.timer >= 1.5) {
                 startLaserFire();
             }
             return;
@@ -422,25 +838,7 @@
             isSoulStolen = true;
             isGameOver = true;
             isDying = false;
-            
-            let title = document.getElementById('crash-title');
-            let desc = document.getElementById('crash-desc');
-            let overlay = document.getElementById('game-over-overlay');
-            let btn = document.getElementById('restart-btn');
-            
-            title.style.display = 'none'; // CRUSHED 텍스트 숨김 (유저 요청 반영)
-            desc.innerText = 'YOUR SOUL HAS BEEN STOLEN.';
-            desc.style.display = 'block';
-            desc.style.fontSize = '26px';
-            desc.style.fontWeight = 'bold';
-            desc.style.letterSpacing = '2px';
-            
-            btn.style.borderColor = '#ff3333';
-            btn.style.color = '#ff3333';
-            btn.style.background = 'transparent';
-            
-            overlay.style.background = '#000'; 
-            overlay.style.display = 'flex';
+            showGameOverScreen();
             
             glitchIntensity = 20; // 찢어지는 듯한 최고 강도에서 시작
             requestAnimationFrame(updateGlitchLoop);
@@ -461,7 +859,7 @@
     
     // 마우스 클릭으로 에러 블록 선택 로직
     canvas.addEventListener('mousedown', e => {
-        if (isGameOver) return;
+        if (gameState !== 'playing') return;
         
         let rect = canvas.getBoundingClientRect();
         let scaleX = canvas.width / rect.width;
@@ -785,7 +1183,7 @@
             this.y = -BLOCK_SIZE * this.matrix.length; 
             this.isGhost = false;
             this.dropTimer = 0;
-            this.dropInterval = 0.8; // 0.8초마다 한 칸(30px) 위치 이동
+            this.dropInterval = currentLevel.dropInterval; // 레벨별 낙하 속도
             this.locked = false;
             
             this.lockDelayTimer = 0;
@@ -1042,6 +1440,7 @@
                 }
             }
             if (clearedLines > 0) {
+                score += Math.floor(LINE_SCORE_TABLE[clearedLines] * currentLevel.scoreMultiplier);
                 shakeAmount = Math.min(clearedLines * 25, 50); // 흔들림 강도를 이전보다 약 1.5배 상향
             }
 
@@ -1177,61 +1576,39 @@
     }
     
     function resetGame() {
-        board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
-        enemies = [];
-        particles = [];
-        player = new Player();
-        controlMode = 'CHARACTER';
-        selectedBlock = null;
-        isGameOver = false;
-        isDying = false;
-        isSoulStolen = false;
-        deathCause = null;
-        deathTimer = 0;
-        
-        let title = document.getElementById('crash-title');
-        let desc = document.getElementById('crash-desc');
-        let overlay = document.getElementById('game-over-overlay');
-        let btn = document.getElementById('restart-btn');
-        
-        if (title) {
-            title.style.display = 'block';
-            title.innerText = 'CRUSHED!';
-            title.style.color = '#fff';
-            desc.style.display = 'none';
-            desc.style.transform = 'none';
-            desc.style.textShadow = 'none';
-            desc.style.opacity = 1;
-            btn.style.borderColor = '#fff';
-            btn.style.color = '#fff';
-            overlay.style.background = 'rgba(139, 0, 0, 0.85)';
-        }
-        overlay.style.display = 'none';
-        document.body.classList.remove('warning-zone', 'critical-zone');
-        lastTime = performance.now();
-        enemySpawnTimer = 0;
-        keys = {}; 
-        keysPressed = {};
-        canHold = true;
-        laserAttack.phase = 'idle';
-        laserAttack.cooldown = getRandomLaserCooldown();
-        laserAttack.timer = 0;
-        requestAnimationFrame(gameLoop);
+        startLevel(currentLevelIndex);
     }
     
     function update(dt) {
-        if (isGameOver) return;
+        if (gameState !== 'playing') {
+            keysPressed = {};
+            return;
+        }
 
         updateDangerZoneState();
         updateLaserAttack(dt);
+
+        if (enemySpawnWarningPiece) {
+            enemySpawnWarningTimer -= dt;
+            if (enemySpawnWarningTimer <= 0) {
+                enemies.push(enemySpawnWarningPiece);
+                enemySpawnWarningPiece = null;
+                enemySpawnWarningTimer = 0;
+                enemySpawnTimer = currentLevel.spawnInterval;
+            }
+        }
         
         // 에러 사이클 연속 스폰 및 4초 주기 스폰
-        enemySpawnTimer -= dt;
+        if (!enemySpawnWarningPiece) {
+            enemySpawnTimer -= dt;
+        }
         
         let activeEnemies = enemies.filter(e => !e.deleted && !e.locked).length;
-        if (activeEnemies === 0 || enemySpawnTimer <= 0) {
-            enemies.push(new EnemyPiece());
-            enemySpawnTimer = 4.0; 
+        if (!enemySpawnWarningPiece && (activeEnemies === 0 || enemySpawnTimer <= 0)) {
+            enemySpawnWarningPiece = new EnemyPiece();
+            enemySpawnWarningPiece.y = 0;
+            enemySpawnWarningTimer = 0.7;
+            enemySpawnTimer = currentLevel.spawnInterval;
         }
         
         player.update(dt);
@@ -1242,6 +1619,11 @@
             if (enemies[i].locked || enemies[i].deleted) {
                 enemies.splice(i, 1);
             }
+        }
+
+        if (gameState !== 'playing') {
+            keysPressed = {};
+            return;
         }
         
         for (let i = particles.length - 1; i >= 0; i--) {
@@ -1278,6 +1660,10 @@
             heldPieceType = null;
             canHold = false; // 블록을 새로 하나 뺐으므로 이 블록을 놓을 때까지는 다시 홀드 불가
             drawHoldUI();
+        }
+
+        if (!levelClearShown && score >= currentLevel.targetScore) {
+            showLevelClear();
         }
 
         if (isGameOver) {
@@ -1403,15 +1789,80 @@
         
         // 파티클 그리기
         for (let p of particles) p.draw(ctx);
+
+        if (enemySpawnWarningPiece) {
+            drawEnemySpawnWarning(enemySpawnWarningPiece, 1 - (enemySpawnWarningTimer / 0.7));
+        }
         
         ctx.restore(); // 화면 흔들림 복구
         
         // 좌측 상단 모드 HUD 
         ctx.fillStyle = controlMode === 'BLOCK' ? '#ff99cc' : '#eee';
         ctx.font = '10px "Press Start 2P"';
-        ctx.fillText(`MODE: ${controlMode === 'BLOCK' ? 'HACKING' : 'SURVIVAL'}`, 10, 20);
+        ctx.fillText(`LV ${padLevelNumber(currentLevelIndex + 1)} ${currentLevel.name}`, 10, 20);
+        ctx.fillText(`SCORE ${score.toLocaleString()} / ${currentLevel.targetScore.toLocaleString()}`, 10, 34);
+        ctx.fillText(`MODE: ${controlMode === 'BLOCK' ? 'HACKING' : 'SURVIVAL'}`, 10, 48);
+
+        let progressX = 162;
+        let progressY = 10;
+        let progressW = 128;
+        let progressH = 10;
+        let progressRatio = Math.min(score / currentLevel.targetScore, 1);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.fillRect(progressX, progressY, progressW, progressH);
+        ctx.strokeStyle = '#fff';
+        ctx.strokeRect(progressX, progressY, progressW, progressH);
+        ctx.fillStyle = '#ff99cc';
+        ctx.fillRect(progressX, progressY, progressW * progressRatio, progressH);
         
         // 삭제된 전역 글로우 오버레이 자리
+    }
+
+    function drawEnemySpawnWarning(enemy, progress) {
+        let flicker = 0.08 + progress * 0.08 + Math.sin(performance.now() / 120) * 0.015;
+        let occupiedMinX = null;
+        let occupiedMaxX = null;
+
+        for (let r = 0; r < enemy.matrix.length; r++) {
+            for (let c = 0; c < enemy.matrix[r].length; c++) {
+                if (!enemy.matrix[r][c]) continue;
+                let gx = enemy.gridX + c;
+                if (occupiedMinX === null || gx < occupiedMinX) occupiedMinX = gx;
+                if (occupiedMaxX === null || gx > occupiedMaxX) occupiedMaxX = gx;
+            }
+        }
+
+        if (occupiedMinX === null || occupiedMaxX === null) return;
+
+        let x = occupiedMinX * BLOCK_SIZE;
+        let w = (occupiedMaxX - occupiedMinX + 1) * BLOCK_SIZE;
+        let stripHeight = BLOCK_SIZE;
+        let visibleTopY = HIDDEN_ROWS * BLOCK_SIZE;
+        ctx.save();
+        ctx.shadowColor = 'rgba(255, 60, 60, 0.28)';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = `rgba(120, 20, 20, ${0.08 + flicker})`;
+        ctx.fillRect(x, visibleTopY, w, stripHeight);
+
+        let grad = ctx.createLinearGradient(0, visibleTopY, 0, visibleTopY + stripHeight);
+        grad.addColorStop(0, 'rgba(255, 170, 170, 0.28)');
+        grad.addColorStop(0.4, 'rgba(255, 90, 90, 0.14)');
+        grad.addColorStop(1, 'rgba(255, 60, 60, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, visibleTopY, w, stripHeight);
+
+        ctx.fillStyle = 'rgba(255, 180, 180, 0.12)';
+        ctx.fillRect(x + 1, visibleTopY, Math.max(0, w - 2), 2);
+
+        ctx.fillStyle = 'rgba(150, 30, 30, 0.14)';
+        ctx.fillRect(x + 2, visibleTopY + 3, Math.max(0, w - 4), stripHeight - 3);
+
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(255, 120, 120, 0.16)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 0.5, visibleTopY + 0.5, w - 1, stripHeight - 1);
+
+        ctx.restore();
     }
     
     function gameLoop(timestamp) {
@@ -1431,14 +1882,15 @@
         
         update(dt);
         draw();
-        
-        if (!isGameOver) {
-            requestAnimationFrame(gameLoop);
-        }
+
+        requestAnimationFrame(gameLoop);
     }
     
     // 초기 시작
-    resetGame();
+    showMenuScreen();
+    renderLevelList();
+    updateLevelHeader();
+    requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
