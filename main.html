@@ -94,12 +94,12 @@
             display: flex;
         }
 
-        .hold-panel {
+        .hold-panel, .score-panel {
             position: absolute;
             display: none;
         }
 
-        body.playing .hold-panel {
+        body.playing .hold-panel, body.playing .score-panel {
             display: flex;
             position: relative;
         }
@@ -332,6 +332,23 @@
             </div>
         </div>
 
+        <!-- SCORE UI -->
+        <div class="score-panel" style="background: rgba(22, 22, 40, 0.9); border: 4px solid #444; padding: 20px; text-align: right; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-100px); min-width: 140px; font-family: 'Press Start 2P', cursive; flex-direction: column;">
+            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">SCORE</div>
+            <div id="ui-score" style="font-size: 18px; color: #fff; margin-bottom: 24px; text-shadow: 3px 3px 0 #000;">0</div>
+            
+            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">TARGET</div>
+            <div id="ui-target-score" style="font-size: 14px; color: #fff06a; margin-bottom: 24px; text-shadow: 2px 2px 0 #000;">10,000</div>
+            
+            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">COMBO</div>
+            <div id="ui-combo" style="font-size: 18px; color: #fff; margin-bottom: 24px; text-shadow: 3px 3px 0 #000;">0</div>
+            
+            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">PROGRESS</div>
+            <div style="width: 100%; height: 12px; border: 2px solid #fff; background: rgba(255,255,255,0.08); box-shadow: inset 0 0 0 2px #000;">
+                <div id="ui-progress" style="height: 100%; width: 0%; background: linear-gradient(90deg, #ff99cc, #fff06a);"></div>
+            </div>
+        </div>
+
         <div id="game-over-overlay">
             <div class="ui-shell">
                 <div class="ui-screen active" id="menu-screen">
@@ -410,20 +427,29 @@
     const GHOST_COLOR = 'rgba(139, 0, 0, 0.5)';
     const PLAYER_COLOR = '#A3E4D7';
 
-    const LEVELS = [
-        { name: 'BOOT SECTOR', targetScore: 500, spawnInterval: 4.2, dropInterval: 0.85, laserMin: 5.0, laserMax: 9.0, scoreMultiplier: 1.0 },
-        { name: 'PATCH ONE', targetScore: 1200, spawnInterval: 4.0, dropInterval: 0.82, laserMin: 4.8, laserMax: 8.6, scoreMultiplier: 1.1 },
-        { name: 'GLITCH HALL', targetScore: 2000, spawnInterval: 3.8, dropInterval: 0.80, laserMin: 4.6, laserMax: 8.2, scoreMultiplier: 1.2 },
-        { name: 'ERROR CHAMBER', targetScore: 3200, spawnInterval: 3.6, dropInterval: 0.78, laserMin: 4.4, laserMax: 7.8, scoreMultiplier: 1.3 },
-        { name: 'NIGHTMARE FILE', targetScore: 4700, spawnInterval: 3.4, dropInterval: 0.76, laserMin: 4.2, laserMax: 7.4, scoreMultiplier: 1.4 },
-        { name: 'RUPTURE CORE', targetScore: 6500, spawnInterval: 3.2, dropInterval: 0.74, laserMin: 4.0, laserMax: 7.0, scoreMultiplier: 1.5 },
-        { name: 'BLACKOUT GRID', targetScore: 8600, spawnInterval: 3.0, dropInterval: 0.72, laserMin: 3.8, laserMax: 6.6, scoreMultiplier: 1.6 },
-        { name: 'VOID STACK', targetScore: 11000, spawnInterval: 2.8, dropInterval: 0.70, laserMin: 3.6, laserMax: 6.2, scoreMultiplier: 1.7 },
-        { name: 'DEVIL BIAS', targetScore: 13800, spawnInterval: 2.6, dropInterval: 0.68, laserMin: 3.4, laserMax: 5.8, scoreMultiplier: 1.8 },
-        { name: 'FINAL REBOOT', targetScore: 17000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2.0 }
-    ];
+    // ==============================================
+    // [점수 및 밸런스 설정] - 직접 수치를 조정할 수 있습니다
+    // ==============================================
+    const SCORE_CONFIG = {
+        lineClear: [0, 100, 200, 300, 1000],
+        survivalPerSec: 10,
+        softDropPerCell: 1,
+        hardDropPerCell: 2,
+        comboBonus: 50
+    };
 
-    const LINE_SCORE_TABLE = [0, 100, 300, 500, 800];
+    const LEVELS = [
+        { name: 'BOOT SECTOR', targetScore: 10000, spawnInterval: 4.2, dropInterval: 0.85, laserMin: 5, laserMax: 9, scoreMultiplier: 1 },
+        { name: 'PATCH ONE', targetScore: 12000, spawnInterval: 4, dropInterval: 0.82, laserMin: 4.8, laserMax: 8.6, scoreMultiplier: 1.1 },
+        { name: 'GLITCH HALL', targetScore: 15000, spawnInterval: 3.8, dropInterval: 0.8, laserMin: 4.6, laserMax: 8.2, scoreMultiplier: 1.2 },
+        { name: 'ERROR CHAMBER', targetScore: 20000, spawnInterval: 3.6, dropInterval: 0.78, laserMin: 4.4, laserMax: 7.8, scoreMultiplier: 1.3 },
+        { name: 'NIGHTMARE FILE', targetScore: 25000, spawnInterval: 3.4, dropInterval: 0.76, laserMin: 4.2, laserMax: 7.4, scoreMultiplier: 1.4 },
+        { name: 'RUPTURE CORE', targetScore: 32000, spawnInterval: 3.2, dropInterval: 0.74, laserMin: 4, laserMax: 7, scoreMultiplier: 1.5 },
+        { name: 'BLACKOUT GRID', targetScore: 40000, spawnInterval: 3, dropInterval: 0.72, laserMin: 3.8, laserMax: 6.6, scoreMultiplier: 1.6 },
+        { name: 'VOID STACK', targetScore: 50000, spawnInterval: 2.8, dropInterval: 0.7, laserMin: 3.6, laserMax: 6.2, scoreMultiplier: 1.7 },
+        { name: 'DEVIL BIAS', targetScore: 65000, spawnInterval: 2.6, dropInterval: 0.68, laserMin: 3.4, laserMax: 5.8, scoreMultiplier: 1.8 },
+        { name: 'FINAL REBOOT', targetScore: 80000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2 }
+    ];
     
     let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
     let enemies = [];
@@ -436,6 +462,8 @@
     let currentLevelIndex = 0;
     let highestUnlockedLevel = 0;
     let score = 0;
+    let comboCount = 0;
+    let survivalTimer = 0;
     let currentLevel = LEVELS[0];
     let levelClearShown = false;
     
@@ -663,6 +691,8 @@
         selectedBlock = null;
         heldPieceType = null;
         score = 0;
+        comboCount = 0;
+        survivalTimer = 0;
         levelClearShown = false;
         isGameOver = false;
         isDying = false;
@@ -914,7 +944,7 @@
             
             // 유저가 요청해 제공한 이미지 적용 
             this.spriteImg = new Image();
-            this.spriteImg.src = 'character.png'; // 로컬 폴더에 character.png 로 저장 필수
+            this.spriteImg.src = 'Resources/character.png'; // 실제 Resources/character.png 이미지 경로 필수
             this.spriteImg.onload = () => this.cutSprites();
         }
         
@@ -1312,9 +1342,12 @@
                 
                 // 하드 드롭 (Space)
                 if (keysPressed['Space']) {
+                    let dropDistance = 0;
                     while(!this.checkOverlap(this.gridX, this.y + BLOCK_SIZE)) {
                         this.y += BLOCK_SIZE;
+                        dropDistance++;
                     }
+                    score += Math.floor(dropDistance * SCORE_CONFIG.hardDropPerCell * currentLevel.scoreMultiplier);
                     this.lock();
                     return;
                 }
@@ -1324,16 +1357,21 @@
                 let speedMultiplier = keys['KeyS'] ? 20 : 1; 
                 
                 this.dropTimer += dt * speedMultiplier;
+                let softDropCells = 0;
                 while (this.dropTimer >= this.dropInterval) {
                     this.dropTimer -= this.dropInterval;
                     let newY = this.y + BLOCK_SIZE;
                     if (!this.checkOverlap(this.gridX, newY)) {
                         this.y = newY;
                         this.isLockDelaying = false;
+                        if (keys['KeyS']) softDropCells++;
                     } else {
                         this.dropTimer = 0; // 바닥에 닿으면 낙하 타이머 비우기
                         break;
                     }
+                }
+                if (softDropCells > 0) {
+                    score += Math.floor(softDropCells * SCORE_CONFIG.softDropPerCell * currentLevel.scoreMultiplier);
                 }
                 
                 // 바닥 착지 체크 및 락 딜레이 (2.0초 유예 작동)
@@ -1440,8 +1478,12 @@
                 }
             }
             if (clearedLines > 0) {
-                score += Math.floor(LINE_SCORE_TABLE[clearedLines] * currentLevel.scoreMultiplier);
+                let comboBonus = SCORE_CONFIG.comboBonus * comboCount;
+                score += Math.floor((SCORE_CONFIG.lineClear[clearedLines] + comboBonus) * currentLevel.scoreMultiplier);
+                comboCount++;
                 shakeAmount = Math.min(clearedLines * 25, 50); // 흔들림 강도를 이전보다 약 1.5배 상향
+            } else {
+                comboCount = 0;
             }
 
             updateDangerZoneState();
@@ -1588,26 +1630,30 @@
         updateDangerZoneState();
         updateLaserAttack(dt);
 
-        if (enemySpawnWarningPiece) {
-            enemySpawnWarningTimer -= dt;
-            if (enemySpawnWarningTimer <= 0) {
-                enemies.push(enemySpawnWarningPiece);
-                enemySpawnWarningPiece = null;
-                enemySpawnWarningTimer = 0;
-                enemySpawnTimer = currentLevel.spawnInterval;
-            }
+        survivalTimer += dt;
+        if (survivalTimer >= 1.0) {
+            survivalTimer -= 1.0;
+            score += Math.floor(SCORE_CONFIG.survivalPerSec * currentLevel.scoreMultiplier);
         }
-        
-        // 에러 사이클 연속 스폰 및 4초 주기 스폰
-        if (!enemySpawnWarningPiece) {
-            enemySpawnTimer -= dt;
-        }
+
+        // 에러 사이클 연속 스폰 및 주기 스폰 (숨겨진 영역에서 바로 시작)
+        enemySpawnTimer -= dt;
         
         let activeEnemies = enemies.filter(e => !e.deleted && !e.locked).length;
-        if (!enemySpawnWarningPiece && (activeEnemies === 0 || enemySpawnTimer <= 0)) {
-            enemySpawnWarningPiece = new EnemyPiece();
-            enemySpawnWarningPiece.y = 0;
-            enemySpawnWarningTimer = 0.7;
+        if (activeEnemies === 0 || enemySpawnTimer <= 0) {
+            let newEnemy = new EnemyPiece();
+            
+            // 바닥(가장 아래쪽 블록)이 히든 영역(row 0~2) 내부의 위쪽에 위치하도록 y좌표 조정
+            // dropInterval에 따라 서서히 내려오며 경고 연출을 보여주기 위해 bottomY가 30쯤 되게 맞춘다.
+            let maxR = 0;
+            for (let r = 0; r < newEnemy.matrix.length; r++) {
+                for (let c = 0; c < newEnemy.matrix[r].length; c++) {
+                    if (newEnemy.matrix[r][c]) maxR = Math.max(maxR, r);
+                }
+            }
+            newEnemy.y = 30 - (maxR + 1) * BLOCK_SIZE;
+            
+            enemies.push(newEnemy);
             enemySpawnTimer = currentLevel.spawnInterval;
         }
         
@@ -1790,36 +1836,54 @@
         // 파티클 그리기
         for (let p of particles) p.draw(ctx);
 
-        if (enemySpawnWarningPiece) {
-            drawEnemySpawnWarning(enemySpawnWarningPiece, 1 - (enemySpawnWarningTimer / 0.7));
+        for (let enemy of enemies) {
+            if (!enemy.locked && !enemy.deleted && !enemy.isGhost) {
+                let maxR = 0;
+                for (let r = 0; r < enemy.matrix.length; r++) {
+                    for (let c = 0; c < enemy.matrix[r].length; c++) {
+                        if (enemy.matrix[r][c]) maxR = Math.max(maxR, r);
+                    }
+                }
+                let bottomY = enemy.y + (maxR + 1) * BLOCK_SIZE;
+                
+                // 블록이 완전히 화면에 보이기 전(히든 영역)일 때만 연출
+                if (bottomY <= HIDDEN_ROWS * BLOCK_SIZE) {
+                    drawEnemySpawnWarning(enemy);
+                }
+            }
         }
         
         ctx.restore(); // 화면 흔들림 복구
         
-        // 좌측 상단 모드 HUD 
+        // 좌측 상단 모드 HUD (캔버스 내부 간소화)
         ctx.fillStyle = controlMode === 'BLOCK' ? '#ff99cc' : '#eee';
         ctx.font = '10px "Press Start 2P"';
-        ctx.fillText(`LV ${padLevelNumber(currentLevelIndex + 1)} ${currentLevel.name}`, 10, 20);
-        ctx.fillText(`SCORE ${score.toLocaleString()} / ${currentLevel.targetScore.toLocaleString()}`, 10, 34);
-        ctx.fillText(`MODE: ${controlMode === 'BLOCK' ? 'HACKING' : 'SURVIVAL'}`, 10, 48);
+        ctx.fillText(`LV ${padLevelNumber(currentLevelIndex + 1)}`, 10, 20);
+        ctx.fillText(currentLevel.name, 10, 36);
+        ctx.fillText(`MODE: ${controlMode === 'BLOCK' ? 'HACKING' : 'SURVIVAL'}`, 10, 52);
 
-        let progressX = 162;
-        let progressY = 10;
-        let progressW = 128;
-        let progressH = 10;
-        let progressRatio = Math.min(score / currentLevel.targetScore, 1);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.fillRect(progressX, progressY, progressW, progressH);
-        ctx.strokeStyle = '#fff';
-        ctx.strokeRect(progressX, progressY, progressW, progressH);
-        ctx.fillStyle = '#ff99cc';
-        ctx.fillRect(progressX, progressY, progressW * progressRatio, progressH);
+        // 우측 패널 UI 업데이트
+        let uiScore = document.getElementById('ui-score');
+        let uiTarget = document.getElementById('ui-target-score');
+        let uiCombo = document.getElementById('ui-combo');
+        let uiProgress = document.getElementById('ui-progress');
+
+        if (uiScore) uiScore.innerText = score.toLocaleString();
+        if (uiTarget) uiTarget.innerText = currentLevel.targetScore.toLocaleString();
+        if (uiCombo) {
+            uiCombo.innerText = comboCount;
+            uiCombo.style.color = comboCount > 0 ? '#ff99cc' : '#fff';
+        }
+        if (uiProgress) {
+            let ratio = Math.min(score / currentLevel.targetScore, 1);
+            uiProgress.style.width = `${Math.round(ratio * 100)}%`;
+        }
         
         // 삭제된 전역 글로우 오버레이 자리
     }
 
     function drawEnemySpawnWarning(enemy, progress) {
-        let flicker = 0.08 + progress * 0.08 + Math.sin(performance.now() / 120) * 0.015;
+        let flicker = 0.5 + Math.sin(performance.now() / 80) * 0.5;
         let occupiedMinX = null;
         let occupiedMaxX = null;
 
@@ -1836,31 +1900,22 @@
 
         let x = occupiedMinX * BLOCK_SIZE;
         let w = (occupiedMaxX - occupiedMinX + 1) * BLOCK_SIZE;
-        let stripHeight = BLOCK_SIZE;
         let visibleTopY = HIDDEN_ROWS * BLOCK_SIZE;
+        let gradientHeight = BLOCK_SIZE * 4;
+
         ctx.save();
-        ctx.shadowColor = 'rgba(255, 60, 60, 0.28)';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = `rgba(120, 20, 20, ${0.08 + flicker})`;
-        ctx.fillRect(x, visibleTopY, w, stripHeight);
-
-        let grad = ctx.createLinearGradient(0, visibleTopY, 0, visibleTopY + stripHeight);
-        grad.addColorStop(0, 'rgba(255, 170, 170, 0.28)');
-        grad.addColorStop(0.4, 'rgba(255, 90, 90, 0.14)');
-        grad.addColorStop(1, 'rgba(255, 60, 60, 0)');
+        
+        let grad = ctx.createLinearGradient(0, visibleTopY, 0, visibleTopY + gradientHeight);
+        grad.addColorStop(0, `rgba(255, 0, 0, ${0.4 + flicker * 0.2})`);
+        grad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        
         ctx.fillStyle = grad;
-        ctx.fillRect(x, visibleTopY, w, stripHeight);
+        ctx.fillRect(x, visibleTopY, w, gradientHeight);
 
-        ctx.fillStyle = 'rgba(255, 180, 180, 0.12)';
-        ctx.fillRect(x + 1, visibleTopY, Math.max(0, w - 2), 2);
-
-        ctx.fillStyle = 'rgba(150, 30, 30, 0.14)';
-        ctx.fillRect(x + 2, visibleTopY + 3, Math.max(0, w - 4), stripHeight - 3);
-
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = 'rgba(255, 120, 120, 0.16)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x + 0.5, visibleTopY + 0.5, w - 1, stripHeight - 1);
+        ctx.shadowColor = 'rgba(255, 50, 50, 1)';
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = `rgba(255, 50, 50, ${0.8 + flicker * 0.2})`;
+        ctx.fillRect(x, visibleTopY, w, 3);
 
         ctx.restore();
     }
