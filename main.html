@@ -314,6 +314,138 @@
             box-shadow: 2px 2px 0px #000;
         }
 
+        #intro-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 120;
+            pointer-events: none;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 50% 50%, rgba(255, 240, 106, 0.08), rgba(0, 0, 0, 0.7) 45%, rgba(0, 0, 0, 0.92) 100%),
+                linear-gradient(180deg, rgba(12, 12, 22, 0.8), rgba(0, 0, 0, 0.9));
+        }
+
+        #intro-overlay.active {
+            display: flex;
+        }
+
+        .intro-stage {
+            position: relative;
+            width: min(100vw, 1200px);
+            height: min(100vh, 720px);
+        }
+
+        .intro-line {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) translateX(-160vw);
+            opacity: 0;
+            font-family: 'Press Start 2P', cursive;
+            font-weight: 900;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.8),
+                0 0 18px rgba(255, 240, 106, 0.55),
+                4px 4px 0 #000;
+        }
+
+        .intro-line.level {
+            color: #fff;
+            font-size: clamp(40px, 9vw, 98px);
+        }
+
+        .intro-line.start {
+            color: #fff06a;
+            font-size: clamp(42px, 10vw, 112px);
+            top: 58%;
+        }
+
+        .intro-line.run {
+            animation: introSweep 1.65s cubic-bezier(0.18, 0.9, 0.22, 1) both;
+        }
+
+        .intro-line.sparkle {
+            animation: introShimmer 0.28s steps(2, end) infinite;
+        }
+
+        .intro-star-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .intro-star {
+            position: absolute;
+            left: var(--x);
+            top: var(--y);
+            color: var(--star-color);
+            font-size: var(--size);
+            text-shadow: 0 0 12px rgba(255, 240, 106, 0.95);
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+            animation: starBurst var(--duration) ease-out forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes introSweep {
+            0% {
+                transform: translate(-50%, -50%) translateX(-160vw) scale(1.06);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            40% {
+                transform: translate(-50%, -50%) translateX(-12vw) scale(1.02);
+                opacity: 1;
+            }
+            68% {
+                transform: translate(-50%, -50%) translateX(10vw) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) translateX(155vw) scale(0.98);
+                opacity: 0;
+            }
+        }
+
+        @keyframes introShimmer {
+            0% {
+                text-shadow:
+                    0 0 8px rgba(255, 240, 106, 0.8),
+                    0 0 18px rgba(255, 240, 106, 0.55),
+                    4px 4px 0 #000;
+            }
+            100% {
+                text-shadow:
+                    0 0 16px rgba(255, 255, 255, 0.98),
+                    0 0 28px rgba(255, 240, 106, 1),
+                    5px 5px 0 #000;
+            }
+        }
+
+        @keyframes starBurst {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+                filter: blur(0px);
+            }
+            12% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.45) rotate(var(--rot));
+                filter: blur(0.2px);
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -391,6 +523,14 @@
             </div>
         </div>
     </div>
+
+    <div id="intro-overlay" aria-hidden="true">
+        <div class="intro-stage">
+            <div class="intro-star-layer" id="intro-star-layer"></div>
+            <div class="intro-line level" id="intro-level-line">LEVEL 1</div>
+            <div class="intro-line start" id="intro-start-line">Start!!</div>
+        </div>
+    </div>
     
     <script>
     const canvas = document.getElementById('tetris');
@@ -406,6 +546,10 @@
     const clearTitle = document.getElementById('clear-title');
     const clearDesc = document.getElementById('clear-desc');
     const clearProgress = document.getElementById('clear-progress');
+    const introOverlay = document.getElementById('intro-overlay');
+    const introStarLayer = document.getElementById('intro-star-layer');
+    const introLevelLine = document.getElementById('intro-level-line');
+    const introStartLine = document.getElementById('intro-start-line');
     
     const ROWS = 23; 
     const COLS = 10; 
@@ -488,6 +632,30 @@
             }
         }
     }
+
+    function spawnHeldPiece(type) {
+        if (!type) return null;
+
+        let newEnemy = new EnemyPiece();
+        newEnemy.type = type;
+        newEnemy.matrix = PIECES[type];
+        newEnemy.gridX = Math.floor(COLS / 2) - Math.floor(newEnemy.matrix[0].length / 2);
+        newEnemy.y = 0;
+
+        while (newEnemy.checkOverlap(newEnemy.gridX, newEnemy.y)) {
+            newEnemy.y += BLOCK_SIZE;
+            if (newEnemy.y > ROWS * BLOCK_SIZE) break;
+        }
+
+        newEnemy.isGhost = true;
+        enemies.push(newEnemy);
+        selectedBlock = newEnemy;
+        controlMode = 'BLOCK';
+        canHold = false;
+        drawHoldUI();
+
+        return newEnemy;
+    }
     
     class Particle {
         constructor(x, y, color) {
@@ -529,6 +697,11 @@
     let enemySpawnWarningPiece = null;
     let shakeAmount = 0;
     let canHold = true;
+    let playerIdleTimer = 0;
+    let lastPlayerX = null;
+    let lastPlayerY = null;
+    let introTimeoutIds = [];
+    let introStarCleanupId = null;
 
     let laserAttack = {
         phase: 'idle',
@@ -546,10 +719,52 @@
         return currentLevel.laserMin + Math.random() * (currentLevel.laserMax - currentLevel.laserMin);
     }
 
+    function updatePlayerIdleTimer(dt) {
+        if (!player || isGameOver || isDying) {
+            playerIdleTimer = 0;
+            lastPlayerX = null;
+            lastPlayerY = null;
+            return;
+        }
+
+        if (lastPlayerX === null || lastPlayerY === null) {
+            lastPlayerX = player.x;
+            lastPlayerY = player.y;
+            playerIdleTimer = 0;
+            return;
+        }
+
+        let moved = Math.abs(player.x - lastPlayerX) > 0.5 || Math.abs(player.y - lastPlayerY) > 0.5;
+        if (moved) playerIdleTimer = 0;
+        else playerIdleTimer += dt;
+
+        lastPlayerX = player.x;
+        lastPlayerY = player.y;
+    }
+
+    function getLaserTelegraphRow() {
+        if (!player) {
+            return Math.floor(Math.random() * (ROWS - (HIDDEN_ROWS + 1))) + (HIDDEN_ROWS + 1);
+        }
+
+        let randomRow = Math.floor(Math.random() * (ROWS - (HIDDEN_ROWS + 1))) + (HIDDEN_ROWS + 1);
+        if (playerIdleTimer < 3) {
+            return randomRow;
+        }
+
+        let playerRow = Math.floor((player.y + player.h / 2) / BLOCK_SIZE);
+        playerRow = Math.max(HIDDEN_ROWS + 1, Math.min(ROWS - 1, playerRow));
+
+        let idleProgress = Math.min((playerIdleTimer - 3) / 4, 1);
+        let targetChance = 0.35 + idleProgress * 0.45;
+
+        return Math.random() < targetChance ? playerRow : randomRow;
+    }
+
     function startLaserTelegraph() {
         laserAttack.phase = 'telegraph';
         laserAttack.timer = 0;
-        laserAttack.row = Math.floor(Math.random() * (ROWS - (HIDDEN_ROWS + 1))) + (HIDDEN_ROWS + 1);
+        laserAttack.row = getLaserTelegraphRow();
         laserAttack.y = laserAttack.row * BLOCK_SIZE + BLOCK_SIZE / 2;
     }
 
@@ -575,6 +790,109 @@
 
     function padLevelNumber(value) {
         return String(value).padStart(2, '0');
+    }
+
+    function clearIntroSequence() {
+        introTimeoutIds.forEach(timeoutId => clearTimeout(timeoutId));
+        introTimeoutIds = [];
+
+        if (introStarCleanupId !== null) {
+            clearTimeout(introStarCleanupId);
+            introStarCleanupId = null;
+        }
+
+        if (introStarLayer) {
+            introStarLayer.innerHTML = '';
+        }
+
+        if (introOverlay) {
+            introOverlay.classList.remove('active');
+            introOverlay.style.display = 'none';
+        }
+
+        if (introLevelLine) introLevelLine.classList.remove('run', 'sparkle');
+        if (introStartLine) introStartLine.classList.remove('run', 'sparkle');
+    }
+
+    function spawnIntroStars(originX, originY, count) {
+        if (!introStarLayer) return;
+
+        for (let i = 0; i < count; i++) {
+            let star = document.createElement('span');
+            star.className = 'intro-star';
+
+            let angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+            let distance = 80 + Math.random() * 170;
+            let dx = Math.cos(angle) * distance;
+            let dy = Math.sin(angle) * distance * 0.7;
+
+            star.textContent = Math.random() > 0.5 ? '✦' : '★';
+            star.style.setProperty('--x', `${originX}px`);
+            star.style.setProperty('--y', `${originY}px`);
+            star.style.setProperty('--dx', `${dx}px`);
+            star.style.setProperty('--dy', `${dy}px`);
+            star.style.setProperty('--rot', `${(Math.random() * 2 - 1) * 260}deg`);
+            star.style.setProperty('--size', `${10 + Math.random() * 18}px`);
+            star.style.setProperty('--duration', `${0.6 + Math.random() * 0.5}s`);
+            star.style.setProperty('--star-color', Math.random() > 0.5 ? '#ffffff' : '#fff06a');
+
+            introStarLayer.appendChild(star);
+        }
+
+        if (introStarCleanupId !== null) {
+            clearTimeout(introStarCleanupId);
+        }
+
+        introStarCleanupId = setTimeout(() => {
+            if (introStarLayer) {
+                introStarLayer.innerHTML = '';
+            }
+        }, 1400);
+    }
+
+    function restartElementAnimation(element) {
+        if (!element) return;
+        element.classList.remove('run', 'sparkle');
+        void element.offsetWidth;
+        element.classList.add('run', 'sparkle');
+    }
+
+    function playStartIntro() {
+        clearIntroSequence();
+
+        if (!introOverlay || !introLevelLine || !introStartLine) {
+            gameState = 'playing';
+            return;
+        }
+
+        let levelNumber = currentLevelIndex + 1;
+        introLevelLine.textContent = `LEVEL ${levelNumber}`;
+        introStartLine.textContent = 'Start!!';
+        introOverlay.style.display = 'flex';
+        introOverlay.classList.add('active');
+
+        introTimeoutIds.push(setTimeout(() => {
+            restartElementAnimation(introLevelLine);
+            spawnIntroStars(window.innerWidth * 0.48, window.innerHeight * 0.47, 18);
+        }, 40));
+
+        introTimeoutIds.push(setTimeout(() => {
+            spawnIntroStars(window.innerWidth * 0.54, window.innerHeight * 0.48, 24);
+        }, 620));
+
+        introTimeoutIds.push(setTimeout(() => {
+            restartElementAnimation(introStartLine);
+            spawnIntroStars(window.innerWidth * 0.52, window.innerHeight * 0.56, 22);
+        }, 1150));
+
+        introTimeoutIds.push(setTimeout(() => {
+            spawnIntroStars(window.innerWidth * 0.58, window.innerHeight * 0.54, 26);
+        }, 1500));
+
+        introTimeoutIds.push(setTimeout(() => {
+            clearIntroSequence();
+            gameState = 'playing';
+        }, 2450));
     }
 
     function updateLevelHeader() {
@@ -683,6 +1001,7 @@
     }
 
     function resetRunState() {
+        clearIntroSequence();
         board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
         enemies = [];
         particles = [];
@@ -707,6 +1026,9 @@
         enemySpawnWarningTimer = 0;
         enemySpawnWarningPiece = null;
         shakeAmount = 0;
+        playerIdleTimer = 0;
+        lastPlayerX = null;
+        lastPlayerY = null;
         document.body.classList.remove('warning-zone', 'critical-zone');
         keys = {};
         keysPressed = {};
@@ -721,9 +1043,10 @@
             highestUnlockedLevel = currentLevelIndex;
         }
         resetRunState();
-        gameState = 'playing';
+        gameState = 'intro';
         overlay.style.display = 'none';
         document.body.classList.add('playing');
+        playStartIntro();
         updateLevelHeader();
     }
 
@@ -1158,6 +1481,10 @@
                     particles.push(spark);
                 }
             }
+
+            if (this.frames.length === 0 && this.spriteImg.complete && this.spriteImg.naturalWidth > 0) {
+                this.cutSprites();
+            }
             
             if (this.frames && this.frames.length > 0) {
                 let fIdx = this.currentFrame % this.frames.length;
@@ -1326,16 +1653,20 @@
                 if (keysPressed['KeyF']) {
                     keysPressed['KeyF'] = false; // 중복 프레임 입력 소모
                     
-                    if (canHold && !heldPieceType) {
-                        // 현재 블록을 홀드 UI에 저장 후 블록은 삭제 플래그 처리
+                    if (canHold) {
+                        let swappedType = heldPieceType;
                         heldPieceType = this.type;
-                        this.deleted = true; 
-                        canHold = false; // 한번 홀드했으므로 강하해서 놓기 전까진 더 이상 불가
-                        drawHoldUI();
-                        
-                        // 즉시 캐릭터 조종 모드로 복귀
-                        controlMode = 'CHARACTER';
-                        selectedBlock = null;
+                        this.deleted = true;
+
+                        if (swappedType) {
+                            spawnHeldPiece(swappedType);
+                        } else {
+                            controlMode = 'CHARACTER';
+                            selectedBlock = null;
+                            canHold = false;
+                            drawHoldUI();
+                        }
+
                         return;
                     }
                 }
@@ -1628,7 +1959,6 @@
         }
 
         updateDangerZoneState();
-        updateLaserAttack(dt);
 
         survivalTimer += dt;
         if (survivalTimer >= 1.0) {
@@ -1658,6 +1988,8 @@
         }
         
         player.update(dt);
+        updatePlayerIdleTimer(dt);
+        updateLaserAttack(dt);
         
         for (let i = enemies.length - 1; i >= 0; i--) {
             enemies[i].update(dt);
@@ -1685,27 +2017,9 @@
         // 플레이어 모드일 때 F키 누르면 홀드된 블록 꺼내어 조종 모드 변환
         if (controlMode === 'CHARACTER' && keysPressed['KeyF'] && heldPieceType) {
             keysPressed['KeyF'] = false; // 키 입력 이벤트 소모
-            let newEnemy = new EnemyPiece();
-            newEnemy.type = heldPieceType;
-            newEnemy.matrix = PIECES[heldPieceType];
-            newEnemy.gridX = Math.floor(COLS / 2) - Math.floor(newEnemy.matrix[0].length / 2);
-            
-            newEnemy.y = 0; // 보이지 않는 보드 밖이 아닌 무조건 보이도록 화면 젤 위에서 스폰 
-            
-            // 만약 기존에 깔려있는 에러 블록들과 해당 위치가 겹친다면 밀어내어 온전히 보일 때까지 밑으로 강하
-            while (newEnemy.checkOverlap(newEnemy.gridX, newEnemy.y)) {
-                newEnemy.y += BLOCK_SIZE;
-                if (newEnemy.y > ROWS * BLOCK_SIZE) break; // 혹시라도 무한 루프 방지용 바닥 안전체크
-            }
-            
-            newEnemy.isGhost = true;
-            enemies.push(newEnemy);
-            
-            selectedBlock = newEnemy;
-            controlMode = 'BLOCK';
+            let swappedType = heldPieceType;
             heldPieceType = null;
-            canHold = false; // 블록을 새로 하나 뺐으므로 이 블록을 놓을 때까지는 다시 홀드 불가
-            drawHoldUI();
+            spawnHeldPiece(swappedType);
         }
 
         if (!levelClearShown && score >= currentLevel.targetScore) {
