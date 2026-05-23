@@ -104,6 +104,90 @@
             position: relative;
         }
 
+        .tutorial-panel {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(78vw, 560px);
+            padding: 14px 18px;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            background: linear-gradient(180deg, rgba(12, 12, 22, 0.94), rgba(28, 28, 48, 0.92));
+            box-shadow: 8px 8px 0 #000;
+            z-index: 30;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        body.playing .tutorial-panel.active {
+            display: flex;
+        }
+
+        .tutorial-panel__title {
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: #fff06a;
+        }
+
+        .tutorial-panel__body {
+            font-size: 11px;
+            line-height: 1.55;
+            color: #f3f3ff;
+        }
+
+        .tutorial-panel__row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            font-size: 10px;
+            color: #ff99cc;
+        }
+
+        .tutorial-progress {
+            width: 100%;
+            height: 10px;
+            border: 2px solid #fff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 0 2px #000;
+            overflow: hidden;
+        }
+
+        .tutorial-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #66ff99, #fff06a);
+        }
+
+        .tutorial-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 10px;
+            font-size: 8px;
+            color: #ddd;
+        }
+
+        .tutorial-chip {
+            padding: 4px 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tutorial-chip.done {
+            color: #66ff99;
+            border-color: rgba(102, 255, 153, 0.7);
+            background: rgba(102, 255, 153, 0.08);
+        }
+
+        .tutorial-chip.active {
+            color: #fff06a;
+            border-color: rgba(255, 240, 106, 0.9);
+            background: rgba(255, 240, 106, 0.08);
+        }
+
         .canvas-outer { 
             position: relative; 
             padding: 10px; 
@@ -320,7 +404,7 @@
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 120;
+            z-index: 220;
             pointer-events: none;
             overflow: hidden;
             background:
@@ -333,17 +417,23 @@
         }
 
         .intro-stage {
-            position: relative;
-            width: min(100vw, 1200px);
-            height: min(100vh, 720px);
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            padding: 24px;
+            box-sizing: border-box;
         }
 
         .intro-line {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) translateX(-160vw);
-            opacity: 0;
+            position: relative;
+            transform: translateY(18px) scale(0.92);
+            opacity: 1;
             font-family: 'Press Start 2P', cursive;
             font-weight: 900;
             letter-spacing: 2px;
@@ -356,17 +446,18 @@
 
         .intro-line.level {
             color: #fff;
+            margin: 0;
             font-size: clamp(40px, 9vw, 98px);
         }
 
         .intro-line.start {
             color: #fff06a;
+            margin: 0;
             font-size: clamp(42px, 10vw, 112px);
-            top: 58%;
         }
 
         .intro-line.run {
-            animation: introSweep 1.65s cubic-bezier(0.18, 0.9, 0.22, 1) both;
+            animation: introBurst 1.55s cubic-bezier(0.18, 0.9, 0.22, 1) both;
         }
 
         .intro-line.sparkle {
@@ -393,24 +484,24 @@
             will-change: transform, opacity;
         }
 
-        @keyframes introSweep {
+        @keyframes introBurst {
             0% {
-                transform: translate(-50%, -50%) translateX(-160vw) scale(1.06);
-                opacity: 0;
+                transform: translateY(22px) scale(0.82);
+                opacity: 1;
             }
-            10% {
+            12% {
                 opacity: 1;
             }
             40% {
-                transform: translate(-50%, -50%) translateX(-12vw) scale(1.02);
+                transform: translateY(-2px) scale(1.04);
                 opacity: 1;
             }
-            68% {
-                transform: translate(-50%, -50%) translateX(10vw) scale(1);
+            78% {
+                transform: translateY(-6px) scale(1);
                 opacity: 1;
             }
             100% {
-                transform: translate(-50%, -50%) translateX(155vw) scale(0.98);
+                transform: translateY(-12px) scale(1.02);
                 opacity: 0;
             }
         }
@@ -479,6 +570,17 @@
             <div style="width: 100%; height: 12px; border: 2px solid #fff; background: rgba(255,255,255,0.08); box-shadow: inset 0 0 0 2px #000;">
                 <div id="ui-progress" style="height: 100%; width: 0%; background: linear-gradient(90deg, #ff99cc, #fff06a);"></div>
             </div>
+        </div>
+
+        <div class="tutorial-panel" id="tutorial-panel">
+            <div class="tutorial-panel__title" id="tutorial-panel-title">LEVEL 01 TUTORIAL</div>
+            <div class="tutorial-panel__body" id="tutorial-panel-body">WASD로 움직이세요!</div>
+            <div class="tutorial-panel__row">
+                <span id="tutorial-panel-step">1 / 4</span>
+                <span id="tutorial-panel-status">READY</span>
+            </div>
+            <div class="tutorial-progress"><div class="tutorial-progress-fill" id="tutorial-panel-progress"></div></div>
+            <div class="tutorial-list" id="tutorial-panel-list"></div>
         </div>
 
         <div id="game-over-overlay">
@@ -550,6 +652,13 @@
     const introStarLayer = document.getElementById('intro-star-layer');
     const introLevelLine = document.getElementById('intro-level-line');
     const introStartLine = document.getElementById('intro-start-line');
+    const tutorialPanel = document.getElementById('tutorial-panel');
+    const tutorialPanelTitle = document.getElementById('tutorial-panel-title');
+    const tutorialPanelBody = document.getElementById('tutorial-panel-body');
+    const tutorialPanelStep = document.getElementById('tutorial-panel-step');
+    const tutorialPanelStatus = document.getElementById('tutorial-panel-status');
+    const tutorialPanelProgress = document.getElementById('tutorial-panel-progress');
+    const tutorialPanelList = document.getElementById('tutorial-panel-list');
     
     const ROWS = 23; 
     const COLS = 10; 
@@ -702,6 +811,19 @@
     let lastPlayerY = null;
     let introTimeoutIds = [];
     let introStarCleanupId = null;
+    let introStartAt = 0;
+    let introEndAt = 0;
+    let introPhases = [];
+    let tutorialActive = false;
+    let tutorialPhase = 'idle';
+    let tutorialStepIndex = 0;
+    let tutorialPhaseUntil = 0;
+    let tutorialStepStartedAt = 0;
+    let tutorialBlock = null;
+    let tutorialBlockStartY = 0;
+    let tutorialBaseline = null;
+    let tutorialFastFallUsed = false;
+    let tutorialMarkers = [];
 
     let laserAttack = {
         phase: 'idle',
@@ -795,6 +917,15 @@
     function clearIntroSequence() {
         introTimeoutIds.forEach(timeoutId => clearTimeout(timeoutId));
         introTimeoutIds = [];
+        introStartAt = 0;
+        introPhases = [];
+        tutorialActive = false;
+        tutorialPhase = 'idle';
+        tutorialStepIndex = 0;
+        tutorialPhaseUntil = 0;
+        tutorialStepStartedAt = 0;
+        tutorialBlock = null;
+        tutorialBaseline = null;
 
         if (introStarCleanupId !== null) {
             clearTimeout(introStarCleanupId);
@@ -812,6 +943,220 @@
 
         if (introLevelLine) introLevelLine.classList.remove('run', 'sparkle');
         if (introStartLine) introStartLine.classList.remove('run', 'sparkle');
+    }
+
+    function spawnTutorialBlock() {
+        if (tutorialBlock && !tutorialBlock.deleted) return tutorialBlock;
+
+        let block = new EnemyPiece();
+        block.type = 'T';
+        block.matrix = PIECES.T;
+        block.gridX = 3;
+        block.y = 120;
+        block.dropInterval = 9999;
+        block.dropTimer = 0;
+        block.isGhost = false;
+        block.locked = false;
+        enemies = [block];
+        tutorialBlock = block;
+        tutorialBlockStartY = block.y;
+        return block;
+    }
+
+    function spawnTutorialHazardBlock() {
+        let block = new EnemyPiece();
+        block.type = 'L';
+        block.matrix = PIECES.L;
+        block.gridX = 4;
+        block.y = -BLOCK_SIZE * 3;
+        block.dropInterval = 0.75;
+        block.dropTimer = 0;
+        block.isGhost = false;
+        block.locked = false;
+        enemies = [block];
+        tutorialBlock = block;
+        return block;
+    }
+
+    function buildTutorialMarkers(step) {
+        const floorY = canvas.height - 78;
+        const jumpY = canvas.height - 108;
+        const sideY = canvas.height - 76;
+
+        if (step === 0) {
+            return [
+                { id: 'move-left', x: 18, y: sideY, label: 'LEFT', color: '#66ff99' },
+                { id: 'move-right', x: canvas.width - 18, y: sideY, label: 'RIGHT', color: '#66ff99' }
+            ];
+        }
+
+        if (step === 1) {
+            return [
+                { id: 'jump-center', x: canvas.width / 2, y: jumpY, label: 'JUMP', color: '#fff06a' }
+            ];
+        }
+
+        if (step === 2) {
+            return [
+                { id: 'fast-fall', x: canvas.width / 2, y: floorY, label: 'DROP', color: '#ff99cc' }
+            ];
+        }
+
+        return [];
+    }
+
+    function buildTutorialSequence() {
+        return [
+            {
+                title: 'SURVIVAL MOVE',
+                body: 'A / D로 좌우 이동\n양옆 초록 체크포인트를 밟아보세요',
+                color: '#66ff99',
+                minShowMs: 1200,
+                mode: 'player',
+                doneCheck: () => tutorialMarkers.some(marker => marker.id !== 'jump-center' && isPlayerTouchingMarker(marker))
+            },
+            {
+                title: 'JUMP',
+                body: 'W 또는 SPACE로 점프\n중앙 체크포인트에 닿아보세요',
+                color: '#fff06a',
+                minShowMs: 1200,
+                mode: 'player',
+                doneCheck: () => tutorialMarkers.some(marker => marker.id === 'jump-center' && isPlayerTouchingMarker(marker))
+            },
+            {
+                title: 'FAST FALL',
+                body: 'S를 누르면 더 빨리 내려옵니다\n점프 후 바로 내려와보세요',
+                color: '#ff99cc',
+                minShowMs: 1300,
+                mode: 'player',
+                doneCheck: () => tutorialFastFallUsed && player && player.isGrounded
+            },
+            {
+                title: 'ERROR BLOCK',
+                body: '붉은 블록은 자동으로 내려옵니다\n위험을 보고 피해보세요',
+                color: '#ff6666',
+                minShowMs: 2400,
+                mode: 'watch',
+                onEnter: () => spawnTutorialHazardBlock()
+            },
+            {
+                title: 'START',
+                body: '이제 본게임을 시작합니다',
+                color: '#fff06a',
+                minShowMs: 1300,
+                mode: 'auto'
+            }
+        ];
+    }
+
+    function startTutorialSequence() {
+        tutorialActive = true;
+        tutorialPhase = 'show';
+        tutorialStepIndex = 0;
+        introPhases = buildTutorialSequence();
+        tutorialPhaseUntil = performance.now() + introPhases[0].minShowMs;
+        tutorialStepStartedAt = performance.now();
+        tutorialBaseline = player ? { x: player.x, y: player.y } : null;
+        tutorialBlock = null;
+        tutorialBlockStartY = 0;
+        enemies = [];
+        tutorialFastFallUsed = false;
+        tutorialMarkers = buildTutorialMarkers(0);
+        updateTutorialHUD();
+    }
+
+    function getTutorialStep() {
+        return tutorialActive ? introPhases[tutorialStepIndex] : null;
+    }
+
+    function advanceTutorialStep() {
+        tutorialStepIndex += 1;
+        if (tutorialStepIndex >= introPhases.length) {
+            tutorialActive = false;
+            tutorialPhase = 'idle';
+            introPhases = [];
+            tutorialBlock = null;
+            tutorialBaseline = null;
+            tutorialMarkers = [];
+            tutorialFastFallUsed = false;
+            enemies = [];
+            selectedBlock = null;
+            controlMode = 'CHARACTER';
+            enemySpawnTimer = 0;
+            updateTutorialHUD();
+            return;
+        }
+
+        let step = introPhases[tutorialStepIndex];
+        tutorialPhase = 'show';
+        tutorialPhaseUntil = performance.now() + step.minShowMs;
+        tutorialStepStartedAt = performance.now();
+        tutorialBaseline = player ? { x: player.x, y: player.y } : null;
+        tutorialMarkers = buildTutorialMarkers(tutorialStepIndex);
+
+        if (step.onEnter) {
+            step.onEnter();
+        }
+
+        updateTutorialHUD();
+    }
+
+    function updateTutorialSequence() {
+        let step = getTutorialStep();
+        if (!step) return;
+
+        let now = performance.now();
+
+        if (tutorialPhase === 'show') {
+            if (now < tutorialPhaseUntil) return;
+
+            if (step.mode === 'frozen') {
+                advanceTutorialStep();
+                return;
+            }
+
+            tutorialPhase = 'active';
+            tutorialPhaseUntil = 0;
+            tutorialStepStartedAt = now;
+            tutorialBaseline = player ? { x: player.x, y: player.y } : null;
+
+            if (step.onEnter) {
+                step.onEnter();
+            }
+        }
+
+        if (tutorialPhase === 'active' && step.doneCheck && step.doneCheck()) {
+            tutorialPhase = 'success';
+            tutorialPhaseUntil = now + 650;
+            return;
+        }
+
+        if (tutorialPhase === 'success' && now >= tutorialPhaseUntil) {
+            advanceTutorialStep();
+        }
+    }
+
+    function buildIntroSequence() {
+        if (currentLevelIndex === 0) {
+            return [
+                { title: 'LEVEL 01 TUTORIAL', body: 'WASD로 움직이세요!', duration: 1900, color: '#fff06a' },
+                { title: 'MOVE', body: 'A / D : 좌우 이동\n천천히 왔다 갔다 해보세요', duration: 2000, color: '#fff' },
+                { title: 'JUMP', body: 'W 또는 SPACE : 점프\n블록 위로 올라갈 때 씁니다', duration: 2000, color: '#fff06a' },
+                { title: 'FAST FALL', body: 'S : 더 빠르게 떨어짐\n낮은 곳으로 급하게 내려갈 때 사용', duration: 2100, color: '#fff' },
+                { title: 'BLOCK CONTROL', body: '블록을 클릭하면 조종 가능\nW 회전 / F 홀드 / SPACE 하드드롭', duration: 2300, color: '#fff06a' },
+                { title: 'ENEMY BLOCKS', body: '붉은 블록은 자동으로 내려옵니다\n막히면 압사당할 수 있어요', duration: 2200, color: '#ff6666' },
+                { title: 'LASER WARNING', body: '빨간 선이 보이면 레이저입니다\n그 줄에서 벗어나세요', duration: 2200, color: '#ff8080' },
+                { title: 'DEAD ZONE', body: '위쪽 빨간 칸은 데드존입니다\n거기까지 쌓이면 위험합니다', duration: 2200, color: '#ff6666' },
+                { title: 'START', body: '준비되면 살아남기 시작!', duration: 1700, color: '#fff06a' }
+            ];
+        }
+
+        return [
+            { title: `LEVEL ${padLevelNumber(currentLevelIndex + 1)}`, body: '3', duration: 1200, color: '#fff' },
+            { title: `LEVEL ${padLevelNumber(currentLevelIndex + 1)}`, body: '2', duration: 1200, color: '#fff06a' },
+            { title: `LEVEL ${padLevelNumber(currentLevelIndex + 1)}`, body: '1', duration: 1200, color: '#fff' },
+            { title: `LEVEL ${padLevelNumber(currentLevelIndex + 1)}`, body: 'START', duration: 1600, color: '#fff06a' }
+        ];
     }
 
     function spawnIntroStars(originX, originY, count) {
@@ -860,39 +1205,35 @@
     function playStartIntro() {
         clearIntroSequence();
 
+        if (currentLevelIndex === 0) {
+            startTutorialSequence();
+            gameState = 'playing';
+            return;
+        }
+
         if (!introOverlay || !introLevelLine || !introStartLine) {
             gameState = 'playing';
             return;
         }
 
-        let levelNumber = currentLevelIndex + 1;
-        introLevelLine.textContent = `LEVEL ${levelNumber}`;
-        introStartLine.textContent = 'Start!!';
-        introOverlay.style.display = 'flex';
-        introOverlay.classList.add('active');
+        introOverlay.style.display = 'none';
+        introPhases = buildIntroSequence();
+        introStartAt = performance.now();
+        introEndAt = introStartAt + introPhases.reduce((sum, phase) => sum + phase.duration, 0);
 
-        introTimeoutIds.push(setTimeout(() => {
-            restartElementAnimation(introLevelLine);
-            spawnIntroStars(window.innerWidth * 0.48, window.innerHeight * 0.47, 18);
-        }, 40));
-
-        introTimeoutIds.push(setTimeout(() => {
-            spawnIntroStars(window.innerWidth * 0.54, window.innerHeight * 0.48, 24);
-        }, 620));
-
-        introTimeoutIds.push(setTimeout(() => {
-            restartElementAnimation(introStartLine);
-            spawnIntroStars(window.innerWidth * 0.52, window.innerHeight * 0.56, 22);
-        }, 1150));
-
-        introTimeoutIds.push(setTimeout(() => {
-            spawnIntroStars(window.innerWidth * 0.58, window.innerHeight * 0.54, 26);
-        }, 1500));
+        let phaseCursor = 0;
+        introPhases.forEach((phase, index) => {
+            introTimeoutIds.push(setTimeout(() => {
+                let burstCount = index === introPhases.length - 1 ? 26 : 16;
+                spawnIntroStars(window.innerWidth * 0.5, window.innerHeight * 0.48, burstCount);
+            }, phaseCursor + 60));
+            phaseCursor += phase.duration;
+        });
 
         introTimeoutIds.push(setTimeout(() => {
             clearIntroSequence();
             gameState = 'playing';
-        }, 2450));
+        }, introEndAt - introStartAt));
     }
 
     function updateLevelHeader() {
@@ -1043,6 +1384,7 @@
             highestUnlockedLevel = currentLevelIndex;
         }
         resetRunState();
+        introEndAt = performance.now() + 4300;
         gameState = 'intro';
         overlay.style.display = 'none';
         document.body.classList.add('playing');
@@ -1958,6 +2300,40 @@
             return;
         }
 
+        if (tutorialActive) {
+            updateTutorialSequence();
+            let tutorialStep = getTutorialStep();
+
+            if (!tutorialStep) {
+                keysPressed = {};
+                return;
+            }
+
+            if (tutorialPhase !== 'active') {
+                keysPressed = {};
+                return;
+            }
+
+            if (tutorialStep.mode === 'player') {
+                player.update(dt);
+                updatePlayerIdleTimer(dt);
+            } else if (tutorialStep.mode === 'block') {
+                player.update(dt);
+                updatePlayerIdleTimer(dt);
+
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    enemies[i].update(dt);
+                    if (enemies[i].locked || enemies[i].deleted) {
+                        enemies.splice(i, 1);
+                    }
+                }
+            }
+
+            updateTutorialSequence();
+            keysPressed = {};
+            return;
+        }
+
         updateDangerZoneState();
 
         survivalTimer += dt;
@@ -2149,6 +2525,74 @@
         
         // 파티클 그리기
         for (let p of particles) p.draw(ctx);
+
+        let activeCard = null;
+        let cardElapsed = 0;
+        let cardProgress = 0;
+
+        if (tutorialActive) {
+            activeCard = getTutorialStep();
+            cardElapsed = Math.max(0, performance.now() - tutorialStepStartedAt);
+            cardProgress = activeCard ? Math.min(cardElapsed / Math.max(activeCard.minShowMs, 1), 1) : 0;
+        } else if (performance.now() < introEndAt && introPhases.length > 0) {
+            const introElapsed = Math.max(0, performance.now() - introStartAt);
+            let phaseStart = 0;
+            activeCard = introPhases[introPhases.length - 1];
+
+            for (const phase of introPhases) {
+                const phaseEnd = phaseStart + phase.duration;
+                if (introElapsed < phaseEnd) {
+                    activeCard = phase;
+                    break;
+                }
+                phaseStart = phaseEnd;
+            }
+
+            cardElapsed = introElapsed - phaseStart;
+            cardProgress = Math.min(Math.max(cardElapsed / Math.max(activeCard.duration, 1), 0), 1);
+        }
+
+        if (activeCard) {
+            const fade = tutorialActive && tutorialPhase === 'active'
+                ? 1
+                : (cardProgress < 0.18 ? cardProgress / 0.18 : cardProgress > 0.82 ? (1 - cardProgress) / 0.18 : 1);
+            const pulse = 1 + Math.sin(cardElapsed / 85) * 0.03;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'rgba(10, 10, 18, 0.95)';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4;
+            const bodyText = activeCard.body || '';
+            const bodyLines = bodyText.split('\n');
+            let panelW = 420;
+            let panelH = 120 + bodyLines.length * 26;
+            let panelX = (canvas.width - panelW) / 2;
+            let panelY = (canvas.height - panelH) / 2 - 10;
+            ctx.fillRect(panelX, panelY, panelW, panelH);
+            ctx.strokeRect(panelX, panelY, panelW, panelH);
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(255, 240, 106, 0.95)';
+            ctx.shadowBlur = 10;
+            ctx.globalAlpha = Math.max(0.1, fade);
+            ctx.fillStyle = '#fff';
+            ctx.font = '18px "Press Start 2P"';
+            ctx.fillText(activeCard.title, canvas.width / 2, panelY + 40);
+            ctx.fillStyle = activeCard.color || '#fff06a';
+            ctx.font = bodyLines.some(line => line.length > 18) ? '15px "Press Start 2P"' : '19px "Press Start 2P"';
+            ctx.save();
+            ctx.translate(canvas.width / 2, panelY + 84);
+            ctx.scale(pulse, pulse);
+            bodyLines.forEach((line, index) => {
+                ctx.fillText(line, 0, index * 28);
+            });
+            ctx.restore();
+            ctx.restore();
+        }
 
         for (let enemy of enemies) {
             if (!enemy.locked && !enemy.deleted && !enemy.isGhost) {
