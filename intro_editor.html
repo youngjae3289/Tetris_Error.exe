@@ -60,13 +60,13 @@
             align-items: center;
             justify-content: flex-start;
             flex-direction: column;
-            padding: var(--intro-y, 14vh) 24px 24px;
+            padding: var(--intro-y, 29vh) 24px 24px;
         }
 
         .intro-text {
             color: var(--intro-color, #fff);
             font-family: 'Press Start 2P', cursive;
-            font-size: clamp(64px, var(--intro-size, 13vw), 152px);
+            font-size: clamp(64px, var(--intro-size, 8vw), 152px);
             text-shadow:
                 0 0 8px rgba(255, 240, 106, 0.8),
                 0 0 18px rgba(255, 240, 106, 0.55),
@@ -148,16 +148,16 @@
     <aside>
         <h1>INTRO UI EDITOR</h1>
 
-        <label>Y 위치(vh): <span id="y-value">14</span>
-            <input id="intro-y" type="range" min="0" max="40" value="14">
+        <label>Y 위치(vh): <span id="y-value">29</span>
+            <input id="intro-y" type="range" min="0" max="40" value="29">
         </label>
 
-        <label>숫자 크기(vw): <span id="size-value">13</span>
-            <input id="intro-size" type="range" min="6" max="20" value="13">
+        <label>숫자 크기(vw): <span id="size-value">8</span>
+            <input id="intro-size" type="range" min="6" max="20" value="8">
         </label>
 
-        <label>3/2/1 페이드 시간(ms): <span id="number-duration-value">900</span>
-            <input id="number-duration" type="range" min="400" max="1600" step="50" value="900">
+        <label>3/2/1 페이드 시간(ms): <span id="number-duration-value">650</span>
+            <input id="number-duration" type="range" min="400" max="1600" step="50" value="650">
         </label>
 
         <label>START 페이드 시간(ms): <span id="start-duration-value">1050</span>
@@ -215,7 +215,7 @@
                 { text: '3', color: '#fff', duration: config.numberDurationMs },
                 { text: '2', color: '#fff06a', duration: config.numberDurationMs },
                 { text: '1', color: '#fff', duration: config.numberDurationMs },
-                { text: 'START', color: '#fff06a', duration: config.startDurationMs }
+                { text: 'START!!', color: '#fff06a', duration: config.startDurationMs }
             ];
 
             let cursor = 0;

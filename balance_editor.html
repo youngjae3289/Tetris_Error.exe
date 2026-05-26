@@ -365,16 +365,9 @@
     <script>
         // Initial Level Data
         const levels = [
-            { name: 'BOOT SECTOR', targetScore: 10000, spawnInterval: 4.2, dropInterval: 0.85, laserMin: 5.0, laserMax: 9.0, scoreMultiplier: 1.0 },
-            { name: 'PATCH ONE', targetScore: 12000, spawnInterval: 4.0, dropInterval: 0.82, laserMin: 4.8, laserMax: 8.6, scoreMultiplier: 1.1 },
-            { name: 'GLITCH HALL', targetScore: 15000, spawnInterval: 3.8, dropInterval: 0.80, laserMin: 4.6, laserMax: 8.2, scoreMultiplier: 1.2 },
-            { name: 'ERROR CHAMBER', targetScore: 20000, spawnInterval: 3.6, dropInterval: 0.78, laserMin: 4.4, laserMax: 7.8, scoreMultiplier: 1.3 },
-            { name: 'NIGHTMARE FILE', targetScore: 25000, spawnInterval: 3.4, dropInterval: 0.76, laserMin: 4.2, laserMax: 7.4, scoreMultiplier: 1.4 },
-            { name: 'RUPTURE CORE', targetScore: 32000, spawnInterval: 3.2, dropInterval: 0.74, laserMin: 4.0, laserMax: 7.0, scoreMultiplier: 1.5 },
-            { name: 'BLACKOUT GRID', targetScore: 40000, spawnInterval: 3.0, dropInterval: 0.72, laserMin: 3.8, laserMax: 6.6, scoreMultiplier: 1.6 },
-            { name: 'VOID STACK', targetScore: 50000, spawnInterval: 2.8, dropInterval: 0.70, laserMin: 3.6, laserMax: 6.2, scoreMultiplier: 1.7 },
-            { name: 'DEVIL BIAS', targetScore: 65000, spawnInterval: 2.6, dropInterval: 0.68, laserMin: 3.4, laserMax: 5.8, scoreMultiplier: 1.8 },
-            { name: 'FINAL REBOOT', targetScore: 80000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2.0 }
+            { id: 'tutorial', label: 'TUTORIAL', name: 'SYSTEM CHECK', targetScore: 1500, spawnInterval: 5.2, dropInterval: 1.05, laserMin: 9.0, laserMax: 13.0, scoreMultiplier: 1.0 },
+            { id: 'level-01', label: 'LEVEL 01', name: 'BOOT SECTOR', targetScore: 10000, spawnInterval: 4.2, dropInterval: 0.85, laserMin: 5.0, laserMax: 9.0, scoreMultiplier: 1.0 },
+            { id: 'boss-10', label: 'LEVEL 10', name: 'BOSS: FINAL REBOOT', targetScore: 80000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2.0 }
         ];
 
         let currentLevelIdx = 0;
@@ -385,7 +378,7 @@
             levels.forEach((lvl, idx) => {
                 const btn = document.createElement('button');
                 btn.className = `tab-btn ${idx === currentLevelIdx ? 'active' : ''}`;
-                btn.innerText = `LV ${idx + 1}`;
+                btn.innerText = lvl.label;
                 btn.onclick = () => selectLevel(idx);
                 tabsContainer.appendChild(btn);
             });
@@ -449,7 +442,7 @@ const SCORE_CONFIG = {
 const LEVELS = [\n`;
 
             levels.forEach((lvl, i) => {
-                code += `    { name: '${lvl.name}', targetScore: ${lvl.targetScore}, spawnInterval: ${lvl.spawnInterval}, dropInterval: ${lvl.dropInterval}, laserMin: ${lvl.laserMin}, laserMax: ${lvl.laserMax}, scoreMultiplier: ${lvl.scoreMultiplier} }`;
+                code += `    { id: '${lvl.id}', label: '${lvl.label}', name: '${lvl.name}', targetScore: ${lvl.targetScore}, spawnInterval: ${lvl.spawnInterval}, dropInterval: ${lvl.dropInterval}, laserMin: ${lvl.laserMin}, laserMax: ${lvl.laserMax}, scoreMultiplier: ${lvl.scoreMultiplier} }`;
                 if(i < levels.length - 1) code += ",\n";
                 else code += "\n];\n\n";
             });

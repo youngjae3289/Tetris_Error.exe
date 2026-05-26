@@ -223,7 +223,7 @@
         .level-grid {
             width: 100%;
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 8px;
             overflow: visible;
             padding-right: 0;
@@ -261,7 +261,7 @@
 
         .level-chip {
             display: inline-block;
-            font-size: 7px;
+            font-size: 8px;
             color: #ff99cc;
         }
 
@@ -342,7 +342,7 @@
             align-items: center;
             justify-content: flex-start;
             gap: 18px;
-            padding: 14vh 24px 24px;
+            padding: 29vh 24px 24px;
             box-sizing: border-box;
         }
 
@@ -371,7 +371,7 @@
         .intro-line.start {
             color: #fff06a;
             margin: 0;
-            font-size: clamp(64px, 13vw, 152px);
+            font-size: clamp(64px, 8vw, 152px);
         }
 
         .intro-line.run {
@@ -501,7 +501,7 @@
                 <div class="ui-screen active" id="menu-screen">
                     <div class="ui-badge">TETRIS_ERROR.EXE</div>
                     <h1>MAIN START</h1>
-                    <p class="ui-copy">10 STAGES / SCORE CLEAR / LEVEL 01 FROM HERE</p>
+                    <p class="ui-copy">TUTORIAL / LEVEL 01 / LEVEL 10 BOSS</p>
                     <div class="ui-actions">
                         <button class="btn btn-cta" id="start-btn" onclick="openLevelSelect()">LET'S FIX</button>
                     </div>
@@ -597,21 +597,15 @@
     };
 
     const LEVELS = [
-        { name: 'BOOT SECTOR', targetScore: 10000, spawnInterval: 4.2, dropInterval: 0.85, laserMin: 5, laserMax: 9, scoreMultiplier: 1 },
-        { name: 'PATCH ONE', targetScore: 12000, spawnInterval: 4, dropInterval: 0.82, laserMin: 4.8, laserMax: 8.6, scoreMultiplier: 1.1 },
-        { name: 'GLITCH HALL', targetScore: 15000, spawnInterval: 3.8, dropInterval: 0.8, laserMin: 4.6, laserMax: 8.2, scoreMultiplier: 1.2 },
-        { name: 'ERROR CHAMBER', targetScore: 20000, spawnInterval: 3.6, dropInterval: 0.78, laserMin: 4.4, laserMax: 7.8, scoreMultiplier: 1.3 },
-        { name: 'NIGHTMARE FILE', targetScore: 25000, spawnInterval: 3.4, dropInterval: 0.76, laserMin: 4.2, laserMax: 7.4, scoreMultiplier: 1.4 },
-        { name: 'RUPTURE CORE', targetScore: 32000, spawnInterval: 3.2, dropInterval: 0.74, laserMin: 4, laserMax: 7, scoreMultiplier: 1.5 },
-        { name: 'BLACKOUT GRID', targetScore: 40000, spawnInterval: 3, dropInterval: 0.72, laserMin: 3.8, laserMax: 6.6, scoreMultiplier: 1.6 },
-        { name: 'VOID STACK', targetScore: 50000, spawnInterval: 2.8, dropInterval: 0.7, laserMin: 3.6, laserMax: 6.2, scoreMultiplier: 1.7 },
-        { name: 'DEVIL BIAS', targetScore: 65000, spawnInterval: 2.6, dropInterval: 0.68, laserMin: 3.4, laserMax: 5.8, scoreMultiplier: 1.8 },
-        { name: 'FINAL REBOOT', targetScore: 80000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2 }
+        { id: 'tutorial', label: 'TUTORIAL', name: 'SYSTEM CHECK', targetScore: 1500, spawnInterval: 5.2, dropInterval: 1.05, laserMin: 9, laserMax: 13, scoreMultiplier: 1 },
+        { id: 'level-01', label: 'LEVEL 01', name: 'BOOT SECTOR', targetScore: 10000, spawnInterval: 4.2, dropInterval: 0.85, laserMin: 5, laserMax: 9, scoreMultiplier: 1 },
+        { id: 'boss-10', label: 'LEVEL 10', name: 'BOSS: FINAL REBOOT', targetScore: 80000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2 }
     ];
     
     let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
     let enemies = [];
     let particles = [];
+    let hardDropTrails = [];
     let player = null;
     let controlMode = 'CHARACTER';
     let selectedBlock = null;
@@ -809,6 +803,10 @@
         return String(value).padStart(2, '0');
     }
 
+    function getLevelLabel(levelIndex = currentLevelIndex) {
+        return LEVELS[levelIndex]?.label || `LEVEL ${padLevelNumber(levelIndex + 1)}`;
+    }
+
     function clearIntroSequence() {
         introTimeoutIds.forEach(timeoutId => clearTimeout(timeoutId));
         introTimeoutIds = [];
@@ -836,10 +834,10 @@
 
     function buildIntroSequence() {
         return [
-            { body: '3', duration: 900, color: '#fff' },
-            { body: '2', duration: 900, color: '#fff06a' },
-            { body: '1', duration: 900, color: '#fff' },
-            { body: 'START', duration: 1050, color: '#fff06a' }
+            { body: '3', duration: 650, color: '#fff' },
+            { body: '2', duration: 650, color: '#fff06a' },
+            { body: '1', duration: 650, color: '#fff' },
+            { body: 'START!!', duration: 1050, color: '#fff06a' }
         ];
     }
 
@@ -951,7 +949,7 @@
             if (!unlocked) card.disabled = true;
 
             card.innerHTML = `
-                <span class="level-chip ${unlocked ? '' : 'locked'}">${padLevelNumber(index + 1)}</span>
+                <span class="level-chip ${unlocked ? '' : 'locked'}">${level.label}</span>
                 <span style="font-size: 7px; opacity: 0.9;">${level.name}</span>
             `;
 
@@ -982,7 +980,7 @@
 
     function updateClearPanel() {
         if (clearTitle) {
-            clearTitle.textContent = `LEVEL ${padLevelNumber(currentLevelIndex + 1)} CLEAR!`;
+            clearTitle.textContent = `${getLevelLabel()} CLEAR!`;
         }
         if (clearDesc) {
             clearDesc.textContent = `${score.toLocaleString()} / ${currentLevel.targetScore.toLocaleString()} SCORE`;
@@ -1045,6 +1043,7 @@
         board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
         enemies = [];
         particles = [];
+        hardDropTrails = [];
         player = new Player();
         controlMode = 'CHARACTER';
         selectedBlock = null;
@@ -1764,12 +1763,14 @@
                 
                 // 하드 드롭 (Space)
                 if (keysPressed['Space']) {
+                    let startY = this.y;
                     let dropDistance = 0;
                     while(!this.checkOverlap(this.gridX, this.y + BLOCK_SIZE)) {
                         this.y += BLOCK_SIZE;
                         dropDistance++;
                     }
                     score += Math.floor(dropDistance * SCORE_CONFIG.hardDropPerCell * currentLevel.scoreMultiplier);
+                    addHardDropTrail(this, startY, this.y);
                     this.lock();
                     return;
                 }
@@ -2042,7 +2043,38 @@
     function resetGame() {
         startLevel(currentLevelIndex);
     }
-    
+
+    function addHardDropTrail(piece, startY, endY) {
+        if (endY <= startY) return;
+
+        let occupiedMinX = null;
+        let occupiedMaxX = null;
+        let minR = null;
+        let maxR = null;
+
+        for (let r = 0; r < piece.matrix.length; r++) {
+            for (let c = 0; c < piece.matrix[r].length; c++) {
+                if (!piece.matrix[r][c]) continue;
+                let gx = piece.gridX + c;
+                if (occupiedMinX === null || gx < occupiedMinX) occupiedMinX = gx;
+                if (occupiedMaxX === null || gx > occupiedMaxX) occupiedMaxX = gx;
+                if (minR === null || r < minR) minR = r;
+                if (maxR === null || r > maxR) maxR = r;
+            }
+        }
+
+        if (occupiedMinX === null) return;
+
+        hardDropTrails.push({
+            x: occupiedMinX * BLOCK_SIZE,
+            y: startY + minR * BLOCK_SIZE,
+            w: (occupiedMaxX - occupiedMinX + 1) * BLOCK_SIZE,
+            h: (endY - startY) + (maxR - minR + 1) * BLOCK_SIZE,
+            life: 0.28,
+            maxLife: 0.28
+        });
+    }
+
     function update(dt) {
         if (gameState !== 'playing') {
             keysPressed = {};
@@ -2103,6 +2135,11 @@
         if (shakeAmount > 0) {
             shakeAmount *= 0.95; // 0.9에서 0.95로 변경하여 흔들림 유지 시간을 훨씬 길게 연장
             if (shakeAmount < 0.5) shakeAmount = 0;
+        }
+
+        for (let i = hardDropTrails.length - 1; i >= 0; i--) {
+            hardDropTrails[i].life -= dt;
+            if (hardDropTrails[i].life <= 0) hardDropTrails.splice(i, 1);
         }
 
         // 플레이어 모드일 때 F키 누르면 홀드된 블록 꺼내어 조종 모드 변환
@@ -2234,6 +2271,8 @@
             ctx.fillStyle = 'rgba(255, 80, 80, 0.25)';
             ctx.fillRect(laserAttack.x - 40, beamY - 8, laserAttack.width + 40, laserAttack.thickness + 16);
         }
+
+        drawHardDropTrails();
         
         // 플레이어 그리기 (인트로 카운트다운 중에는 UI 잔상 방지를 위해 숨김)
         if (player && gameState !== 'intro') player.draw(ctx);
@@ -2263,7 +2302,7 @@
         // 좌측 상단 모드 HUD (캔버스 내부 간소화)
         ctx.fillStyle = controlMode === 'BLOCK' ? '#ff99cc' : '#eee';
         ctx.font = '10px "Press Start 2P"';
-        ctx.fillText(`LV ${padLevelNumber(currentLevelIndex + 1)}`, 10, 20);
+        ctx.fillText(getLevelLabel(), 10, 20);
         ctx.fillText(currentLevel.name, 10, 36);
         ctx.fillText(`MODE: ${controlMode === 'BLOCK' ? 'HACKING' : 'SURVIVAL'}`, 10, 52);
 
@@ -2323,6 +2362,31 @@
         ctx.fillRect(x, visibleTopY, w, 3);
 
         ctx.restore();
+    }
+
+    function drawHardDropTrails() {
+        for (let trail of hardDropTrails) {
+            let ratio = Math.max(trail.life / trail.maxLife, 0);
+            let alpha = ratio * ratio;
+
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+
+            let grad = ctx.createLinearGradient(0, trail.y, 0, trail.y + trail.h);
+            grad.addColorStop(0, 'rgba(255, 0, 0, 0)');
+            grad.addColorStop(0.55, `rgba(255, 0, 0, ${0.08 * alpha})`);
+            grad.addColorStop(1, `rgba(255, 50, 50, ${0.58 * alpha})`);
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(trail.x, trail.y, trail.w, trail.h);
+
+            ctx.shadowColor = 'rgba(255, 50, 50, 1)';
+            ctx.shadowBlur = 18 * alpha;
+            ctx.fillStyle = `rgba(255, 70, 70, ${0.72 * alpha})`;
+            ctx.fillRect(trail.x, trail.y + trail.h - 4, trail.w, 4);
+
+            ctx.restore();
+        }
     }
     
     function gameLoop(timestamp) {
