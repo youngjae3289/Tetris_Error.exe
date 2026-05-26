@@ -104,90 +104,6 @@
             position: relative;
         }
 
-        .tutorial-panel {
-            position: absolute;
-            top: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: min(78vw, 560px);
-            padding: 14px 18px;
-            border: 3px solid rgba(255, 255, 255, 0.9);
-            background: linear-gradient(180deg, rgba(12, 12, 22, 0.94), rgba(28, 28, 48, 0.92));
-            box-shadow: 8px 8px 0 #000;
-            z-index: 30;
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-            color: #fff;
-            font-family: 'Press Start 2P', cursive;
-        }
-
-        body.playing .tutorial-panel.active {
-            display: flex;
-        }
-
-        .tutorial-panel__title {
-            font-size: 12px;
-            letter-spacing: 1px;
-            color: #fff06a;
-        }
-
-        .tutorial-panel__body {
-            font-size: 11px;
-            line-height: 1.55;
-            color: #f3f3ff;
-        }
-
-        .tutorial-panel__row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            font-size: 10px;
-            color: #ff99cc;
-        }
-
-        .tutorial-progress {
-            width: 100%;
-            height: 10px;
-            border: 2px solid #fff;
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: inset 0 0 0 2px #000;
-            overflow: hidden;
-        }
-
-        .tutorial-progress-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #66ff99, #fff06a);
-        }
-
-        .tutorial-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px 10px;
-            font-size: 8px;
-            color: #ddd;
-        }
-
-        .tutorial-chip {
-            padding: 4px 6px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .tutorial-chip.done {
-            color: #66ff99;
-            border-color: rgba(102, 255, 153, 0.7);
-            background: rgba(102, 255, 153, 0.08);
-        }
-
-        .tutorial-chip.active {
-            color: #fff06a;
-            border-color: rgba(255, 240, 106, 0.9);
-            background: rgba(255, 240, 106, 0.08);
-        }
-
         .canvas-outer { 
             position: relative; 
             padding: 10px; 
@@ -408,8 +324,8 @@
             pointer-events: none;
             overflow: hidden;
             background:
-                radial-gradient(circle at 50% 50%, rgba(255, 240, 106, 0.08), rgba(0, 0, 0, 0.7) 45%, rgba(0, 0, 0, 0.92) 100%),
-                linear-gradient(180deg, rgba(12, 12, 22, 0.8), rgba(0, 0, 0, 0.9));
+                radial-gradient(circle at 50% 48%, rgba(255, 240, 106, 0.12), rgba(255, 240, 106, 0) 34%),
+                linear-gradient(180deg, rgba(12, 12, 22, 0.18), rgba(0, 0, 0, 0.26));
         }
 
         #intro-overlay.active {
@@ -424,9 +340,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 18px;
-            padding: 24px;
+            padding: 14vh 24px 24px;
             box-sizing: border-box;
         }
 
@@ -445,15 +361,17 @@
         }
 
         .intro-line.level {
+            display: none;
             color: #fff;
             margin: 0;
-            font-size: clamp(40px, 9vw, 98px);
+            font-size: clamp(18px, 3vw, 34px);
+            opacity: 0.88;
         }
 
         .intro-line.start {
             color: #fff06a;
             margin: 0;
-            font-size: clamp(42px, 10vw, 112px);
+            font-size: clamp(64px, 13vw, 152px);
         }
 
         .intro-line.run {
@@ -462,6 +380,12 @@
 
         .intro-line.sparkle {
             animation: introShimmer 0.28s steps(2, end) infinite;
+        }
+
+        .intro-line.run.sparkle {
+            animation:
+                introBurst var(--intro-duration, 900ms) cubic-bezier(0.18, 0.9, 0.22, 1) both,
+                introShimmer 0.28s steps(2, end) infinite;
         }
 
         .intro-star-layer {
@@ -486,19 +410,19 @@
 
         @keyframes introBurst {
             0% {
-                transform: translateY(22px) scale(0.82);
+                transform: translateY(18px) scale(0.82);
                 opacity: 1;
             }
-            12% {
+            18% {
                 opacity: 1;
             }
-            40% {
+            48% {
                 transform: translateY(-2px) scale(1.04);
                 opacity: 1;
             }
-            78% {
+            74% {
                 transform: translateY(-6px) scale(1);
-                opacity: 1;
+                opacity: 0.72;
             }
             100% {
                 transform: translateY(-12px) scale(1.02);
@@ -572,17 +496,6 @@
             </div>
         </div>
 
-        <div class="tutorial-panel" id="tutorial-panel">
-            <div class="tutorial-panel__title" id="tutorial-panel-title">LEVEL 01 TUTORIAL</div>
-            <div class="tutorial-panel__body" id="tutorial-panel-body">WASD로 움직이세요!</div>
-            <div class="tutorial-panel__row">
-                <span id="tutorial-panel-step">1 / 4</span>
-                <span id="tutorial-panel-status">READY</span>
-            </div>
-            <div class="tutorial-progress"><div class="tutorial-progress-fill" id="tutorial-panel-progress"></div></div>
-            <div class="tutorial-list" id="tutorial-panel-list"></div>
-        </div>
-
         <div id="game-over-overlay">
             <div class="ui-shell">
                 <div class="ui-screen active" id="menu-screen">
@@ -630,7 +543,7 @@
         <div class="intro-stage">
             <div class="intro-star-layer" id="intro-star-layer"></div>
             <div class="intro-line level" id="intro-level-line">LEVEL 1</div>
-            <div class="intro-line start" id="intro-start-line">Start!!</div>
+            <div class="intro-line start" id="intro-start-line"></div>
         </div>
     </div>
     
@@ -652,14 +565,6 @@
     const introStarLayer = document.getElementById('intro-star-layer');
     const introLevelLine = document.getElementById('intro-level-line');
     const introStartLine = document.getElementById('intro-start-line');
-    const tutorialPanel = document.getElementById('tutorial-panel');
-    const tutorialPanelTitle = document.getElementById('tutorial-panel-title');
-    const tutorialPanelBody = document.getElementById('tutorial-panel-body');
-    const tutorialPanelStep = document.getElementById('tutorial-panel-step');
-    const tutorialPanelStatus = document.getElementById('tutorial-panel-status');
-    const tutorialPanelProgress = document.getElementById('tutorial-panel-progress');
-    const tutorialPanelList = document.getElementById('tutorial-panel-list');
-    
     const ROWS = 23; 
     const COLS = 10; 
     const BLOCK_SIZE = 30;
@@ -814,16 +719,6 @@
     let introStartAt = 0;
     let introEndAt = 0;
     let introPhases = [];
-    let tutorialActive = false;
-    let tutorialPhase = 'idle';
-    let tutorialStepIndex = 0;
-    let tutorialPhaseUntil = 0;
-    let tutorialStepStartedAt = 0;
-    let tutorialBlock = null;
-    let tutorialBlockStartY = 0;
-    let tutorialBaseline = null;
-    let tutorialFastFallUsed = false;
-    let tutorialMarkers = [];
 
     let laserAttack = {
         phase: 'idle',
@@ -919,13 +814,6 @@
         introTimeoutIds = [];
         introStartAt = 0;
         introPhases = [];
-        tutorialActive = false;
-        tutorialPhase = 'idle';
-        tutorialStepIndex = 0;
-        tutorialPhaseUntil = 0;
-        tutorialStepStartedAt = 0;
-        tutorialBlock = null;
-        tutorialBaseline = null;
 
         if (introStarCleanupId !== null) {
             clearTimeout(introStarCleanupId);
@@ -939,223 +827,19 @@
         if (introOverlay) {
             introOverlay.classList.remove('active');
             introOverlay.style.display = 'none';
+            introOverlay.setAttribute('aria-hidden', 'true');
         }
 
         if (introLevelLine) introLevelLine.classList.remove('run', 'sparkle');
         if (introStartLine) introStartLine.classList.remove('run', 'sparkle');
     }
 
-    function spawnTutorialBlock() {
-        if (tutorialBlock && !tutorialBlock.deleted) return tutorialBlock;
-
-        let block = new EnemyPiece();
-        block.type = 'T';
-        block.matrix = PIECES.T;
-        block.gridX = 3;
-        block.y = 120;
-        block.dropInterval = 9999;
-        block.dropTimer = 0;
-        block.isGhost = false;
-        block.locked = false;
-        enemies = [block];
-        tutorialBlock = block;
-        tutorialBlockStartY = block.y;
-        return block;
-    }
-
-    function spawnTutorialHazardBlock() {
-        let block = new EnemyPiece();
-        block.type = 'L';
-        block.matrix = PIECES.L;
-        block.gridX = 4;
-        block.y = -BLOCK_SIZE * 3;
-        block.dropInterval = 0.75;
-        block.dropTimer = 0;
-        block.isGhost = false;
-        block.locked = false;
-        enemies = [block];
-        tutorialBlock = block;
-        return block;
-    }
-
-    function buildTutorialMarkers(step) {
-        const floorY = canvas.height - 78;
-        const jumpY = canvas.height - 108;
-        const sideY = canvas.height - 76;
-
-        if (step === 0) {
-            return [
-                { id: 'move-left', x: 18, y: sideY, label: 'LEFT', color: '#66ff99' },
-                { id: 'move-right', x: canvas.width - 18, y: sideY, label: 'RIGHT', color: '#66ff99' }
-            ];
-        }
-
-        if (step === 1) {
-            return [
-                { id: 'jump-center', x: canvas.width / 2, y: jumpY, label: 'JUMP', color: '#fff06a' }
-            ];
-        }
-
-        if (step === 2) {
-            return [
-                { id: 'fast-fall', x: canvas.width / 2, y: floorY, label: 'DROP', color: '#ff99cc' }
-            ];
-        }
-
-        return [];
-    }
-
-    function buildTutorialSequence() {
-        return [
-            {
-                title: 'SURVIVAL MOVE',
-                body: 'A / D로 좌우 이동\n양옆 초록 체크포인트를 밟아보세요',
-                color: '#66ff99',
-                minShowMs: 1200,
-                mode: 'player',
-                doneCheck: () => tutorialMarkers.some(marker => marker.id !== 'jump-center' && isPlayerTouchingMarker(marker))
-            },
-            {
-                title: 'JUMP',
-                body: 'W 또는 SPACE로 점프\n중앙 체크포인트에 닿아보세요',
-                color: '#fff06a',
-                minShowMs: 1200,
-                mode: 'player',
-                doneCheck: () => tutorialMarkers.some(marker => marker.id === 'jump-center' && isPlayerTouchingMarker(marker))
-            },
-            {
-                title: 'FAST FALL',
-                body: 'S를 누르면 더 빨리 내려옵니다\n점프 후 바로 내려와보세요',
-                color: '#ff99cc',
-                minShowMs: 1300,
-                mode: 'player',
-                doneCheck: () => tutorialFastFallUsed && player && player.isGrounded
-            },
-            {
-                title: 'ERROR BLOCK',
-                body: '붉은 블록은 자동으로 내려옵니다\n위험을 보고 피해보세요',
-                color: '#ff6666',
-                minShowMs: 2400,
-                mode: 'watch',
-                onEnter: () => spawnTutorialHazardBlock()
-            },
-            {
-                title: 'START',
-                body: '이제 본게임을 시작합니다',
-                color: '#fff06a',
-                minShowMs: 1300,
-                mode: 'auto'
-            }
-        ];
-    }
-
-    function startTutorialSequence() {
-        tutorialActive = true;
-        tutorialPhase = 'show';
-        tutorialStepIndex = 0;
-        introPhases = buildTutorialSequence();
-        tutorialPhaseUntil = performance.now() + introPhases[0].minShowMs;
-        tutorialStepStartedAt = performance.now();
-        tutorialBaseline = player ? { x: player.x, y: player.y } : null;
-        tutorialBlock = null;
-        tutorialBlockStartY = 0;
-        enemies = [];
-        tutorialFastFallUsed = false;
-        tutorialMarkers = buildTutorialMarkers(0);
-        updateTutorialHUD();
-    }
-
-    function getTutorialStep() {
-        return tutorialActive ? introPhases[tutorialStepIndex] : null;
-    }
-
-    function advanceTutorialStep() {
-        tutorialStepIndex += 1;
-        if (tutorialStepIndex >= introPhases.length) {
-            tutorialActive = false;
-            tutorialPhase = 'idle';
-            introPhases = [];
-            tutorialBlock = null;
-            tutorialBaseline = null;
-            tutorialMarkers = [];
-            tutorialFastFallUsed = false;
-            enemies = [];
-            selectedBlock = null;
-            controlMode = 'CHARACTER';
-            enemySpawnTimer = 0;
-            updateTutorialHUD();
-            return;
-        }
-
-        let step = introPhases[tutorialStepIndex];
-        tutorialPhase = 'show';
-        tutorialPhaseUntil = performance.now() + step.minShowMs;
-        tutorialStepStartedAt = performance.now();
-        tutorialBaseline = player ? { x: player.x, y: player.y } : null;
-        tutorialMarkers = buildTutorialMarkers(tutorialStepIndex);
-
-        if (step.onEnter) {
-            step.onEnter();
-        }
-
-        updateTutorialHUD();
-    }
-
-    function updateTutorialSequence() {
-        let step = getTutorialStep();
-        if (!step) return;
-
-        let now = performance.now();
-
-        if (tutorialPhase === 'show') {
-            if (now < tutorialPhaseUntil) return;
-
-            if (step.mode === 'frozen') {
-                advanceTutorialStep();
-                return;
-            }
-
-            tutorialPhase = 'active';
-            tutorialPhaseUntil = 0;
-            tutorialStepStartedAt = now;
-            tutorialBaseline = player ? { x: player.x, y: player.y } : null;
-
-            if (step.onEnter) {
-                step.onEnter();
-            }
-        }
-
-        if (tutorialPhase === 'active' && step.doneCheck && step.doneCheck()) {
-            tutorialPhase = 'success';
-            tutorialPhaseUntil = now + 650;
-            return;
-        }
-
-        if (tutorialPhase === 'success' && now >= tutorialPhaseUntil) {
-            advanceTutorialStep();
-        }
-    }
-
     function buildIntroSequence() {
-        if (currentLevelIndex === 0) {
-            return [
-                { title: 'LEVEL 01 TUTORIAL', body: 'WASD로 움직이세요!', duration: 1900, color: '#fff06a' },
-                { title: 'MOVE', body: 'A / D : 좌우 이동\n천천히 왔다 갔다 해보세요', duration: 2000, color: '#fff' },
-                { title: 'JUMP', body: 'W 또는 SPACE : 점프\n블록 위로 올라갈 때 씁니다', duration: 2000, color: '#fff06a' },
-                { title: 'FAST FALL', body: 'S : 더 빠르게 떨어짐\n낮은 곳으로 급하게 내려갈 때 사용', duration: 2100, color: '#fff' },
-                { title: 'BLOCK CONTROL', body: '블록을 클릭하면 조종 가능\nW 회전 / F 홀드 / SPACE 하드드롭', duration: 2300, color: '#fff06a' },
-                { title: 'ENEMY BLOCKS', body: '붉은 블록은 자동으로 내려옵니다\n막히면 압사당할 수 있어요', duration: 2200, color: '#ff6666' },
-                { title: 'LASER WARNING', body: '빨간 선이 보이면 레이저입니다\n그 줄에서 벗어나세요', duration: 2200, color: '#ff8080' },
-                { title: 'DEAD ZONE', body: '위쪽 빨간 칸은 데드존입니다\n거기까지 쌓이면 위험합니다', duration: 2200, color: '#ff6666' },
-                { title: 'START', body: '준비되면 살아남기 시작!', duration: 1700, color: '#fff06a' }
-            ];
-        }
-
         return [
-            { title: `LEVEL ${padLevelNumber(currentLevelIndex + 1)}`, body: '3', duration: 1200, color: '#fff' },
-            { title: `LEVEL ${padLevelNumber(currentLevelIndex + 1)}`, body: '2', duration: 1200, color: '#fff06a' },
-            { title: `LEVEL ${padLevelNumber(currentLevelIndex + 1)}`, body: '1', duration: 1200, color: '#fff' },
-            { title: `LEVEL ${padLevelNumber(currentLevelIndex + 1)}`, body: 'START', duration: 1600, color: '#fff06a' }
+            { body: '3', duration: 900, color: '#fff' },
+            { body: '2', duration: 900, color: '#fff06a' },
+            { body: '1', duration: 900, color: '#fff' },
+            { body: 'START', duration: 1050, color: '#fff06a' }
         ];
     }
 
@@ -1202,31 +886,46 @@
         element.classList.add('run', 'sparkle');
     }
 
+    function showIntroPhase(phase, isFinalPhase) {
+        if (!introOverlay || !introLevelLine || !introStartLine) return;
+
+        introLevelLine.textContent = '';
+        introStartLine.textContent = phase.body || '';
+        introStartLine.style.color = phase.color || '#fff06a';
+        introStartLine.style.setProperty('--intro-duration', `${phase.duration}ms`);
+        introOverlay.style.display = 'flex';
+        introOverlay.classList.add('active');
+        introOverlay.setAttribute('aria-hidden', 'false');
+
+        restartElementAnimation(introStartLine);
+
+        if (introStarLayer) {
+            introStarLayer.innerHTML = '';
+        }
+    }
+
     function playStartIntro() {
         clearIntroSequence();
-
-        if (currentLevelIndex === 0) {
-            startTutorialSequence();
-            gameState = 'playing';
-            return;
-        }
 
         if (!introOverlay || !introLevelLine || !introStartLine) {
             gameState = 'playing';
             return;
         }
 
-        introOverlay.style.display = 'none';
+        introOverlay.style.display = 'flex';
+        introOverlay.classList.add('active');
+        introOverlay.setAttribute('aria-hidden', 'false');
         introPhases = buildIntroSequence();
         introStartAt = performance.now();
         introEndAt = introStartAt + introPhases.reduce((sum, phase) => sum + phase.duration, 0);
 
-        let phaseCursor = 0;
-        introPhases.forEach((phase, index) => {
+        showIntroPhase(introPhases[0], introPhases.length === 1);
+
+        let phaseCursor = introPhases[0].duration;
+        introPhases.slice(1).forEach((phase, index) => {
             introTimeoutIds.push(setTimeout(() => {
-                let burstCount = index === introPhases.length - 1 ? 26 : 16;
-                spawnIntroStars(window.innerWidth * 0.5, window.innerHeight * 0.48, burstCount);
-            }, phaseCursor + 60));
+                showIntroPhase(phase, index === introPhases.length - 2);
+            }, phaseCursor));
             phaseCursor += phase.duration;
         });
 
@@ -1617,39 +1316,95 @@
         cutSprites() {
             let cols = 3;
             let rows = 2;
-            let cellW = this.spriteImg.width / cols;
-            let cellH = this.spriteImg.height / rows;
             
             let tempCanvas = document.createElement('canvas');
             let tCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
-            tempCanvas.width = cellW;
-            tempCanvas.height = cellH;
             
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
+                    let sx = Math.floor(c * this.spriteImg.width / cols);
+                    let sy = Math.floor(r * this.spriteImg.height / rows);
+                    let nextSx = Math.floor((c + 1) * this.spriteImg.width / cols);
+                    let nextSy = Math.floor((r + 1) * this.spriteImg.height / rows);
+                    let cellW = nextSx - sx;
+                    let cellH = nextSy - sy;
+
+                    tempCanvas.width = cellW;
+                    tempCanvas.height = cellH;
                     tCtx.clearRect(0, 0, cellW, cellH);
-                    tCtx.drawImage(this.spriteImg, c * cellW, r * cellH, cellW, cellH, 0, 0, cellW, cellH);
+                    tCtx.imageSmoothingEnabled = false;
+                    tCtx.drawImage(this.spriteImg, sx, sy, cellW, cellH, 0, 0, cellW, cellH);
                     
                     try {
                         let imgData = tCtx.getImageData(0, 0, cellW, cellH);
                         let data = imgData.data;
-                        let minX = cellW, minY = cellH, maxX = 0, maxY = 0;
-                        let found = false;
-                        
+                        let visited = new Uint8Array(cellW * cellH);
+                        let best = null;
+                        const opaqueThreshold = 80;
+
                         for (let y = 0; y < cellH; y++) {
                             for (let x = 0; x < cellW; x++) {
-                                let alpha = data[(y * cellW + x) * 4 + 3];
-                                if (alpha > 10) {
-                                    if (x < minX) minX = x;
-                                    if (x > maxX) maxX = x;
-                                    if (y < minY) minY = y;
-                                    if (y > maxY) maxY = y;
-                                    found = true;
+                                let startIdx = y * cellW + x;
+                                if (visited[startIdx] || data[startIdx * 4 + 3] <= opaqueThreshold) continue;
+
+                                let stack = [startIdx];
+                                visited[startIdx] = 1;
+                                let minX = x, maxX = x, minY = y, maxY = y;
+                                let count = 0;
+
+                                while (stack.length > 0) {
+                                    let idx = stack.pop();
+                                    let px = idx % cellW;
+                                    let py = Math.floor(idx / cellW);
+                                    count++;
+
+                                    if (px < minX) minX = px;
+                                    if (px > maxX) maxX = px;
+                                    if (py < minY) minY = py;
+                                    if (py > maxY) maxY = py;
+
+                                    let neighbors = [idx - 1, idx + 1, idx - cellW, idx + cellW];
+                                    for (let next of neighbors) {
+                                        if (next < 0 || next >= visited.length || visited[next]) continue;
+                                        let nx = next % cellW;
+                                        if ((next === idx - 1 && nx === cellW - 1) || (next === idx + 1 && nx === 0)) continue;
+                                        if (data[next * 4 + 3] <= opaqueThreshold) continue;
+                                        visited[next] = 1;
+                                        stack.push(next);
+                                    }
+                                }
+
+                                if (!best || count > best.count) {
+                                    best = { minX, maxX, minY, maxY, count, seed: startIdx };
                                 }
                             }
                         }
-                        
-                        if (found) {
+
+                        if (best) {
+                            let keepMask = new Uint8Array(cellW * cellH);
+                            let stack = [best.seed];
+                            keepMask[best.seed] = 1;
+
+                            while (stack.length > 0) {
+                                let idx = stack.pop();
+                                let neighbors = [idx - 1, idx + 1, idx - cellW, idx + cellW];
+                                for (let next of neighbors) {
+                                    if (next < 0 || next >= keepMask.length || keepMask[next]) continue;
+                                    let nx = next % cellW;
+                                    if ((next === idx - 1 && nx === cellW - 1) || (next === idx + 1 && nx === 0)) continue;
+                                    if (data[next * 4 + 3] <= opaqueThreshold) continue;
+                                    keepMask[next] = 1;
+                                    stack.push(next);
+                                }
+                            }
+
+                            const edgeTrim = 4;
+                            let { minX, minY, maxX, maxY } = best;
+                            minX = Math.min(minX + edgeTrim, maxX);
+                            minY = Math.min(minY + edgeTrim, maxY);
+                            maxX = Math.max(maxX - edgeTrim, minX);
+                            maxY = Math.max(maxY - edgeTrim, minY);
+
                             let fW = maxX - minX + 1;
                             let fH = maxY - minY + 1;
                             let frameCanvas = document.createElement('canvas');
@@ -1657,6 +1412,17 @@
                             frameCanvas.height = fH;
                             let fCtx = frameCanvas.getContext('2d');
                             fCtx.drawImage(tempCanvas, minX, minY, fW, fH, 0, 0, fW, fH);
+
+                            let frameData = fCtx.getImageData(0, 0, fW, fH);
+                            for (let fy = 0; fy < fH; fy++) {
+                                for (let fx = 0; fx < fW; fx++) {
+                                    let sourceIdx = (minY + fy) * cellW + (minX + fx);
+                                    if (!keepMask[sourceIdx]) {
+                                        frameData.data[(fy * fW + fx) * 4 + 3] = 0;
+                                    }
+                                }
+                            }
+                            fCtx.putImageData(frameData, 0, 0);
                             this.frames.push(frameCanvas);
                         }
                     } catch (e) {
@@ -1792,10 +1558,6 @@
         }
         
         draw(ctx) {
-            ctx.shadowColor = PLAYER_COLOR;
-            ctx.shadowBlur = ((Date.now() / 150) % 2 > 1) ? 8 : 12; // 네온 깜빡임
-            ctx.fillStyle = PLAYER_COLOR;
-            
             let drawX = this.x - (this.renderW - this.w) / 2;
             let drawY = this.y;
             let drawW = this.renderW;
@@ -1827,6 +1589,8 @@
             if (this.frames.length === 0 && this.spriteImg.complete && this.spriteImg.naturalWidth > 0) {
                 this.cutSprites();
             }
+
+            ctx.shadowBlur = 0;
             
             if (this.frames && this.frames.length > 0) {
                 let fIdx = this.currentFrame % this.frames.length;
@@ -1852,23 +1616,8 @@
                 ctx.imageSmoothingEnabled = false;
                 ctx.drawImage(frame, dx, dy, dw, dh);
                 ctx.restore();
-            } else if (this.spriteImg.complete && this.spriteImg.naturalWidth > 0) {
-                // 프레임 추출 전 로딩 구간에는 스프라이트 시트의 첫 칸만 임시 렌더
-                let cols = 3;
-                let rows = 2;
-                let cellW = this.spriteImg.width / cols;
-                let cellH = this.spriteImg.height / rows;
-                ctx.save();
-                if (this.lastDir === -1) {
-                    ctx.translate(drawX + drawW/2, 0);
-                    ctx.scale(-1, 1);
-                    ctx.translate(-(drawX + drawW/2), 0);
-                }
-                ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(this.spriteImg, 0, 0, cellW, cellH, drawX, drawY, drawW, drawH);
-                ctx.restore();
             }
-            
+
             ctx.shadowBlur = 0;
         }
     }
@@ -2300,40 +2049,6 @@
             return;
         }
 
-        if (tutorialActive) {
-            updateTutorialSequence();
-            let tutorialStep = getTutorialStep();
-
-            if (!tutorialStep) {
-                keysPressed = {};
-                return;
-            }
-
-            if (tutorialPhase !== 'active') {
-                keysPressed = {};
-                return;
-            }
-
-            if (tutorialStep.mode === 'player') {
-                player.update(dt);
-                updatePlayerIdleTimer(dt);
-            } else if (tutorialStep.mode === 'block') {
-                player.update(dt);
-                updatePlayerIdleTimer(dt);
-
-                for (let i = enemies.length - 1; i >= 0; i--) {
-                    enemies[i].update(dt);
-                    if (enemies[i].locked || enemies[i].deleted) {
-                        enemies.splice(i, 1);
-                    }
-                }
-            }
-
-            updateTutorialSequence();
-            keysPressed = {};
-            return;
-        }
-
         updateDangerZoneState();
 
         survivalTimer += dt;
@@ -2520,79 +2235,11 @@
             ctx.fillRect(laserAttack.x - 40, beamY - 8, laserAttack.width + 40, laserAttack.thickness + 16);
         }
         
-        // 플레이어 그리기 (영혼 뺏겨서 완전 블랙아웃 되기 전까지는 시체 유지)
-        if (player) player.draw(ctx);
+        // 플레이어 그리기 (인트로 카운트다운 중에는 UI 잔상 방지를 위해 숨김)
+        if (player && gameState !== 'intro') player.draw(ctx);
         
         // 파티클 그리기
         for (let p of particles) p.draw(ctx);
-
-        let activeCard = null;
-        let cardElapsed = 0;
-        let cardProgress = 0;
-
-        if (tutorialActive) {
-            activeCard = getTutorialStep();
-            cardElapsed = Math.max(0, performance.now() - tutorialStepStartedAt);
-            cardProgress = activeCard ? Math.min(cardElapsed / Math.max(activeCard.minShowMs, 1), 1) : 0;
-        } else if (performance.now() < introEndAt && introPhases.length > 0) {
-            const introElapsed = Math.max(0, performance.now() - introStartAt);
-            let phaseStart = 0;
-            activeCard = introPhases[introPhases.length - 1];
-
-            for (const phase of introPhases) {
-                const phaseEnd = phaseStart + phase.duration;
-                if (introElapsed < phaseEnd) {
-                    activeCard = phase;
-                    break;
-                }
-                phaseStart = phaseEnd;
-            }
-
-            cardElapsed = introElapsed - phaseStart;
-            cardProgress = Math.min(Math.max(cardElapsed / Math.max(activeCard.duration, 1), 0), 1);
-        }
-
-        if (activeCard) {
-            const fade = tutorialActive && tutorialPhase === 'active'
-                ? 1
-                : (cardProgress < 0.18 ? cardProgress / 0.18 : cardProgress > 0.82 ? (1 - cardProgress) / 0.18 : 1);
-            const pulse = 1 + Math.sin(cardElapsed / 85) * 0.03;
-
-            ctx.save();
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = 'rgba(10, 10, 18, 0.95)';
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 4;
-            const bodyText = activeCard.body || '';
-            const bodyLines = bodyText.split('\n');
-            let panelW = 420;
-            let panelH = 120 + bodyLines.length * 26;
-            let panelX = (canvas.width - panelW) / 2;
-            let panelY = (canvas.height - panelH) / 2 - 10;
-            ctx.fillRect(panelX, panelY, panelW, panelH);
-            ctx.strokeRect(panelX, panelY, panelW, panelH);
-
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.shadowColor = 'rgba(255, 240, 106, 0.95)';
-            ctx.shadowBlur = 10;
-            ctx.globalAlpha = Math.max(0.1, fade);
-            ctx.fillStyle = '#fff';
-            ctx.font = '18px "Press Start 2P"';
-            ctx.fillText(activeCard.title, canvas.width / 2, panelY + 40);
-            ctx.fillStyle = activeCard.color || '#fff06a';
-            ctx.font = bodyLines.some(line => line.length > 18) ? '15px "Press Start 2P"' : '19px "Press Start 2P"';
-            ctx.save();
-            ctx.translate(canvas.width / 2, panelY + 84);
-            ctx.scale(pulse, pulse);
-            bodyLines.forEach((line, index) => {
-                ctx.fillText(line, 0, index * 28);
-            });
-            ctx.restore();
-            ctx.restore();
-        }
 
         for (let enemy of enemies) {
             if (!enemy.locked && !enemy.deleted && !enemy.isGhost) {

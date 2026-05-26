@@ -18,6 +18,7 @@
 - Do not rewrite the entire codebase at once.
 - Make changes in small, understandable units.
 - After making changes, explain which files were modified and why.
+- After completing requested edits, send a macOS notification to the user on this MacBook.
 
 ## Test Rules
 

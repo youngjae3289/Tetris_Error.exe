@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris_Error.exe Intro UI Editor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            background: #141426;
+            color: #f4f4ff;
+            font-family: Arial, sans-serif;
+        }
+
+        .preview {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)),
+                #1a1a2e;
+            background-size: 100% 4px, 3px 100%, auto;
+        }
+
+        .board {
+            width: 300px;
+            height: 690px;
+            background: #020204;
+            border: 10px solid #2f2f36;
+            box-shadow: 10px 10px 0 #000;
+            background-image:
+                linear-gradient(#151515 1px, transparent 1px),
+                linear-gradient(90deg, #151515 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .intro-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 50% 48%, rgba(255, 240, 106, 0.12), rgba(255, 240, 106, 0) 34%),
+                linear-gradient(180deg, rgba(12, 12, 22, 0.18), rgba(0, 0, 0, 0.26));
+        }
+
+        .intro-stage {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-direction: column;
+            padding: var(--intro-y, 14vh) 24px 24px;
+        }
+
+        .intro-text {
+            color: var(--intro-color, #fff);
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(64px, var(--intro-size, 13vw), 152px);
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.8),
+                0 0 18px rgba(255, 240, 106, 0.55),
+                4px 4px 0 #000;
+            animation: introBurst var(--intro-duration, 900ms) cubic-bezier(0.18, 0.9, 0.22, 1) both;
+        }
+
+        @keyframes introBurst {
+            0% { transform: translateY(18px) scale(0.82); opacity: 1; }
+            18% { opacity: 1; }
+            48% { transform: translateY(-2px) scale(1.04); opacity: 1; }
+            74% { transform: translateY(-6px) scale(1); opacity: 0.72; }
+            100% { transform: translateY(-12px) scale(1.02); opacity: 0; }
+        }
+
+        aside {
+            padding: 24px;
+            background: #0d0d14;
+            border-left: 1px solid rgba(255, 255, 255, 0.14);
+            overflow: auto;
+        }
+
+        h1 {
+            margin: 0 0 18px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 15px;
+            color: #fff06a;
+            line-height: 1.5;
+        }
+
+        label {
+            display: grid;
+            gap: 7px;
+            margin: 16px 0;
+            font-size: 13px;
+            color: #d8d8e8;
+        }
+
+        input, button, textarea {
+            width: 100%;
+            font: inherit;
+        }
+
+        input[type="range"] {
+            accent-color: #fff06a;
+        }
+
+        button {
+            margin-top: 12px;
+            padding: 12px 14px;
+            border: 0;
+            background: #ff99cc;
+            color: #000;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        textarea {
+            min-height: 160px;
+            margin-top: 14px;
+            padding: 12px;
+            color: #d7fce6;
+            background: #050508;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <main class="preview">
+        <div class="board"></div>
+        <div class="intro-overlay">
+            <div class="intro-stage" id="stage">
+                <div class="intro-text" id="intro-text">3</div>
+            </div>
+        </div>
+    </main>
+
+    <aside>
+        <h1>INTRO UI EDITOR</h1>
+
+        <label>Y 위치(vh): <span id="y-value">14</span>
+            <input id="intro-y" type="range" min="0" max="40" value="14">
+        </label>
+
+        <label>숫자 크기(vw): <span id="size-value">13</span>
+            <input id="intro-size" type="range" min="6" max="20" value="13">
+        </label>
+
+        <label>3/2/1 페이드 시간(ms): <span id="number-duration-value">900</span>
+            <input id="number-duration" type="range" min="400" max="1600" step="50" value="900">
+        </label>
+
+        <label>START 페이드 시간(ms): <span id="start-duration-value">1050</span>
+            <input id="start-duration" type="range" min="500" max="2200" step="50" value="1050">
+        </label>
+
+        <button onclick="playIntro()">PLAY 3 2 1 START</button>
+        <button onclick="copyConfig()">COPY CONFIG</button>
+
+        <textarea id="output" readonly></textarea>
+    </aside>
+
+    <script>
+        const stage = document.getElementById('stage');
+        const introText = document.getElementById('intro-text');
+        const yInput = document.getElementById('intro-y');
+        const sizeInput = document.getElementById('intro-size');
+        const numberDurationInput = document.getElementById('number-duration');
+        const startDurationInput = document.getElementById('start-duration');
+        const output = document.getElementById('output');
+
+        function getConfig() {
+            return {
+                yVh: Number(yInput.value),
+                sizeVw: Number(sizeInput.value),
+                numberDurationMs: Number(numberDurationInput.value),
+                startDurationMs: Number(startDurationInput.value)
+            };
+        }
+
+        function applyConfig() {
+            const config = getConfig();
+            stage.style.setProperty('--intro-y', `${config.yVh}vh`);
+            introText.style.setProperty('--intro-size', `${config.sizeVw}vw`);
+            document.getElementById('y-value').textContent = config.yVh;
+            document.getElementById('size-value').textContent = config.sizeVw;
+            document.getElementById('number-duration-value').textContent = config.numberDurationMs;
+            document.getElementById('start-duration-value').textContent = config.startDurationMs;
+            output.value = JSON.stringify(config, null, 2);
+        }
+
+        function showText(text, color, duration) {
+            introText.textContent = text;
+            introText.style.setProperty('--intro-color', color);
+            introText.style.setProperty('--intro-duration', `${duration}ms`);
+            introText.classList.remove('intro-text');
+            void introText.offsetWidth;
+            introText.classList.add('intro-text');
+        }
+
+        function playIntro() {
+            applyConfig();
+            const config = getConfig();
+            const phases = [
+                { text: '3', color: '#fff', duration: config.numberDurationMs },
+                { text: '2', color: '#fff06a', duration: config.numberDurationMs },
+                { text: '1', color: '#fff', duration: config.numberDurationMs },
+                { text: 'START', color: '#fff06a', duration: config.startDurationMs }
+            ];
+
+            let cursor = 0;
+            phases.forEach(phase => {
+                setTimeout(() => showText(phase.text, phase.color, phase.duration), cursor);
+                cursor += phase.duration;
+            });
+        }
+
+        function copyConfig() {
+            applyConfig();
+            navigator.clipboard.writeText(output.value);
+        }
+
+        [yInput, sizeInput, numberDurationInput, startDurationInput].forEach(input => {
+            input.addEventListener('input', applyConfig);
+        });
+
+        applyConfig();
+    </script>
+</body>
+</html>
