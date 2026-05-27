@@ -408,6 +408,100 @@
             will-change: transform, opacity;
         }
 
+        #tutorial-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 160;
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            padding: 29vh 24px 24px;
+            box-sizing: border-box;
+            align-items: center;
+            justify-content: flex-start;
+            flex-direction: column;
+            gap: 18px;
+            background: rgba(0, 0, 0, var(--tutorial-dim-opacity, 0.42));
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            pointer-events: none;
+            transition: background 0.62s ease;
+        }
+
+        #tutorial-overlay.active {
+            display: flex;
+        }
+
+        #tutorial-overlay.dismiss {
+            background: rgba(0, 0, 0, 0);
+        }
+
+        #tutorial-overlay.compact {
+            background: rgba(0, 0, 0, 0);
+        }
+
+        .tutorial-panel {
+            width: fit-content;
+            max-width: min(760px, calc(100vw - 40px));
+            padding: 14px 18px;
+            background: rgba(22, 22, 40, 0.9);
+            border: 4px solid #444;
+            box-shadow: 6px 6px 0 #000;
+        }
+
+        .tutorial-panel {
+            transition:
+                transform 0.62s cubic-bezier(0.18, 0.9, 0.22, 1),
+                opacity 0.62s ease;
+        }
+
+        #tutorial-overlay.dismiss .tutorial-panel,
+        #tutorial-overlay.compact .tutorial-panel {
+            transform:
+                translate(var(--tutorial-target-x, 0vw), var(--tutorial-target-y, -42vh))
+                scale(var(--tutorial-target-scale, 0.58));
+            opacity: 1;
+        }
+
+        .tutorial-title {
+            color: #fff06a;
+            font-size: clamp(18px, var(--tutorial-title-size, 3vw), 34px);
+            line-height: 1.5;
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.8),
+                0 0 18px rgba(255, 240, 106, 0.55),
+                4px 4px 0 #000;
+        }
+
+        .tutorial-text {
+            font-size: clamp(18px, var(--tutorial-text-size, 4vw), 46px);
+            line-height: 1.8;
+            color: #fff;
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.8),
+                0 0 18px rgba(255, 240, 106, 0.55),
+                4px 4px 0 #000;
+        }
+
+        .tutorial-hint {
+            min-height: 18px;
+            color: rgba(190, 190, 200, 0.92);
+            font-size: var(--tutorial-hint-size, 9px);
+            line-height: 1.6;
+            text-shadow: 2px 2px 0 #000;
+            opacity: 0;
+        }
+
+        #tutorial-overlay.ready .tutorial-hint {
+            animation: tutorialHintBlink var(--tutorial-hint-blink, 900ms) steps(2, end) infinite;
+        }
+
+        @keyframes tutorialHintBlink {
+            0%, 45% { opacity: 1; }
+            46%, 100% { opacity: 0.25; }
+        }
+
         @keyframes introBurst {
             0% {
                 transform: translateY(18px) scale(0.82);
@@ -546,6 +640,14 @@
             <div class="intro-line start" id="intro-start-line"></div>
         </div>
     </div>
+
+    <div id="tutorial-overlay" aria-hidden="true">
+        <div class="tutorial-panel" id="tutorial-panel">
+            <div class="tutorial-title" id="tutorial-title">TUTORIAL</div>
+            <div class="tutorial-text" id="tutorial-text"></div>
+            <div class="tutorial-hint" id="tutorial-hint">아무 키 입력...</div>
+        </div>
+    </div>
     
     <script>
     const canvas = document.getElementById('tetris');
@@ -565,6 +667,10 @@
     const introStarLayer = document.getElementById('intro-star-layer');
     const introLevelLine = document.getElementById('intro-level-line');
     const introStartLine = document.getElementById('intro-start-line');
+    const tutorialOverlay = document.getElementById('tutorial-overlay');
+    const tutorialTitle = document.getElementById('tutorial-title');
+    const tutorialText = document.getElementById('tutorial-text');
+    const tutorialHint = document.getElementById('tutorial-hint');
     const ROWS = 23; 
     const COLS = 10; 
     const BLOCK_SIZE = 30;
@@ -627,6 +733,35 @@
         { id: 'level-01', label: 'LEVEL 01', name: 'BOOT SECTOR', targetScore: 10000, spawnInterval: 4.2, dropInterval: 0.85, laserMin: 5, laserMax: 9, scoreMultiplier: 1 },
         { id: 'boss-10', label: 'LEVEL 10', name: 'BOSS: FINAL REBOOT', targetScore: 80000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2 }
     ];
+
+    const TUTORIAL_STEPS = [
+        { key: 'move', title: '목표로 이동하세요!', text: '이동 : A / D' },
+        { key: 'jump', title: '목표로 이동하세요!', text: '점프 : W / spacebar' },
+        { key: 'hack-target', title: 'HACKING 01', text: '클릭 선택 / A D 이동 / W 회전 / S 소프트드롭 / Space 하드드롭' },
+        { key: 'hold', title: 'HACKING 02', text: 'F 홀드' },
+        { key: 'laser', title: 'LASER 01', text: '빨간 예고선을 피하세요' },
+        { key: 'complete', title: 'TUTORIAL', text: '튜토리얼 완료' }
+    ];
+
+    const TUTORIAL_TARGET = {
+        type: 'T',
+        gridX: 3,
+        gridY: 20,
+        matrix: [[0, 1, 0], [0, 1, 1], [0, 1, 0]]
+    };
+
+    const TUTORIAL_EXPLAIN_CONFIG = {
+        yVh: 50,
+        titleSizeVw: 2,
+        textSizeVw: 2.3,
+        hintSizePx: 12,
+        forceMs: 1500,
+        dimOpacity: 0.12,
+        hintBlinkMs: 500,
+        targetXVw: 0,
+        targetYVh: -42,
+        targetScale: 0.58
+    };
     
     let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
     let enemies = [];
@@ -644,6 +779,21 @@
     let survivalTimer = 0;
     let currentLevel = LEVELS[0];
     let levelClearShown = false;
+    let tutorial = {
+        active: false,
+        stepIndex: 0,
+        checkpoint: null,
+        target: null,
+        moveCheckpointIndex: 0,
+        laserStarted: false,
+        laserComplete: false,
+        explaining: false,
+        dismissing: false,
+        compact: false,
+        explainStartAt: 0,
+        explainMinMs: TUTORIAL_EXPLAIN_CONFIG.forceMs,
+        explainReady: false
+    };
     
     function drawHoldUI() {
         hCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
@@ -810,6 +960,384 @@
         laserAttack.phase = 'idle';
         laserAttack.cooldown = getRandomLaserCooldown();
         laserAttack.timer = 0;
+        if (isTutorialLevel() && getTutorialStepKey() === 'laser') {
+            tutorial.laserComplete = true;
+        }
+    }
+
+    function isTutorialLevel() {
+        return currentLevel && currentLevel.id === 'tutorial' && tutorial.active;
+    }
+
+    function getTutorialStep() {
+        return TUTORIAL_STEPS[tutorial.stepIndex] || TUTORIAL_STEPS[0];
+    }
+
+    function getTutorialStepKey() {
+        return getTutorialStep().key;
+    }
+
+    function setTutorialOverlayVisible(visible) {
+        if (!tutorialOverlay) return;
+        tutorialOverlay.classList.toggle('active', visible);
+        tutorialOverlay.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    }
+
+    function applyTutorialExplainConfig() {
+        if (!tutorialOverlay) return;
+        tutorialOverlay.style.paddingTop = `${TUTORIAL_EXPLAIN_CONFIG.yVh}vh`;
+        tutorialOverlay.style.setProperty('--tutorial-title-size', `${TUTORIAL_EXPLAIN_CONFIG.titleSizeVw}vw`);
+        tutorialOverlay.style.setProperty('--tutorial-text-size', `${TUTORIAL_EXPLAIN_CONFIG.textSizeVw}vw`);
+        tutorialOverlay.style.setProperty('--tutorial-hint-size', `${TUTORIAL_EXPLAIN_CONFIG.hintSizePx}px`);
+        tutorialOverlay.style.setProperty('--tutorial-dim-opacity', TUTORIAL_EXPLAIN_CONFIG.dimOpacity);
+        tutorialOverlay.style.setProperty('--tutorial-hint-blink', `${TUTORIAL_EXPLAIN_CONFIG.hintBlinkMs}ms`);
+        tutorialOverlay.style.setProperty('--tutorial-target-x', `${TUTORIAL_EXPLAIN_CONFIG.targetXVw}vw`);
+        tutorialOverlay.style.setProperty('--tutorial-target-y', `${TUTORIAL_EXPLAIN_CONFIG.targetYVh}vh`);
+        tutorialOverlay.style.setProperty('--tutorial-target-scale', TUTORIAL_EXPLAIN_CONFIG.targetScale);
+        tutorial.explainMinMs = TUTORIAL_EXPLAIN_CONFIG.forceMs;
+    }
+
+    function clearTutorialOverlayState() {
+        if (!tutorialOverlay) return;
+        tutorialOverlay.classList.remove('active', 'ready', 'dismiss', 'compact');
+        tutorialOverlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function updateTutorialOverlay() {
+        if (!isTutorialLevel() || (!tutorial.explaining && !tutorial.dismissing && !tutorial.compact)) {
+            setTutorialOverlayVisible(false);
+            return;
+        }
+
+        applyTutorialExplainConfig();
+        let step = getTutorialStep();
+        setTutorialOverlayVisible(true);
+        tutorialOverlay.classList.toggle('ready', tutorial.explainReady);
+        tutorialOverlay.classList.toggle('dismiss', tutorial.dismissing);
+        tutorialOverlay.classList.toggle('compact', tutorial.compact);
+        if (tutorialTitle) tutorialTitle.textContent = step.title;
+        if (tutorialText) tutorialText.textContent = step.text;
+        if (tutorialHint) tutorialHint.textContent = tutorial.compact ? '' : (tutorial.explainReady ? '아무 키 입력...' : '');
+    }
+
+    function startTutorialExplanation() {
+        tutorial.explaining = true;
+        tutorial.dismissing = false;
+        tutorial.compact = false;
+        tutorial.explainStartAt = performance.now();
+        tutorial.explainReady = false;
+        keys = {};
+        keysPressed = {};
+        updateTutorialOverlay();
+    }
+
+    function updateTutorialExplanationMode() {
+        if (!isTutorialLevel() || !tutorial.explaining) return;
+        tutorial.explainReady = performance.now() - tutorial.explainStartAt >= tutorial.explainMinMs;
+        updateTutorialOverlay();
+    }
+
+    function dismissTutorialExplanation() {
+        if (!isTutorialLevel() || !tutorial.explaining || !tutorial.explainReady) return false;
+        tutorial.dismissing = true;
+        tutorial.explainReady = false;
+        keys = {};
+        keysPressed = {};
+        updateTutorialOverlay();
+
+        setTimeout(() => {
+            if (!isTutorialLevel() || !tutorial.dismissing) return;
+            tutorial.explaining = false;
+            tutorial.dismissing = false;
+            tutorial.compact = true;
+            keys = {};
+            keysPressed = {};
+            if (tutorialOverlay) {
+                tutorialOverlay.classList.remove('dismiss', 'ready');
+                tutorialOverlay.classList.add('active', 'compact');
+                tutorialOverlay.setAttribute('aria-hidden', 'false');
+            }
+            updateTutorialOverlay();
+        }, 620);
+
+        return true;
+    }
+
+    function isTutorialInputLocked() {
+        return isTutorialLevel() && (tutorial.explaining || tutorial.dismissing);
+    }
+
+    function resetTutorialBoard() {
+        board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+    }
+
+    function placeTutorialJumpBlocks() {
+        resetTutorialBoard();
+        [
+            { r: 21, c: 4 },
+            { r: 22, c: 4 },
+            { r: 22, c: 5 }
+        ].forEach(cell => {
+            board[cell.r][cell.c] = getEnemyColor('L');
+        });
+    }
+
+    function setPlayerPosition(x, y = canvas.height - 27) {
+        if (!player) return;
+        player.x = Math.max(0, Math.min(canvas.width - player.w, x));
+        player.y = y;
+        player.vx = 0;
+        player.vy = 0;
+        player.isGrounded = true;
+    }
+
+    function setTutorialCheckpoint(x, y, label) {
+        tutorial.checkpoint = { x, y, r: 17, label };
+    }
+
+    function clearTutorialActors() {
+        enemies = [];
+        selectedBlock = null;
+        controlMode = 'CHARACTER';
+        heldPieceType = null;
+        canHold = true;
+        drawHoldUI();
+    }
+
+    function spawnTutorialBlock(type, gridX, y, ghost = false) {
+        let enemy = new EnemyPiece();
+        enemy.type = type;
+        enemy.matrix = PIECES[type];
+        enemy.gridX = gridX;
+        enemy.y = y;
+        enemy.dropInterval = 999;
+        enemy.isGhost = ghost;
+        enemies.push(enemy);
+
+        if (ghost) {
+            selectedBlock = enemy;
+            controlMode = 'BLOCK';
+        }
+
+        return enemy;
+    }
+
+    function enterTutorialStep(stepIndex) {
+        tutorial.stepIndex = stepIndex;
+        tutorial.checkpoint = null;
+        tutorial.target = null;
+        tutorial.moveCheckpointIndex = 0;
+        tutorial.laserStarted = false;
+        tutorial.laserComplete = false;
+        tutorial.explaining = false;
+        tutorial.dismissing = false;
+        tutorial.compact = false;
+        tutorial.explainReady = false;
+        clearTutorialActors();
+        resetTutorialBoard();
+        laserAttack.phase = 'idle';
+        laserAttack.timer = 0;
+        laserAttack.cooldown = 999;
+        keys = {};
+        keysPressed = {};
+
+        let key = getTutorialStepKey();
+        if (key === 'move') {
+            setPlayerPosition(canvas.width / 2 - 9);
+            setTutorialCheckpoint(45, canvas.height - 42, '01');
+        } else if (key === 'jump') {
+            placeTutorialJumpBlocks();
+            setPlayerPosition(canvas.width - 55);
+            setTutorialCheckpoint(40, canvas.height - 42, '02');
+        } else if (key === 'hack-target') {
+            setPlayerPosition(25);
+            tutorial.target = TUTORIAL_TARGET;
+            spawnTutorialBlock(TUTORIAL_TARGET.type, 4, HIDDEN_ROWS * BLOCK_SIZE, false);
+        } else if (key === 'hold') {
+            setPlayerPosition(25);
+            spawnTutorialBlock('L', 4, HIDDEN_ROWS * BLOCK_SIZE, true);
+            canHold = true;
+        } else if (key === 'laser') {
+            setPlayerPosition(canvas.width / 2 - 9);
+            laserAttack.phase = 'telegraph';
+            laserAttack.timer = 0;
+            laserAttack.row = ROWS - 1;
+            laserAttack.y = laserAttack.row * BLOCK_SIZE + BLOCK_SIZE / 2;
+            tutorial.laserStarted = true;
+        } else if (key === 'complete') {
+            score = currentLevel.targetScore;
+            showLevelClear();
+            return;
+        }
+
+        startTutorialExplanation();
+    }
+
+    function startTutorialLevel() {
+        tutorial.active = true;
+        enterTutorialStep(0);
+    }
+
+    function stopTutorialLevel() {
+        tutorial.active = false;
+        tutorial.checkpoint = null;
+        tutorial.target = null;
+        tutorial.explaining = false;
+        tutorial.dismissing = false;
+        tutorial.compact = false;
+        tutorial.explainReady = false;
+        clearTutorialOverlayState();
+    }
+
+    function advanceTutorialStep() {
+        if (!isTutorialLevel()) return;
+        enterTutorialStep(Math.min(tutorial.stepIndex + 1, TUTORIAL_STEPS.length - 1));
+    }
+
+    function failTutorialStep() {
+        if (!isTutorialLevel()) return false;
+        shakeAmount = Math.max(shakeAmount, 34);
+        enterTutorialStep(tutorial.stepIndex);
+        return true;
+    }
+
+    function rectIntersectsCircle(rect, circle) {
+        let closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.w));
+        let closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.h));
+        let dx = circle.x - closestX;
+        let dy = circle.y - closestY;
+        return dx * dx + dy * dy <= circle.r * circle.r;
+    }
+
+    function getPieceGridCells(piece) {
+        let gy = Math.round(piece.y / BLOCK_SIZE);
+        let cells = [];
+        for (let r = 0; r < piece.matrix.length; r++) {
+            for (let c = 0; c < piece.matrix[r].length; c++) {
+                if (piece.matrix[r][c]) cells.push(`${gy + r},${piece.gridX + c}`);
+            }
+        }
+        return cells.sort();
+    }
+
+    function getTargetGridCells(target) {
+        let cells = [];
+        for (let r = 0; r < target.matrix.length; r++) {
+            for (let c = 0; c < target.matrix[r].length; c++) {
+                if (target.matrix[r][c]) cells.push(`${target.gridY + r},${target.gridX + c}`);
+            }
+        }
+        return cells.sort();
+    }
+
+    function cellsMatch(a, b) {
+        return a.length === b.length && a.every((value, index) => value === b[index]);
+    }
+
+    function clearCellsFromBoard(cells) {
+        cells.forEach(cell => {
+            let [r, c] = cell.split(',').map(Number);
+            if (r >= 0 && r < ROWS && c >= 0 && c < COLS) board[r][c] = 0;
+        });
+    }
+
+    function handleTutorialPieceLock(piece) {
+        if (!isTutorialLevel()) return false;
+
+        let key = getTutorialStepKey();
+        if (key === 'hold') {
+            clearCellsFromBoard(getPieceGridCells(piece));
+            failTutorialStep();
+            return true;
+        }
+
+        if (key !== 'hack-target') return false;
+
+        let pieceCells = getPieceGridCells(piece);
+        let targetCells = getTargetGridCells(tutorial.target);
+        if (cellsMatch(pieceCells, targetCells)) {
+            advanceTutorialStep();
+            return true;
+        }
+
+        clearCellsFromBoard(pieceCells);
+        shakeAmount = Math.max(shakeAmount, 42);
+        spawnTutorialBlock(TUTORIAL_TARGET.type, 4, HIDDEN_ROWS * BLOCK_SIZE, false);
+        return true;
+    }
+
+    function updateTutorial(dt) {
+        if (!isTutorialLevel() || gameState !== 'playing') return;
+
+        score = 0;
+        updateTutorialOverlay();
+
+        let key = getTutorialStepKey();
+        if ((key === 'move' || key === 'jump') && tutorial.checkpoint && player) {
+            let pRect = { x: player.x, y: player.y, w: player.w, h: player.h };
+            if (rectIntersectsCircle(pRect, tutorial.checkpoint)) {
+                if (key === 'move' && tutorial.moveCheckpointIndex === 0) {
+                    tutorial.moveCheckpointIndex = 1;
+                    setTutorialCheckpoint(canvas.width - 45, canvas.height - 42, '02');
+                } else {
+                    advanceTutorialStep();
+                }
+            }
+        }
+
+        if (key === 'laser' && tutorial.laserComplete) {
+            advanceTutorialStep();
+        }
+    }
+
+    function drawTutorialCheckpoint() {
+        if (!isTutorialLevel() || !tutorial.checkpoint) return;
+
+        let cp = tutorial.checkpoint;
+        let pulse = 0.5 + Math.sin(performance.now() / 130) * 0.5;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = `rgba(255, 240, 106, ${0.7 + pulse * 0.3})`;
+        ctx.fillStyle = `rgba(255, 240, 106, ${0.16 + pulse * 0.12})`;
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#fff06a';
+        ctx.shadowBlur = 14 + pulse * 8;
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, cp.r + pulse * 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cp.label, cp.x, cp.y + 1);
+        ctx.restore();
+    }
+
+    function drawTutorialTarget() {
+        if (!isTutorialLevel() || getTutorialStepKey() !== 'hack-target' || !tutorial.target) return;
+
+        let target = tutorial.target;
+        let pulse = 0.5 + Math.sin(performance.now() / 160) * 0.5;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = `rgba(255, 153, 204, ${0.58 + pulse * 0.28})`;
+        ctx.fillStyle = `rgba(255, 153, 204, ${0.08 + pulse * 0.05})`;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#ff99cc';
+        ctx.shadowBlur = 16 + pulse * 8;
+        for (let r = 0; r < target.matrix.length; r++) {
+            for (let c = 0; c < target.matrix[r].length; c++) {
+                if (!target.matrix[r][c]) continue;
+                let x = (target.gridX + c) * BLOCK_SIZE;
+                let y = (target.gridY + r) * BLOCK_SIZE;
+                ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                ctx.strokeRect(x + 2, y + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
+            }
+        }
+        ctx.restore();
     }
 
     function setOverlayScreen(screen) {
@@ -928,6 +1456,9 @@
 
         if (!introOverlay || !introLevelLine || !introStartLine) {
             gameState = 'playing';
+            if (currentLevel.id === 'tutorial') {
+                startTutorialLevel();
+            }
             return;
         }
 
@@ -951,6 +1482,9 @@
         introTimeoutIds.push(setTimeout(() => {
             clearIntroSequence();
             gameState = 'playing';
+            if (currentLevel.id === 'tutorial') {
+                startTutorialLevel();
+            }
         }, introEndAt - introStartAt));
     }
 
@@ -983,6 +1517,7 @@
     }
 
     function showMenuScreen() {
+        stopTutorialLevel();
         gameState = 'menu';
         overlay.style.background = 'rgba(5, 5, 12, 0.92)';
         document.body.classList.remove('playing');
@@ -991,6 +1526,7 @@
     }
 
     function openLevelSelect() {
+        stopTutorialLevel();
         gameState = 'levelSelect';
         overlay.style.background = 'rgba(5, 5, 12, 0.92)';
         document.body.classList.remove('playing');
@@ -1020,6 +1556,7 @@
         if (gameState === 'levelClear') return;
         gameState = 'levelClear';
         levelClearShown = true;
+        stopTutorialLevel();
         if (currentLevelIndex === highestUnlockedLevel && currentLevelIndex < LEVELS.length - 1) {
             highestUnlockedLevel = currentLevelIndex + 1;
         }
@@ -1031,6 +1568,7 @@
     }
 
     function showGameOverScreen() {
+        stopTutorialLevel();
         gameState = 'gameOver';
         overlay.style.background = '#000';
         document.body.classList.remove('playing');
@@ -1060,6 +1598,7 @@
     }
 
     function resetRunState() {
+        stopTutorialLevel();
         clearIntroSequence();
         board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
         enemies = [];
@@ -1239,6 +1778,11 @@
     }
     
     function startDeathSequence(cause = 'crush') {
+        if (isTutorialLevel()) {
+            failTutorialStep();
+            return;
+        }
+
         if (!isDying && !isGameOver) {
             deathCause = cause;
             isDying = true;
@@ -1263,6 +1807,13 @@
     let keysPressed = {};
     
     window.addEventListener('keydown', e => { 
+        if (isTutorialInputLocked()) {
+            e.preventDefault();
+            updateTutorialExplanationMode();
+            dismissTutorialExplanation();
+            return;
+        }
+
         keys[e.code] = true; 
         keysPressed[e.code] = true; 
     });
@@ -1274,6 +1825,7 @@
     // 마우스 클릭으로 에러 블록 선택 로직
     canvas.addEventListener('mousedown', e => {
         if (gameState !== 'playing') return;
+        if (isTutorialInputLocked()) return;
         
         let rect = canvas.getBoundingClientRect();
         let scaleX = canvas.width / rect.width;
@@ -1325,6 +1877,7 @@
             this.currentFrame = 0;
             this.frameTimer = 0;
             this.frames = [];
+            this.bumpDir = 0;
             
             // 유저가 요청해 제공한 이미지 적용 
             this.spriteImg = new Image();
@@ -1769,6 +2322,12 @@
                         heldPieceType = this.type;
                         this.deleted = true;
 
+                        if (isTutorialLevel() && getTutorialStepKey() === 'hold') {
+                            advanceTutorialStep();
+                            drawHoldUI();
+                            return;
+                        }
+
                         if (swappedType) {
                             spawnHeldPiece(swappedType);
                         } else {
@@ -1889,6 +2448,11 @@
                         }
                     }
                 }
+            }
+
+            if (handleTutorialPieceLock(this)) {
+                updateDangerZoneState();
+                return;
             }
 
             if (checkDeadZoneLockRows(lockedRows)) {
@@ -2104,10 +2668,19 @@
             return;
         }
 
+        if (isTutorialInputLocked()) {
+            updateTutorialExplanationMode();
+            keys = {};
+            keysPressed = {};
+            return;
+        }
+
         updateDangerZoneState();
 
-        survivalTimer += dt;
-        if (survivalTimer >= 1.0) {
+        if (!isTutorialLevel()) {
+            survivalTimer += dt;
+        }
+        if (!isTutorialLevel() && survivalTimer >= 1.0) {
             survivalTimer -= 1.0;
             score += Math.floor(SCORE_CONFIG.survivalPerSec * currentLevel.scoreMultiplier);
         }
@@ -2116,7 +2689,7 @@
         enemySpawnTimer -= dt;
         
         let activeEnemies = enemies.filter(e => !e.deleted && !e.locked).length;
-        if (activeEnemies === 0 || enemySpawnTimer <= 0) {
+        if (!isTutorialLevel() && (activeEnemies === 0 || enemySpawnTimer <= 0)) {
             let newEnemy = new EnemyPiece();
             
             // 바닥(가장 아래쪽 블록)이 히든 영역(row 0~2) 내부의 위쪽에 위치하도록 y좌표 조정
@@ -2135,12 +2708,21 @@
         
         player.update(dt);
         updatePlayerIdleTimer(dt);
-        updateLaserAttack(dt);
+        if (!isTutorialLevel() || getTutorialStepKey() === 'laser') {
+            updateLaserAttack(dt);
+        }
         
         for (let i = enemies.length - 1; i >= 0; i--) {
-            enemies[i].update(dt);
+            let enemy = enemies[i];
+            if (!enemy) continue;
+            enemy.update(dt);
+
+            if (enemies[i] !== enemy) {
+                continue;
+            }
+
             // 굳어진 블록이나 삭제(홀드 등)된 블록 안전하게 제거
-            if (enemies[i].locked || enemies[i].deleted) {
+            if (enemy.locked || enemy.deleted) {
                 enemies.splice(i, 1);
             }
         }
@@ -2173,7 +2755,9 @@
             spawnHeldPiece(swappedType);
         }
 
-        if (!levelClearShown && score >= currentLevel.targetScore) {
+        updateTutorial(dt);
+
+        if (!isTutorialLevel() && !levelClearShown && score >= currentLevel.targetScore) {
             showLevelClear();
         }
 
@@ -2262,6 +2846,9 @@
                 }
             }
         }
+
+        drawTutorialTarget();
+        drawTutorialCheckpoint();
         
         // 에러 블록 그리기
         for (let e of enemies) e.draw(ctx);
@@ -2291,8 +2878,8 @@
 
         drawHardDropTrails();
         
-        // 플레이어 그리기 (인트로 카운트다운 중에는 UI 잔상 방지를 위해 숨김)
-        if (player && gameState !== 'intro') player.draw(ctx);
+        // 플레이어 그리기 (인트로/튜토리얼 설명 전환 중에는 UI 잔상 방지를 위해 숨김)
+        if (player && gameState !== 'intro' && !isTutorialInputLocked()) player.draw(ctx);
         
         // 파티클 그리기
         for (let p of particles) p.draw(ctx);

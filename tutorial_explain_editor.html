@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris_Error.exe Tutorial Explain UI Editor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            overflow: hidden;
+            background: #1a1a2e;
+            color: #f4f4ff;
+            font-family: Arial, sans-serif;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            pointer-events: none;
+            background:
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+        }
+
+        .preview {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .hold-panel,
+        .score-panel {
+            position: relative;
+            display: flex;
+            background: rgba(22, 22, 40, 0.9);
+            border: 4px solid #444;
+            box-shadow: 6px 6px 0 #000;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .hold-panel {
+            align-self: center;
+            width: 170px;
+            height: 124px;
+            padding: 10px;
+            transform: translateY(-200px);
+            flex-direction: column;
+            gap: 10px;
+            color: #ff99cc;
+            font-size: 10px;
+        }
+
+        .hold-box {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto;
+            background: #000;
+            border: 2px solid #111;
+        }
+
+        .canvas-outer {
+            position: relative;
+            padding: 10px;
+            background: #222;
+            border: 4px solid #444;
+            box-shadow: 10px 10px 0 #000;
+            z-index: 10;
+        }
+
+        .board {
+            position: relative;
+            width: 300px;
+            height: 690px;
+            background: #020204;
+            border: 2px solid #111;
+            background-image:
+                linear-gradient(#151515 1px, transparent 1px),
+                linear-gradient(90deg, #151515 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .player {
+            position: absolute;
+            left: 145px;
+            bottom: 6px;
+            width: 18px;
+            height: 26px;
+            background: #a3e4d7;
+            box-shadow: 0 0 10px rgba(163, 228, 215, 0.8);
+        }
+
+        .checkpoint {
+            position: absolute;
+            left: 42px;
+            bottom: 28px;
+            width: 34px;
+            height: 34px;
+            border: 3px solid #fff06a;
+            border-radius: 50%;
+            box-shadow: 0 0 18px rgba(255, 240, 106, 0.8);
+            transform: translate(-50%, 50%);
+        }
+
+        .score-panel {
+            align-self: center;
+            min-width: 140px;
+            padding: 20px;
+            transform: translateY(-100px);
+            flex-direction: column;
+            text-align: right;
+        }
+
+        .score-label {
+            margin-bottom: 10px;
+            color: #ff99cc;
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .score-value {
+            margin-bottom: 24px;
+            color: #fff;
+            font-size: 18px;
+            text-shadow: 3px 3px 0 #000;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            border: 2px solid #fff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 0 2px #000;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff99cc, #fff06a);
+        }
+
+        .tutorial-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 160;
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            padding: var(--tutorial-y, 50vh) 24px 24px;
+            align-items: center;
+            justify-content: flex-start;
+            flex-direction: column;
+            gap: 18px;
+            background: rgba(0, 0, 0, var(--tutorial-dim, 0.12));
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            pointer-events: none;
+            transition: background 0.62s ease;
+        }
+
+        .tutorial-overlay.active { display: flex; }
+
+        .tutorial-overlay.dismiss {
+            background: rgba(0, 0, 0, 0);
+        }
+
+        .tutorial-overlay.compact {
+            background: rgba(0, 0, 0, 0);
+        }
+
+        .tutorial-panel {
+            width: fit-content;
+            max-width: min(760px, calc(100vw - 40px));
+            padding: 14px 18px;
+            background: rgba(22, 22, 40, 0.9);
+            border: 4px solid #444;
+            box-shadow: 6px 6px 0 #000;
+        }
+
+        .tutorial-panel {
+            transition:
+                transform 0.62s cubic-bezier(0.18, 0.9, 0.22, 1),
+                opacity 0.62s ease;
+        }
+
+        .tutorial-overlay.dismiss .tutorial-panel,
+        .tutorial-overlay.compact .tutorial-panel {
+            transform:
+                translate(var(--tutorial-target-x, 0vw), var(--tutorial-target-y, -42vh))
+                scale(var(--tutorial-target-scale, 0.58));
+            opacity: 1;
+        }
+
+        .tutorial-title {
+            color: #fff06a;
+            font-size: clamp(18px, var(--tutorial-title-size, 2vw), 34px);
+            line-height: 1.5;
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.8),
+                0 0 18px rgba(255, 240, 106, 0.55),
+                4px 4px 0 #000;
+        }
+
+        .tutorial-text {
+            color: #fff;
+            font-size: clamp(18px, var(--tutorial-text-size, 2.3vw), 46px);
+            line-height: 1.8;
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.8),
+                0 0 18px rgba(255, 240, 106, 0.55),
+                4px 4px 0 #000;
+        }
+
+        .tutorial-hint {
+            min-height: 18px;
+            color: rgba(190, 190, 200, 0.92);
+            font-size: var(--tutorial-hint-size, 12px);
+            line-height: 1.6;
+            text-shadow: 2px 2px 0 #000;
+            opacity: 0;
+        }
+
+        .tutorial-overlay.ready .tutorial-hint {
+            animation: tutorialHintBlink var(--tutorial-hint-blink, 500ms) steps(2, end) infinite;
+        }
+
+        @keyframes tutorialHintBlink {
+            0%, 45% { opacity: 1; }
+            46%, 100% { opacity: 0.25; }
+        }
+
+        aside {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 260;
+            width: 420px;
+            max-width: min(420px, 42vw);
+            height: 100vh;
+            padding: 22px;
+            overflow: auto;
+            background: rgba(13, 13, 20, 0.96);
+            border-left: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        h1 {
+            margin: 0 0 18px;
+            color: #fff06a;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        h2 {
+            margin: 20px 0 8px;
+            color: #ff99cc;
+            font-size: 14px;
+        }
+
+        label {
+            display: grid;
+            gap: 7px;
+            margin: 13px 0;
+            color: #d8d8e8;
+            font-size: 13px;
+        }
+
+        input, button, textarea, select {
+            width: 100%;
+            font: inherit;
+        }
+
+        input[type="range"] { accent-color: #fff06a; }
+
+        button {
+            margin-top: 10px;
+            padding: 12px 14px;
+            border: 0;
+            background: #ff99cc;
+            color: #000;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        button.secondary { background: #fff06a; }
+
+        textarea {
+            min-height: 92px;
+            padding: 10px;
+            color: #d7fce6;
+            background: #050508;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            resize: vertical;
+        }
+
+        .step-editor {
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .step-editor strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff06a;
+            font-size: 12px;
+        }
+
+        .status {
+            min-height: 20px;
+            margin-top: 12px;
+            color: #aaaabb;
+            font-size: 12px;
+        }
+
+        .output-box {
+            min-height: 220px;
+            margin-top: 14px;
+        }
+    </style>
+</head>
+<body>
+    <main class="preview">
+        <div class="hold-panel">
+            <div>HOLD (F)</div>
+            <div class="hold-box"></div>
+        </div>
+        <div class="canvas-outer">
+            <div class="board">
+                <div class="checkpoint"></div>
+                <div class="player"></div>
+            </div>
+        </div>
+        <div class="score-panel">
+            <div class="score-label">SCORE</div>
+            <div class="score-value">0</div>
+            <div class="score-label">TARGET</div>
+            <div class="score-value" style="color:#fff06a;font-size:14px;">1,500</div>
+            <div class="score-label">COMBO</div>
+            <div class="score-value">0</div>
+            <div class="score-label">PROGRESS</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+    </main>
+
+    <div class="tutorial-overlay active" id="tutorial-overlay">
+        <div class="tutorial-panel" id="tutorial-panel">
+            <div class="tutorial-title" id="tutorial-title"></div>
+            <div class="tutorial-text" id="tutorial-text"></div>
+            <div class="tutorial-hint" id="tutorial-hint"></div>
+        </div>
+    </div>
+
+    <aside>
+        <h1>TUTORIAL EXPLAIN UI EDITOR</h1>
+
+        <label>미리보기 회차
+            <select id="preview-step"></select>
+        </label>
+
+        <h2>공통 스타일</h2>
+
+        <label>Y 위치(vh): <span id="y-value">50</span>
+            <input id="tutorial-y" type="range" min="0" max="90" value="50">
+        </label>
+
+        <label>제목 크기(vw): <span id="title-size-value">2</span>
+            <input id="title-size" type="range" min="1" max="8" step="0.1" value="2">
+        </label>
+
+        <label>설명 크기(vw): <span id="text-size-value">2.3</span>
+            <input id="text-size" type="range" min="1" max="10" step="0.1" value="2.3">
+        </label>
+
+        <label>하단 안내 크기(px): <span id="hint-size-value">12</span>
+            <input id="hint-size" type="range" min="6" max="18" value="12">
+        </label>
+
+        <label>화면 어둡기: <span id="dim-value">0.12</span>
+            <input id="dim-opacity" type="range" min="0" max="0.85" step="0.01" value="0.12">
+        </label>
+
+        <label>강제 유지 시간(ms): <span id="force-value">1500</span>
+            <input id="force-ms" type="range" min="300" max="4000" step="100" value="1500">
+        </label>
+
+        <label>깜빡임 속도(ms): <span id="blink-value">500</span>
+            <input id="blink-ms" type="range" min="250" max="1800" step="50" value="500">
+        </label>
+
+        <label>해제 후 X 위치(vw): <span id="target-x-value">0</span>
+            <input id="target-x" type="range" min="-60" max="60" step="1" value="0">
+        </label>
+
+        <label>해제 후 Y 위치(vh): <span id="target-y-value">-42</span>
+            <input id="target-y" type="range" min="-80" max="20" step="1" value="-42">
+        </label>
+
+        <label>해제 후 크기(scale): <span id="target-scale-value">0.58</span>
+            <input id="target-scale" type="range" min="0.25" max="1.2" step="0.01" value="0.58">
+        </label>
+
+        <label>하단 안내 공통 문구
+            <input id="hint-text" type="text" value="아무 키 입력...">
+        </label>
+
+        <h2>회차별 멘트</h2>
+        <div id="steps-editor"></div>
+
+        <button onclick="playExplain()">PLAY EXPLAIN MODE</button>
+        <button class="secondary" onclick="copyConfig()">COPY ALL CONFIG</button>
+
+        <div class="status" id="status">메인과 같은 fixed viewport 기준입니다.</div>
+        <textarea id="output" class="output-box" readonly></textarea>
+    </aside>
+
+    <script>
+        const overlay = document.getElementById('tutorial-overlay');
+        const title = document.getElementById('tutorial-title');
+        const text = document.getElementById('tutorial-text');
+        const hint = document.getElementById('tutorial-hint');
+        const output = document.getElementById('output');
+        const status = document.getElementById('status');
+        const previewStep = document.getElementById('preview-step');
+        const stepsEditor = document.getElementById('steps-editor');
+
+        const styleInputs = {
+            y: document.getElementById('tutorial-y'),
+            titleSize: document.getElementById('title-size'),
+            textSize: document.getElementById('text-size'),
+            hintSize: document.getElementById('hint-size'),
+            dim: document.getElementById('dim-opacity'),
+            force: document.getElementById('force-ms'),
+            blink: document.getElementById('blink-ms'),
+            targetX: document.getElementById('target-x'),
+            targetY: document.getElementById('target-y'),
+            targetScale: document.getElementById('target-scale'),
+            hintText: document.getElementById('hint-text')
+        };
+
+        const steps = [
+            { key: 'move', label: '1. 이동', title: '목표로 이동하세요!', text: '이동 : A / D' },
+            { key: 'jump', label: '2. 점프', title: '목표로 이동하세요!', text: '점프 : W / spacebar' },
+            { key: 'hack-target', label: '3. 해킹 목표 배치', title: 'HACKING 01', text: '클릭 선택 / A D 이동 / W 회전 / S 소프트드롭 / Space 하드드롭' },
+            { key: 'hold', label: '4. 홀드', title: 'HACKING 02', text: 'F 홀드' },
+            { key: 'laser', label: '5. 레이저', title: 'LASER 01', text: '빨간 예고선을 피하세요' },
+            { key: 'complete', label: '6. 완료', title: 'TUTORIAL', text: '튜토리얼 완료' }
+        ];
+
+        let ready = false;
+        let dismissing = false;
+        let forceTimer = null;
+
+        function getStyleConfig() {
+            return {
+                yVh: Number(styleInputs.y.value),
+                titleSizeVw: Number(styleInputs.titleSize.value),
+                textSizeVw: Number(styleInputs.textSize.value),
+                hintSizePx: Number(styleInputs.hintSize.value),
+                forceMs: Number(styleInputs.force.value),
+                dimOpacity: Number(styleInputs.dim.value),
+                hintBlinkMs: Number(styleInputs.blink.value),
+                targetXVw: Number(styleInputs.targetX.value),
+                targetYVh: Number(styleInputs.targetY.value),
+                targetScale: Number(styleInputs.targetScale.value)
+            };
+        }
+
+        function getStepConfig() {
+            return steps.map(step => ({
+                key: step.key,
+                title: document.getElementById(`${step.key}-title`).value,
+                text: document.getElementById(`${step.key}-text`).value
+            }));
+        }
+
+        function getConfig() {
+            return {
+                hint: styleInputs.hintText.value,
+                style: getStyleConfig(),
+                steps: getStepConfig()
+            };
+        }
+
+        function renderStepEditors() {
+            previewStep.innerHTML = '';
+            stepsEditor.innerHTML = '';
+
+            steps.forEach(step => {
+                let option = document.createElement('option');
+                option.value = step.key;
+                option.textContent = step.label;
+                previewStep.appendChild(option);
+
+                let section = document.createElement('section');
+                section.className = 'step-editor';
+                section.innerHTML = `
+                    <strong>${step.label}</strong>
+                    <label>제목
+                        <input id="${step.key}-title" type="text" value="${step.title}">
+                    </label>
+                    <label>설명
+                        <textarea id="${step.key}-text">${step.text}</textarea>
+                    </label>
+                `;
+                stepsEditor.appendChild(section);
+            });
+        }
+
+        function getSelectedStep() {
+            return getStepConfig().find(step => step.key === previewStep.value) || getStepConfig()[0];
+        }
+
+        function applyConfig() {
+            const style = getStyleConfig();
+            const selected = getSelectedStep();
+            title.textContent = selected.title;
+            text.textContent = selected.text;
+            hint.textContent = overlay.classList.contains('compact') ? '' : styleInputs.hintText.value;
+
+            overlay.style.setProperty('--tutorial-y', `${style.yVh}vh`);
+            overlay.style.setProperty('--tutorial-title-size', `${style.titleSizeVw}vw`);
+            overlay.style.setProperty('--tutorial-text-size', `${style.textSizeVw}vw`);
+            overlay.style.setProperty('--tutorial-hint-size', `${style.hintSizePx}px`);
+            overlay.style.setProperty('--tutorial-dim', style.dimOpacity);
+            overlay.style.setProperty('--tutorial-hint-blink', `${style.hintBlinkMs}ms`);
+            overlay.style.setProperty('--tutorial-target-x', `${style.targetXVw}vw`);
+            overlay.style.setProperty('--tutorial-target-y', `${style.targetYVh}vh`);
+            overlay.style.setProperty('--tutorial-target-scale', style.targetScale);
+
+            document.getElementById('y-value').textContent = style.yVh;
+            document.getElementById('title-size-value').textContent = style.titleSizeVw;
+            document.getElementById('text-size-value').textContent = style.textSizeVw;
+            document.getElementById('hint-size-value').textContent = style.hintSizePx;
+            document.getElementById('dim-value').textContent = style.dimOpacity.toFixed(2);
+            document.getElementById('force-value').textContent = style.forceMs;
+            document.getElementById('blink-value').textContent = style.hintBlinkMs;
+            document.getElementById('target-x-value').textContent = style.targetXVw;
+            document.getElementById('target-y-value').textContent = style.targetYVh;
+            document.getElementById('target-scale-value').textContent = style.targetScale.toFixed(2);
+
+            output.value = JSON.stringify(getConfig(), null, 2);
+        }
+
+        function keepCompactPreviewVisible() {
+            if (!overlay.classList.contains('compact')) return;
+            clearTimeout(forceTimer);
+            ready = false;
+            dismissing = false;
+            overlay.classList.add('active', 'compact');
+            overlay.classList.remove('ready', 'dismiss');
+            hint.textContent = '';
+            status.textContent = '작은 안내 패널 미리보기 중';
+        }
+
+        function playExplain() {
+            applyConfig();
+            clearTimeout(forceTimer);
+            ready = false;
+            dismissing = false;
+            overlay.classList.add('active');
+            overlay.classList.remove('ready', 'dismiss', 'compact');
+            status.textContent = '강제 유지 중: 키 입력 무시';
+            forceTimer = setTimeout(() => {
+                ready = true;
+                overlay.classList.add('ready');
+                status.textContent = '입력시 해제 가능: 아무 키나 누르세요';
+            }, getStyleConfig().forceMs);
+        }
+
+        function copyConfig() {
+            applyConfig();
+            navigator.clipboard.writeText(output.value);
+            status.textContent = '전체 CONFIG 복사됨';
+        }
+
+        window.addEventListener('keydown', event => {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+            if (!overlay.classList.contains('active')) return;
+            if (dismissing) return;
+            if (!ready) {
+                status.textContent = '아직 강제 유지 시간입니다';
+                return;
+            }
+            overlay.classList.remove('ready');
+            overlay.classList.add('dismiss');
+            dismissing = true;
+            status.textContent = '위로 이동하며 원래 밝기로 복귀 중';
+            setTimeout(() => {
+                overlay.classList.remove('dismiss');
+                overlay.classList.add('active', 'compact');
+                dismissing = false;
+                ready = false;
+                status.textContent = '작은 안내 패널 유지 중 - PLAY로 다시 테스트';
+            }, 620);
+            event.preventDefault();
+        });
+
+        renderStepEditors();
+
+        document.querySelectorAll('input, textarea, select').forEach(input => {
+            input.addEventListener('input', () => {
+                applyConfig();
+                keepCompactPreviewVisible();
+            });
+            input.addEventListener('change', () => {
+                applyConfig();
+                keepCompactPreviewVisible();
+            });
+        });
+
+        applyConfig();
+        playExplain();
+    </script>
+</body>
+</html>
