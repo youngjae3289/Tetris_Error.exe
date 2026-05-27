@@ -582,8 +582,34 @@
     };
     
     const ENEMY_COLOR = '#8B0000';
+    const ENEMY_COLORS = {
+        I: '#A10B0B',
+        J: '#7F050D',
+        L: '#B21818',
+        O: '#8B0000',
+        S: '#9B1024',
+        T: '#C0262A',
+        Z: '#6F0612'
+    };
     const GHOST_COLOR = 'rgba(139, 0, 0, 0.5)';
     const PLAYER_COLOR = '#A3E4D7';
+
+    function getEnemyColor(type) {
+        return ENEMY_COLORS[type] || ENEMY_COLOR;
+    }
+
+    function drawErrorBlock(context, x, y, size, color, highlightAlpha = 0.1) {
+        context.fillStyle = color;
+        context.fillRect(x, y, size, size);
+        context.strokeStyle = '#000';
+        context.strokeRect(x, y, size, size);
+
+        context.fillStyle = `rgba(255, 255, 255, ${highlightAlpha})`;
+        context.fillRect(x + 2, y + 2, size - 4, Math.max(3, size * 0.14));
+
+        context.fillStyle = 'rgba(0, 0, 0, 0.16)';
+        context.fillRect(x + size - 5, y + 3, 2, size - 6);
+    }
 
     // ==============================================
     // [점수 및 밸런스 설정] - 직접 수치를 조정할 수 있습니다
@@ -626,16 +652,11 @@
         let bs = 20; 
         let offsetX = (holdCanvas.width - matrix[0].length * bs) / 2;
         let offsetY = (holdCanvas.height - matrix.length * bs) / 2;
-        hCtx.fillStyle = ENEMY_COLOR;
-        hCtx.strokeStyle = '#000';
+        let color = getEnemyColor(heldPieceType);
         for (let r = 0; r < matrix.length; r++) {
             for (let c = 0; c < matrix[r].length; c++) {
                 if (matrix[r][c]) {
-                    hCtx.fillRect(offsetX + c * bs, offsetY + r * bs, bs, bs);
-                    hCtx.strokeRect(offsetX + c * bs, offsetY + r * bs, bs, bs);
-                    hCtx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                    hCtx.fillRect(offsetX + c * bs + 2, offsetY + r * bs + 2, bs - 4, 4);
-                    hCtx.fillStyle = ENEMY_COLOR;
+                    drawErrorBlock(hCtx, offsetX + c * bs, offsetY + r * bs, bs, color, 0.12);
                 }
             }
         }
@@ -1863,7 +1884,7 @@
                         let ny = gy + r;
                         let nx = this.gridX + c;
                         if (ny >= 0 && ny < ROWS && nx >=0 && nx < COLS) {
-                            board[ny][nx] = 1;
+                            board[ny][nx] = getEnemyColor(this.type);
                             lockedRows.push(ny);
                         }
                     }
@@ -1953,8 +1974,6 @@
                 ctx.strokeStyle = '#ff99cc';
             } else {
                 ctx.shadowBlur = 0;
-                ctx.fillStyle = ENEMY_COLOR;
-                ctx.strokeStyle = '#000';
             }
             
             for (let r = 0; r < this.matrix.length; r++) {
@@ -1962,13 +1981,17 @@
                     if (this.matrix[r][c]) {
                         let px = (this.gridX + c) * BLOCK_SIZE;
                         let py = this.y + r * BLOCK_SIZE;
-                        ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
-                        ctx.strokeRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
-                        
-                        // 레트로 스캔라인 빛 반사 효과 (CRT Inner highlight)
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                        ctx.fillRect(px + 2, py + 2, 26, 4);
-                        ctx.fillStyle = this.isGhost ? 'rgba(255, 153, 204, 0.4)' : ENEMY_COLOR; // 기존 색 복구
+                        if (this.isGhost) {
+                            ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                            ctx.strokeRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                            
+                            // 레트로 스캔라인 빛 반사 효과 (CRT Inner highlight)
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                            ctx.fillRect(px + 2, py + 2, 26, 4);
+                            ctx.fillStyle = 'rgba(255, 153, 204, 0.4)';
+                        } else {
+                            drawErrorBlock(ctx, px, py, BLOCK_SIZE, getEnemyColor(this.type), 0.1);
+                        }
                     }
                 }
             }
@@ -2235,13 +2258,7 @@
                 if (board[r][c]) {
                     let px = c * BLOCK_SIZE; 
                     let py = r * BLOCK_SIZE;
-                    ctx.fillStyle = ENEMY_COLOR;
-                    ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
-                    ctx.strokeStyle = '#000';
-                    ctx.strokeRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
-                    
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-                    ctx.fillRect(px + 2, py + 2, 26, 4);
+                    drawErrorBlock(ctx, px, py, BLOCK_SIZE, board[r][c], 0.05);
                 }
             }
         }
