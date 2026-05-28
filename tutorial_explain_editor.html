@@ -377,8 +377,8 @@
 
         <h2>공통 스타일</h2>
 
-        <label>Y 위치(vh): <span id="y-value">50</span>
-            <input id="tutorial-y" type="range" min="0" max="90" value="50">
+        <label>Y 위치(vh): <span id="y-value">43</span>
+            <input id="tutorial-y" type="range" min="0" max="90" value="43">
         </label>
 
         <label>제목 크기(vw): <span id="title-size-value">2</span>
@@ -458,10 +458,12 @@
         const steps = [
             { key: 'move', label: '1. 이동', title: '목표로 이동하세요!', text: '이동 : A / D' },
             { key: 'jump', label: '2. 점프', title: '목표로 이동하세요!', text: '점프 : W / spacebar' },
-            { key: 'hack-target', label: '3. 해킹 목표 배치', title: 'HACKING 01', text: '클릭 선택 / A D 이동 / W 회전 / S 소프트드롭 / Space 하드드롭' },
-            { key: 'hold', label: '4. 홀드', title: 'HACKING 02', text: 'F 홀드' },
-            { key: 'laser', label: '5. 레이저', title: 'LASER 01', text: '빨간 예고선을 피하세요' },
-            { key: 'complete', label: '6. 완료', title: 'TUTORIAL', text: '튜토리얼 완료' }
+            { key: 'hack-select', label: '3. 해킹 1 - 블록 선택', title: '블록을 클릭하세요!', text: '블록 선택 : 클릭' },
+            { key: 'hack-place', label: '4. 해킹 2 - 블록 설치', title: '조작하여 설치하세요!', text: '블록 설치 : A D / W / S / Spacebar' },
+            { key: 'hold-store', label: '5. 해킹 3 - 블록 홀드', title: '블록을 저장할 수 있습니다!', text: '블록 홀드 : F' },
+            { key: 'hold-place', label: '6. 해킹 4 - 홀드 설치', title: '조작하여 설치하세요!', text: '홀드 꺼내기 : F' },
+            { key: 'laser', label: '7. 레이저', title: '레이저를 피하세요!', text: '약 2초뒤 레이저가 옵니다..' },
+            { key: 'complete', label: '8. 완료', title: '튜토리얼 완료!', text: '축하합니다.' }
         ];
 
         let ready = false;

@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris_Error.exe Cinematic Intro Editor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * { box-sizing: border-box; }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 410px;
+            overflow: hidden;
+            background: #141426;
+            color: #f4f4ff;
+            font-family: Arial, sans-serif;
+        }
+
+        .preview {
+            position: relative;
+            min-width: 0;
+            min-height: 100vh;
+            overflow: hidden;
+            background: #06060c;
+        }
+
+        .preview::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 30;
+            pointer-events: none;
+            background:
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+            background-size: 100% 4px, 3px 100%;
+        }
+
+        .stage {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .stage::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            pointer-events: none;
+            background: rgba(0, 0, 0, var(--dim-opacity, 0.16));
+        }
+
+        .story-image {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 10;
+            width: min(100vw, calc(100vh * 1.777));
+            height: auto;
+            max-width: none;
+            opacity: 0;
+            filter: saturate(1.05) contrast(1.03);
+            transform:
+                translate(calc(-50% + var(--story-x, 0vw)), calc(-50% + var(--story-y, 0vh)))
+                scale(var(--story-scale, 1));
+        }
+
+        .story-label {
+            position: absolute;
+            left: 24px;
+            bottom: 22px;
+            z-index: 40;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.52);
+            border: 2px solid rgba(255, 255, 255, 0.22);
+            color: #fff06a;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            line-height: 1.5;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .dialogue-box {
+            position: absolute;
+            left: var(--dialogue-left, 12vw);
+            right: var(--dialogue-right, 12vw);
+            bottom: var(--dialogue-y, 7vh);
+            z-index: 38;
+            width: auto;
+            min-height: 168px;
+            padding: 18px 22px;
+            background: rgba(12, 12, 24, var(--dialogue-bg, 0.86));
+            border: 4px solid #444;
+            box-shadow: 8px 8px 0 #000, 0 0 20px rgba(255, 153, 204, 0.18);
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: var(--dialogue-font, 15px);
+            line-height: 1.75;
+            text-shadow: 3px 3px 0 #000;
+            opacity: 0;
+            transform: translateX(var(--dialogue-x, 0vw));
+            white-space: pre-wrap;
+        }
+
+        .dialogue-box.empty {
+            display: none;
+        }
+
+        .error-message {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 50;
+            display: none;
+            width: min(680px, calc(100vw - 80px));
+            padding: 18px;
+            background: rgba(20, 0, 8, 0.88);
+            border: 4px solid #ff99cc;
+            box-shadow: 8px 8px 0 #000;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            line-height: 1.7;
+            text-align: center;
+            transform: translate(-50%, -50%);
+        }
+
+        aside {
+            height: 100vh;
+            padding: 22px;
+            overflow: auto;
+            background: #0d0d14;
+            border-left: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        h1 {
+            margin: 0 0 18px;
+            color: #fff06a;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        label {
+            display: grid;
+            gap: 7px;
+            margin: 14px 0;
+            color: #d8d8e8;
+            font-size: 13px;
+        }
+
+        input,
+        button,
+        textarea,
+        select {
+            width: 100%;
+            font: inherit;
+        }
+
+        input,
+        select {
+            padding: 9px;
+            color: #fff;
+            background: #050508;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        input[type="range"] {
+            padding: 0;
+            accent-color: #fff06a;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 12px 14px;
+            border: 0;
+            background: #ff99cc;
+            color: #000;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        button.secondary { background: #fff06a; }
+        button.danger { background: #ff5555; }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .status {
+            min-height: 20px;
+            margin-top: 12px;
+            color: #aaaabb;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        textarea {
+            min-height: 230px;
+            margin-top: 14px;
+            padding: 12px;
+            color: #d7fce6;
+            background: #050508;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            resize: vertical;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        textarea.dialogue-input {
+            min-height: 84px;
+            margin-top: 0;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <main class="preview">
+        <section class="stage" id="stage">
+            <img class="story-image" id="story-image" alt="인트로 시네마틱 스토리 이미지">
+            <div class="dialogue-box" id="dialogue-box"></div>
+            <div class="story-label" id="story-label">STORY 1</div>
+            <div class="error-message" id="error-message"></div>
+        </section>
+    </main>
+
+    <aside>
+        <h1>CINEMATIC INTRO EDITOR</h1>
+
+        <label>현재 슬라이드
+            <select id="slide-select"></select>
+        </label>
+
+        <label>표시 이름
+            <input id="slide-name" type="text">
+        </label>
+
+        <label>이미지 경로
+            <input id="slide-src" type="text">
+        </label>
+
+        <label>Fade In(ms): <span id="fade-in-value">700</span>
+            <input id="fade-in" type="range" min="100" max="3000" step="50" value="700">
+        </label>
+
+        <label>Hold(ms): <span id="hold-value">1800</span>
+            <input id="hold" type="range" min="200" max="6000" step="50" value="1800">
+        </label>
+
+        <label>Fade Out(ms): <span id="fade-out-value">700</span>
+            <input id="fade-out" type="range" min="100" max="3000" step="50" value="700">
+        </label>
+
+        <label>Scale: <span id="scale-value">1.00</span>
+            <input id="scale" type="range" min="0.5" max="1.8" step="0.01" value="1">
+        </label>
+
+        <label>X 위치(vw): <span id="x-value">0</span>
+            <input id="x" type="range" min="-40" max="40" step="0.5" value="0">
+        </label>
+
+        <label>Y 위치(vh): <span id="y-value">0</span>
+            <input id="y" type="range" min="-40" max="40" step="0.5" value="0">
+        </label>
+
+        <label>배경 어두움: <span id="dim-value">0.16</span>
+            <input id="dim" type="range" min="0" max="0.75" step="0.01" value="0.16">
+        </label>
+
+        <label>현재 대사
+            <select id="dialogue-select"></select>
+        </label>
+
+        <div class="button-grid">
+            <button class="secondary" onclick="addDialogue()">ADD DIALOGUE</button>
+            <button class="danger" onclick="removeDialogue()">DELETE DIALOGUE</button>
+        </div>
+
+        <label>대사 내용
+            <textarea class="dialogue-input" id="dialogue-text"></textarea>
+        </label>
+
+        <label>대사 시작(ms): <span id="dialogue-start-value">0</span>
+            <input id="dialogue-start" type="range" min="0" max="6000" step="50" value="0">
+        </label>
+
+        <label>대사 유지(ms): <span id="dialogue-duration-value">1400</span>
+            <input id="dialogue-duration" type="range" min="300" max="6000" step="50" value="1400">
+        </label>
+
+        <label>한 글자 시간(ms): <span id="dialogue-type-value">35</span>
+            <input id="dialogue-type" type="range" min="10" max="140" step="5" value="35">
+        </label>
+
+        <label>대화창 너비(vw): <span id="dialogue-width-value">76</span>
+            <input id="dialogue-width" type="range" min="30" max="96" step="1" value="76">
+        </label>
+
+        <label>대화창 왼쪽 여백(vw): <span id="dialogue-left-value">12</span>
+            <input id="dialogue-left" type="range" min="0" max="40" step="0.5" value="12">
+        </label>
+
+        <label>대화창 오른쪽 여백(vw): <span id="dialogue-right-value">12</span>
+            <input id="dialogue-right" type="range" min="0" max="40" step="0.5" value="12">
+        </label>
+
+        <label>대화창 높이(px): <span id="dialogue-height-value">168</span>
+            <input id="dialogue-height" type="range" min="168" max="168" step="1" value="168">
+        </label>
+
+        <label>대화창 X 위치(vw): <span id="dialogue-x-value">0</span>
+            <input id="dialogue-x" type="range" min="-30" max="30" step="0.5" value="0">
+        </label>
+
+        <label>대화창 아래 위치(vh): <span id="dialogue-y-value">7</span>
+            <input id="dialogue-y" type="range" min="0" max="35" step="0.5" value="7">
+        </label>
+
+        <label>대사 글자 크기(px): <span id="dialogue-font-value">15</span>
+            <input id="dialogue-font" type="range" min="8" max="28" step="1" value="15">
+        </label>
+
+        <label>대화창 배경 농도: <span id="dialogue-bg-value">0.86</span>
+            <input id="dialogue-bg" type="range" min="0" max="1" step="0.01" value="0.86">
+        </label>
+
+        <div class="button-grid">
+            <button onclick="playFull()">PLAY FULL</button>
+            <button class="secondary" onclick="replayCurrent()">REPLAY CURRENT</button>
+            <button class="danger" onclick="stopPlayback()">STOP</button>
+            <button onclick="copyConfig()">COPY CONFIG</button>
+        </div>
+
+        <div class="status" id="status">스토리 1~4 기본 시네마틱 설정입니다.</div>
+        <textarea id="output" readonly></textarea>
+    </aside>
+
+    <script>
+        const DEFAULT_SLIDES = [
+            { key: 'story-1', name: 'STORY 1', src: 'Resources/스토리1.png', fadeInMs: 700, holdMs: 4300, fadeOutMs: 700, scale: 1.3, xVw: 7, yVh: 13, dimOpacity: 0.07, dialogues: [
+                { text: '서아는 오락실에서 테트리스를 하고 있었다.', startMs: 250, durationMs: 1750, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 },
+                { text: '익숙한 블록들이 쌓여 가고, 서아는 게임에 점점 더 몰입한다.', startMs: 2300, durationMs: 1850, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 }
+            ] },
+            { key: 'story-2', name: 'STORY 2', src: 'Resources/스토리2.png', fadeInMs: 700, holdMs: 4400, fadeOutMs: 700, scale: 1, xVw: 0, yVh: 0, dimOpacity: 0.16, dialogues: [
+                { text: '조작에 집중한 서아의 시선엔 게임 화면만이 가득했다.\n', startMs: 250, durationMs: 1750, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 },
+                { text: '그 순간, 화면이 지직거리며 정체불명의 에러 블록이 나타난다.\n', startMs: 2300, durationMs: 1850, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 }
+            ] },
+            { key: 'story-3', name: 'STORY 3', src: 'Resources/스토리3.png', fadeInMs: 400, holdMs: 2600, fadeOutMs: 400, scale: 1.04, xVw: 0, yVh: 0, dimOpacity: 0.16, dialogues: [
+                { text: '평범하던 테트리스는 붉게 뒤틀리고, 게임은 이상한 형태로 변하기 시작한다.', startMs: 250, durationMs: 2200, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 }
+            ] },
+            { key: 'story-4', name: 'STORY 4', src: 'Resources/스토리4', fadeInMs: 300, holdMs: 4300, fadeOutMs: 950, scale: 1.48, xVw: 0, yVh: 15.5, dimOpacity: 0.13, dialogues: [
+                { text: '화면 속 악마가 손을 내뻗자, 붉은 빛이 게임기 밖으로 새어 나온다.', startMs: 250, durationMs: 1750, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 },
+                { text: '서아는 저항할 틈도 없이 그 힘에 끌려, 테트리스 속 세계로 빨려 들어간다.', startMs: 2300, durationMs: 1850, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 }
+            ] }
+        ];
+
+        const stage = document.getElementById('stage');
+        const storyImage = document.getElementById('story-image');
+        const dialogueBox = document.getElementById('dialogue-box');
+        const storyLabel = document.getElementById('story-label');
+        const errorMessage = document.getElementById('error-message');
+        const slideSelect = document.getElementById('slide-select');
+        const nameInput = document.getElementById('slide-name');
+        const srcInput = document.getElementById('slide-src');
+        const fadeInInput = document.getElementById('fade-in');
+        const holdInput = document.getElementById('hold');
+        const fadeOutInput = document.getElementById('fade-out');
+        const scaleInput = document.getElementById('scale');
+        const xInput = document.getElementById('x');
+        const yInput = document.getElementById('y');
+        const dimInput = document.getElementById('dim');
+        const dialogueSelect = document.getElementById('dialogue-select');
+        const dialogueTextInput = document.getElementById('dialogue-text');
+        const dialogueStartInput = document.getElementById('dialogue-start');
+        const dialogueDurationInput = document.getElementById('dialogue-duration');
+        const dialogueTypeInput = document.getElementById('dialogue-type');
+        const dialogueWidthInput = document.getElementById('dialogue-width');
+        const dialogueLeftInput = document.getElementById('dialogue-left');
+        const dialogueRightInput = document.getElementById('dialogue-right');
+        const dialogueHeightInput = document.getElementById('dialogue-height');
+        const dialogueXInput = document.getElementById('dialogue-x');
+        const dialogueYInput = document.getElementById('dialogue-y');
+        const dialogueFontInput = document.getElementById('dialogue-font');
+        const dialogueBgInput = document.getElementById('dialogue-bg');
+        const status = document.getElementById('status');
+        const output = document.getElementById('output');
+
+        let slides = DEFAULT_SLIDES.map(slide => normalizeSlide(slide));
+        let currentIndex = 0;
+        let currentDialogueIndex = 0;
+        let timers = [];
+        let currentFrame = null;
+
+        function populateSlideSelect() {
+            slideSelect.innerHTML = '';
+            slides.forEach((slide, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                option.textContent = `${index + 1}. ${slide.name}`;
+                slideSelect.appendChild(option);
+            });
+        }
+
+        function createDefaultDialogue(overrides = {}) {
+            return {
+                text: '',
+                startMs: 0,
+                durationMs: 1400,
+                typeMs: 35,
+                widthVw: 76,
+                leftVw: 12,
+                rightVw: 12,
+                heightPx: 168,
+                xVw: 0,
+                yVh: 7,
+                fontSizePx: 15,
+                bgOpacity: 0.86,
+                ...overrides
+            };
+        }
+
+        function normalizeSlide(slide) {
+            const normalized = { ...slide };
+            const sourceDialogues = normalized.dialogues || (normalized.dialogue ? [normalized.dialogue] : []);
+            normalized.dialogues = sourceDialogues.length
+                ? sourceDialogues.map(dialogue => createDefaultDialogue(dialogue))
+                : [createDefaultDialogue()];
+            delete normalized.dialogue;
+            return normalized;
+        }
+
+        function getCurrentSlide() {
+            return slides[currentIndex];
+        }
+
+        function getCurrentDialogues() {
+            const slide = getCurrentSlide();
+            if (!slide.dialogues || slide.dialogues.length === 0) {
+                slide.dialogues = [createDefaultDialogue()];
+            }
+            return slide.dialogues;
+        }
+
+        function getCurrentDialogue() {
+            const dialogues = getCurrentDialogues();
+            currentDialogueIndex = Math.max(0, Math.min(currentDialogueIndex, dialogues.length - 1));
+            return dialogues[currentDialogueIndex];
+        }
+
+        function getDialogueHoldMinimum(slide) {
+            const nonEmptyDialogues = slide.dialogues.filter(dialogue => dialogue.text.trim().length > 0);
+            if (nonEmptyDialogues.length === 0) return 200;
+
+            const totalDuration = nonEmptyDialogues.reduce((sum, dialogue) => sum + dialogue.durationMs, 0);
+            const latestEnd = nonEmptyDialogues.reduce((max, dialogue) => {
+                return Math.max(max, dialogue.startMs + dialogue.durationMs);
+            }, 0);
+            return Math.max(200, totalDuration, latestEnd);
+        }
+
+        function syncHoldMinimum(slide) {
+            const minimum = getDialogueHoldMinimum(slide);
+            const max = Math.max(6000, minimum);
+            holdInput.min = String(minimum);
+            holdInput.max = String(max);
+            if (slide.holdMs < minimum) {
+                slide.holdMs = minimum;
+            }
+            holdInput.value = slide.holdMs;
+            return minimum;
+        }
+
+        function populateDialogueSelect() {
+            const dialogues = getCurrentDialogues();
+            dialogueSelect.innerHTML = '';
+            dialogues.forEach((dialogue, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                option.textContent = `${index + 1}. ${dialogue.text.trim() || 'EMPTY DIALOGUE'}`;
+                dialogueSelect.appendChild(option);
+            });
+            dialogueSelect.value = String(currentDialogueIndex);
+        }
+
+        function addDialogue() {
+            syncSlideFromInputs();
+            const dialogues = getCurrentDialogues();
+            dialogues.push(createDefaultDialogue({ startMs: Math.min(Number(holdInput.value), dialogues.length * 900) }));
+            currentDialogueIndex = dialogues.length - 1;
+            populateDialogueSelect();
+            syncInputsFromSlide();
+            applySlide(getCurrentSlide(), true);
+            updateOutput();
+            status.textContent = `대사 ${currentDialogueIndex + 1} 추가됨`;
+        }
+
+        function removeDialogue() {
+            const dialogues = getCurrentDialogues();
+            if (dialogues.length <= 1) {
+                dialogues[0] = createDefaultDialogue();
+                currentDialogueIndex = 0;
+            } else {
+                dialogues.splice(currentDialogueIndex, 1);
+                currentDialogueIndex = Math.max(0, currentDialogueIndex - 1);
+            }
+            populateDialogueSelect();
+            syncInputsFromSlide();
+            applySlide(getCurrentSlide(), true);
+            updateOutput();
+            status.textContent = '대사 삭제됨';
+        }
+
+        function updateValueLabels() {
+            document.getElementById('fade-in-value').textContent = fadeInInput.value;
+            document.getElementById('hold-value').textContent = holdInput.value;
+            document.getElementById('fade-out-value').textContent = fadeOutInput.value;
+            document.getElementById('scale-value').textContent = Number(scaleInput.value).toFixed(2);
+            document.getElementById('x-value').textContent = xInput.value;
+            document.getElementById('y-value').textContent = yInput.value;
+            document.getElementById('dim-value').textContent = Number(dimInput.value).toFixed(2);
+            document.getElementById('dialogue-start-value').textContent = dialogueStartInput.value;
+            document.getElementById('dialogue-duration-value').textContent = dialogueDurationInput.value;
+            document.getElementById('dialogue-type-value').textContent = dialogueTypeInput.value;
+            document.getElementById('dialogue-width-value').textContent = dialogueWidthInput.value;
+            document.getElementById('dialogue-left-value').textContent = dialogueLeftInput.value;
+            document.getElementById('dialogue-right-value').textContent = dialogueRightInput.value;
+            document.getElementById('dialogue-height-value').textContent = dialogueHeightInput.value;
+            document.getElementById('dialogue-x-value').textContent = dialogueXInput.value;
+            document.getElementById('dialogue-y-value').textContent = dialogueYInput.value;
+            document.getElementById('dialogue-font-value').textContent = dialogueFontInput.value;
+            document.getElementById('dialogue-bg-value').textContent = Number(dialogueBgInput.value).toFixed(2);
+        }
+
+        function syncDialogueEdgesFromWidth() {
+            const edge = (100 - Number(dialogueWidthInput.value)) / 2;
+            dialogueLeftInput.value = edge;
+            dialogueRightInput.value = edge;
+        }
+
+        function syncDialogueWidthFromEdges() {
+            const effectiveWidth = 100 - Number(dialogueLeftInput.value) - Number(dialogueRightInput.value);
+            dialogueWidthInput.value = Math.max(30, Math.min(96, effectiveWidth));
+        }
+
+        function syncInputsFromSlide() {
+            const slide = getCurrentSlide();
+            const dialogue = getCurrentDialogue();
+            slideSelect.value = String(currentIndex);
+            populateDialogueSelect();
+            nameInput.value = slide.name;
+            srcInput.value = slide.src;
+            fadeInInput.value = slide.fadeInMs;
+            syncHoldMinimum(slide);
+            fadeOutInput.value = slide.fadeOutMs;
+            scaleInput.value = slide.scale;
+            xInput.value = slide.xVw;
+            yInput.value = slide.yVh;
+            dimInput.value = slide.dimOpacity;
+            dialogueTextInput.value = dialogue.text;
+            dialogueStartInput.value = dialogue.startMs;
+            dialogueDurationInput.value = dialogue.durationMs;
+            dialogueTypeInput.value = dialogue.typeMs;
+            dialogueWidthInput.value = dialogue.widthVw;
+            dialogueLeftInput.value = dialogue.leftVw ?? (100 - dialogue.widthVw) / 2;
+            dialogueRightInput.value = dialogue.rightVw ?? (100 - dialogue.widthVw) / 2;
+            dialogueHeightInput.value = dialogue.heightPx;
+            dialogueXInput.value = dialogue.xVw;
+            dialogueYInput.value = dialogue.yVh;
+            dialogueFontInput.value = dialogue.fontSizePx;
+            dialogueBgInput.value = dialogue.bgOpacity;
+            updateValueLabels();
+        }
+
+        function syncSlideFromInputs() {
+            const slide = getCurrentSlide();
+            const dialogue = getCurrentDialogue();
+            slide.name = nameInput.value;
+            slide.src = srcInput.value;
+            slide.fadeInMs = Number(fadeInInput.value);
+            slide.holdMs = Number(holdInput.value);
+            slide.fadeOutMs = Number(fadeOutInput.value);
+            slide.scale = Number(scaleInput.value);
+            slide.xVw = Number(xInput.value);
+            slide.yVh = Number(yInput.value);
+            slide.dimOpacity = Number(dimInput.value);
+            dialogue.text = dialogueTextInput.value;
+            dialogue.startMs = Number(dialogueStartInput.value);
+            dialogue.durationMs = Number(dialogueDurationInput.value);
+            dialogue.typeMs = Number(dialogueTypeInput.value);
+            dialogue.widthVw = Number(dialogueWidthInput.value);
+            dialogue.leftVw = Number(dialogueLeftInput.value);
+            dialogue.rightVw = Number(dialogueRightInput.value);
+            dialogue.heightPx = Number(dialogueHeightInput.value);
+            dialogue.xVw = Number(dialogueXInput.value);
+            dialogue.yVh = Number(dialogueYInput.value);
+            dialogue.fontSizePx = Number(dialogueFontInput.value);
+            dialogue.bgOpacity = Number(dialogueBgInput.value);
+            syncHoldMinimum(slide);
+            populateSlideSelect();
+            populateDialogueSelect();
+            slideSelect.value = String(currentIndex);
+            applySlide(slide, true);
+            updateValueLabels();
+            updateOutput();
+        }
+
+        function getConfig() {
+            return { slides: slides.map(slide => ({ ...slide })) };
+        }
+
+        function updateOutput() {
+            output.value = JSON.stringify(getConfig(), null, 2);
+        }
+
+        function clearTimers() {
+            timers.forEach(timer => clearTimeout(timer));
+            timers = [];
+            if (currentFrame !== null) {
+                cancelAnimationFrame(currentFrame);
+                currentFrame = null;
+            }
+        }
+
+        function setImageOpacity(opacity) {
+            storyImage.style.opacity = opacity.toFixed(3);
+        }
+
+        function applyDialogue(dialogue, text, opacity) {
+            dialogueBox.textContent = text;
+            dialogueBox.classList.toggle('empty', dialogue.text.trim().length === 0);
+            stage.style.setProperty('--dialogue-width', `${dialogue.widthVw}vw`);
+            stage.style.setProperty('--dialogue-left', `${dialogue.leftVw ?? (100 - dialogue.widthVw) / 2}vw`);
+            stage.style.setProperty('--dialogue-right', `${dialogue.rightVw ?? (100 - dialogue.widthVw) / 2}vw`);
+            stage.style.setProperty('--dialogue-x', `${dialogue.xVw}vw`);
+            stage.style.setProperty('--dialogue-y', `${dialogue.yVh}vh`);
+            stage.style.setProperty('--dialogue-font', `${dialogue.fontSizePx}px`);
+            stage.style.setProperty('--dialogue-bg', dialogue.bgOpacity);
+            dialogueBox.style.opacity = opacity.toFixed(3);
+        }
+
+        function applySlide(slide, visible) {
+            const dialogue = slide === getCurrentSlide() ? getCurrentDialogue() : slide.dialogues[0];
+            storyImage.src = slide.src;
+            storyLabel.textContent = slide.name || slide.key;
+            stage.style.setProperty('--story-scale', slide.scale);
+            stage.style.setProperty('--story-x', `${slide.xVw}vw`);
+            stage.style.setProperty('--story-y', `${slide.yVh}vh`);
+            stage.style.setProperty('--dim-opacity', slide.dimOpacity);
+            applyDialogue(dialogue, dialogue.text, visible ? 1 : 0);
+            errorMessage.style.display = 'none';
+            setImageOpacity(visible ? 1 : 0);
+        }
+
+        function playDialogue(dialogue) {
+            if (!dialogue.text.trim()) return;
+            applyDialogue(dialogue, '', 1);
+            const chars = Array.from(dialogue.text);
+            chars.forEach((_, index) => {
+                timers.push(setTimeout(() => {
+                    applyDialogue(dialogue, chars.slice(0, index + 1).join(''), 1);
+                }, index * dialogue.typeMs));
+            });
+            const hideAfter = Math.max(dialogue.durationMs, chars.length * dialogue.typeMs + 450);
+            timers.push(setTimeout(() => {
+                dialogueBox.style.opacity = '0';
+            }, hideAfter));
+        }
+
+        function scheduleDialogues(slide) {
+            slide.dialogues.forEach(dialogue => {
+                timers.push(setTimeout(() => playDialogue(dialogue), slide.fadeInMs + dialogue.startMs));
+            });
+        }
+
+        function animateOpacity(from, to, duration, done) {
+            const startedAt = performance.now();
+            const run = now => {
+                const progress = duration <= 0 ? 1 : Math.min((now - startedAt) / duration, 1);
+                const eased = progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                setImageOpacity(from + (to - from) * eased);
+                if (progress < 1) {
+                    currentFrame = requestAnimationFrame(run);
+                } else {
+                    currentFrame = null;
+                    if (done) done();
+                }
+            };
+            currentFrame = requestAnimationFrame(run);
+        }
+
+        function playSlide(index, done) {
+            clearTimers();
+            currentIndex = index;
+            syncInputsFromSlide();
+            const slide = getCurrentSlide();
+            applySlide(slide, false);
+            status.textContent = `${slide.name} 재생 중`;
+            scheduleDialogues(slide);
+            animateOpacity(0, 1, slide.fadeInMs, () => {
+                timers.push(setTimeout(() => {
+                    animateOpacity(1, 0, slide.fadeOutMs, done);
+                }, slide.holdMs));
+            });
+        }
+
+        function playSequence(index) {
+            if (index >= slides.length) {
+                status.textContent = '전체 시네마틱 재생 완료';
+                return;
+            }
+            playSlide(index, () => {
+                timers.push(setTimeout(() => playSequence(index + 1), 80));
+            });
+        }
+
+        function playFull() {
+            playSequence(0);
+        }
+
+        function replayCurrent() {
+            playSlide(currentIndex, () => {
+                status.textContent = `${getCurrentSlide().name} 재생 완료`;
+            });
+        }
+
+        function stopPlayback() {
+            clearTimers();
+            applySlide(getCurrentSlide(), true);
+            status.textContent = '재생 정지';
+        }
+
+        function copyConfig() {
+            updateOutput();
+            navigator.clipboard.writeText(output.value).then(() => {
+                status.textContent = 'CONFIG 복사됨';
+            }).catch(() => {
+                output.focus();
+                output.select();
+                status.textContent = '복사 실패: 출력창에서 직접 복사하세요.';
+            });
+        }
+
+        storyImage.addEventListener('error', () => {
+            errorMessage.textContent = `이미지를 불러올 수 없습니다: ${getCurrentSlide().src}`;
+            errorMessage.style.display = 'block';
+            status.textContent = '이미지 경로를 확인하세요.';
+        });
+
+        storyImage.addEventListener('load', () => {
+            errorMessage.style.display = 'none';
+        });
+
+        slideSelect.addEventListener('change', () => {
+            clearTimers();
+            currentIndex = Number(slideSelect.value);
+            currentDialogueIndex = 0;
+            syncInputsFromSlide();
+            applySlide(getCurrentSlide(), true);
+            updateOutput();
+            status.textContent = `${getCurrentSlide().name} 선택됨`;
+        });
+
+        dialogueSelect.addEventListener('change', () => {
+            clearTimers();
+            currentDialogueIndex = Number(dialogueSelect.value);
+            syncInputsFromSlide();
+            applySlide(getCurrentSlide(), true);
+            updateOutput();
+            status.textContent = `대사 ${currentDialogueIndex + 1} 선택됨`;
+        });
+
+        [
+            nameInput,
+            srcInput,
+            fadeInInput,
+            holdInput,
+            fadeOutInput,
+            scaleInput,
+            xInput,
+            yInput,
+            dimInput,
+            dialogueTextInput,
+            dialogueStartInput,
+            dialogueDurationInput,
+            dialogueTypeInput,
+            dialogueLeftInput,
+            dialogueRightInput,
+            dialogueHeightInput,
+            dialogueXInput,
+            dialogueYInput,
+            dialogueFontInput,
+            dialogueBgInput
+        ].forEach(input => {
+            input.addEventListener('input', syncSlideFromInputs);
+        });
+
+        dialogueWidthInput.addEventListener('input', () => {
+            syncDialogueEdgesFromWidth();
+            syncSlideFromInputs();
+        });
+
+        [dialogueLeftInput, dialogueRightInput].forEach(input => {
+            input.addEventListener('input', () => {
+                syncDialogueWidthFromEdges();
+                syncSlideFromInputs();
+            });
+        });
+
+        populateSlideSelect();
+        syncInputsFromSlide();
+        applySlide(getCurrentSlide(), true);
+        updateOutput();
+    </script>
+</body>
+</html>

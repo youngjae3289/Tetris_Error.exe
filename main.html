@@ -78,6 +78,9 @@
             height: 100vh; 
             width: 100%;
             position: relative;
+            --board-shell-width: 332px;
+            --side-gap: 20px;
+            --hold-panel-width: 110px;
         }
 
         .canvas-outer {
@@ -87,7 +90,10 @@
 
         body.playing .canvas-outer {
             display: flex;
-            position: relative;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .canvas-container {
@@ -101,7 +107,22 @@
 
         body.playing .hold-panel, body.playing .score-panel {
             display: flex;
-            position: relative;
+            position: absolute;
+        }
+
+        .hold-panel.hold-highlight {
+            border-color: #ff99cc !important;
+            box-shadow:
+                6px 6px 0 #000,
+                0 0 18px rgba(255, 153, 204, 0.95),
+                0 0 34px rgba(255, 153, 204, 0.45) !important;
+            animation: holdHighlightBlink 0.16s steps(2, end) infinite;
+        }
+
+        @keyframes holdHighlightBlink {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.65); }
+            100% { filter: brightness(1); }
         }
 
         .canvas-outer { 
@@ -111,6 +132,32 @@
             border: 4px solid #444; 
             box-shadow: 10px 10px 0px #000; 
             z-index: 10; 
+            overflow: visible;
+            margin-top: 0;
+        }
+
+        body.playing .canvas-outer {
+            margin-top: 0;
+        }
+
+        body.boss-fight .canvas-outer {
+            margin-top: 96px;
+        }
+
+        body.playing .hold-panel {
+            left: calc(50% - (var(--board-shell-width) / 2) - var(--side-gap) - var(--hold-panel-width));
+            top: 50%;
+            transform: translateY(-170px) !important;
+        }
+
+        body.playing .score-panel {
+            left: calc(50% + (var(--board-shell-width) / 2) + var(--side-gap));
+            top: 50%;
+            transform: translateY(-100px) !important;
+        }
+
+        body.boss-revealing #main-container {
+            transition: height 3s cubic-bezier(0.12, 0.72, 0.1, 1);
         }
 
         .canvas-container { 
@@ -130,6 +177,84 @@
 
         body.critical-zone #main-container {
             height: 690px;
+        }
+
+        body.boss-fight #main-container {
+            height: 690px;
+        }
+
+        #boss-hud {
+            position: absolute;
+            top: -74px;
+            left: 0;
+            right: 0;
+            z-index: 12;
+            display: none;
+            flex-wrap: nowrap;
+            gap: 8px;
+            align-items: stretch;
+            font-family: 'Press Start 2P', cursive;
+            pointer-events: none;
+        }
+
+        body.boss-fight #boss-hud {
+            display: flex;
+        }
+
+        .boss-hud-window {
+            background: rgba(4, 0, 8, 0.82);
+            border: 2px solid #ff99cc;
+            box-shadow: 4px 4px 0 #000, 0 0 18px rgba(255, 40, 80, 0.35);
+            padding: 8px;
+            transform-origin: left center;
+        }
+
+        .boss-hp-window {
+            flex: 0 0 100%;
+            box-sizing: border-box;
+        }
+
+        .boss-mini-window {
+            flex: 1;
+            text-align: right;
+        }
+
+        .boss-hud-label {
+            font-size: 7px;
+            color: #ff99cc;
+            margin-bottom: 6px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .boss-hp-segments {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+        .boss-hp-segment {
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 0 2px #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .boss-hp-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ff3030, #fff06a);
+            transition: width 0.08s linear, opacity 0.08s linear;
+        }
+
+        .boss-part-name {
+            margin-top: 5px;
+            font-size: 6px;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            gap: 4px;
         }
 
         canvas { 
@@ -154,6 +279,21 @@
 
         body.playing #game-over-overlay {
             display: none;
+        }
+
+        #screen-fade {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.34s ease;
+        }
+
+        #screen-fade.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         #crash-title,
@@ -186,6 +326,155 @@
         .ui-screen.active {
             display: flex;
         }
+
+        .title-screen {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            padding: clamp(28px, 5vw, 64px);
+            border: 0;
+            background:
+                radial-gradient(circle at 18% 22%, rgba(255, 80, 190, 0.18), rgba(255, 80, 190, 0) 30%),
+                linear-gradient(90deg, rgba(6, 2, 18, 0.34), rgba(6, 2, 18, 0.02) 48%, rgba(6, 2, 18, 0.18)),
+                url("Resources/TE_Title.png") center / cover no-repeat;
+            box-shadow: none;
+            justify-content: flex-start;
+            align-items: flex-start;
+            text-align: left;
+            overflow: hidden;
+            animation:
+                titleScreenBoot 1.05s steps(2, end) both,
+                titleBgDrift 12s ease-in-out 1.05s infinite alternate;
+        }
+
+        .title-screen::before {
+            content: "";
+            position: absolute;
+            inset: -12%;
+            background:
+                linear-gradient(115deg, rgba(255, 255, 255, 0) 36%, rgba(255, 120, 220, 0.13) 48%, rgba(255, 255, 255, 0) 61%),
+                repeating-linear-gradient(90deg, rgba(255, 40, 170, 0.09) 0 2px, transparent 2px 76px);
+            pointer-events: none;
+            transform: translateX(-40%);
+            animation: titleDataSweep 5.2s steps(9, end) infinite;
+            opacity: 0.72;
+        }
+
+        .title-screen::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(rgba(255, 153, 204, 0.04) 50%, rgba(0, 0, 0, 0.16) 50%),
+                linear-gradient(90deg, rgba(255, 0, 100, 0.05), rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.08));
+            background-size: 100% 5px, 5px 100%;
+            pointer-events: none;
+            opacity: 0.82;
+            animation:
+                titleIntroStatic 1.05s steps(2, end) both,
+                titleScanJitter 0.22s steps(2, end) 1.05s infinite;
+        }
+
+        .title-logo-wrap {
+            position: relative;
+            z-index: 1;
+            width: min(64vw, 720px);
+            max-width: 82vh;
+            margin-top: clamp(8px, 3vh, 34px);
+            margin-left: clamp(0px, 1vw, 18px);
+            animation: titleLogoBoot 1.05s steps(2, end) both, titleLogoFloat 3.2s ease-in-out 1.05s infinite;
+        }
+
+        .title-logo {
+            display: block;
+            width: 100%;
+            height: auto;
+            image-rendering: auto;
+            filter: drop-shadow(8px 8px 0 #000) drop-shadow(0 0 22px rgba(255, 40, 170, 0.82));
+            z-index: 1;
+        }
+
+        .title-logo-wrap::before,
+        .title-logo-wrap::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url("Resources/TE_TitleLogo.png") center / contain no-repeat;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            opacity: 0;
+        }
+
+        .title-logo-wrap::before {
+            filter: hue-rotate(95deg) saturate(2);
+            transform: translate(-7px, 0);
+            animation: titleLogoGlitchA 2.8s steps(2, end) infinite;
+        }
+
+        .title-logo-wrap::after {
+            filter: hue-rotate(300deg) saturate(2);
+            transform: translate(7px, 0);
+            animation: titleLogoGlitchB 3.6s steps(2, end) infinite;
+        }
+
+        .title-screen .ui-copy,
+        .title-press-prompt {
+            z-index: 1;
+            width: min(64vw, 720px);
+            max-width: 82vh;
+            margin-left: clamp(0px, 1vw, 18px);
+        }
+
+        .title-screen .ui-copy {
+            position: absolute;
+            left: clamp(18px, 3vw, 42px);
+            bottom: clamp(16px, 3vh, 34px);
+            width: auto;
+            max-width: min(58vw, 520px);
+            margin: 0;
+            text-align: left;
+            color: #ff99cc;
+            font-size: clamp(8px, 0.86vw, 12px);
+            line-height: 1.65;
+            text-shadow: 2px 2px 0 #000, 0 0 10px rgba(255, 60, 160, 0.72);
+            animation: titleTextBlink 2.4s steps(2, end) infinite;
+        }
+
+        .title-press-prompt {
+            color: #ff99cc;
+            font-size: clamp(8px, 1.2vw, 12px);
+            letter-spacing: 2px;
+            text-align: center;
+            text-shadow:
+                2px 2px 0 #000,
+                0 0 12px rgba(255, 80, 190, 0.92),
+                0 0 22px rgba(255, 80, 190, 0.55);
+            animation: titlePressBlink 0.95s steps(2, end) infinite;
+        }
+
+        .title-particle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 48, 96, 0.9);
+            box-shadow: 0 0 14px rgba(255, 48, 96, 0.8), inset 0 0 0 2px rgba(0, 0, 0, 0.45);
+            z-index: 1;
+            opacity: 0.72;
+            --particle-scale: 1;
+            animation: titleParticleFall 5.5s linear infinite;
+        }
+
+        .title-particle.p1 { left: 72%; top: -8%; animation-delay: 0.2s; }
+        .title-particle.p2 { left: 83%; top: -16%; animation-delay: 1.4s; --particle-scale: 0.72; }
+        .title-particle.p3 { left: 59%; top: -12%; animation-delay: 2.5s; --particle-scale: 0.52; }
+        .title-particle.p4 { left: 91%; top: -20%; animation-delay: 3.35s; --particle-scale: 0.9; }
+        .title-particle.p5 { left: 48%; top: -10%; animation-delay: 4.1s; --particle-scale: 0.62; }
+        .title-particle.p6 { left: 12%; top: -18%; animation-delay: 2.0s; --particle-scale: 0.48; }
+        .title-particle.p7 { left: 26%; top: -14%; animation-delay: 3.0s; --particle-scale: 0.68; }
+        .title-particle.p8 { left: 66%; top: -22%; animation-delay: 4.8s; --particle-scale: 0.44; }
+        .title-particle.p9 { left: 38%; top: -11%; animation-delay: 5.6s; --particle-scale: 0.58; }
+        .title-particle.p10 { left: 78%; top: -17%; animation-delay: 6.2s; --particle-scale: 0.76; }
 
         .ui-badge {
             font-size: 14px;
@@ -221,36 +510,160 @@
         }
 
         .level-grid {
-            width: 100%;
+            width: min(100%, 480px);
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 8px;
+            grid-template-columns: 1fr;
+            gap: 10px;
             overflow: visible;
             padding-right: 0;
+        }
+
+        #level-screen {
+            position: relative;
+            width: min(82vw, 620px);
+            align-items: stretch;
+            gap: 16px;
+            padding: clamp(22px, 3vw, 30px);
+            border-color: #ff99cc;
+            background:
+                linear-gradient(rgba(255, 153, 204, 0.035) 50%, rgba(0, 0, 0, 0.16) 50%),
+                linear-gradient(180deg, rgba(8, 8, 16, 0.98), rgba(22, 22, 40, 0.94));
+            background-size: 100% 5px, auto;
+            box-shadow: 10px 10px 0 #000, 0 0 24px rgba(255, 80, 190, 0.22);
+            overflow: hidden;
+            transform-origin: top center;
+        }
+
+        #level-screen.active {
+            animation: levelPanelOpen 0.42s steps(8, end) both;
+        }
+
+        #level-screen::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(90deg, rgba(255, 0, 100, 0.08), transparent 28%, rgba(255, 240, 106, 0.04) 52%, transparent 78%, rgba(255, 0, 100, 0.08));
+            opacity: 0.85;
+        }
+
+        .level-screen-head {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            width: 100%;
+        }
+
+        .level-screen-head h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(20px, 2.2vw, 26px);
+            margin: 0;
+            color: #ff99cc;
+            text-shadow: 3px 3px 0 #000, 0 0 14px rgba(255, 153, 204, 0.55);
+        }
+
+        .level-back-icon {
+            position: relative;
+            flex: 0 0 auto;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            margin: 0;
+            border: 2px solid #ff99cc;
+            background:
+                linear-gradient(rgba(255, 153, 204, 0.08) 50%, rgba(0, 0, 0, 0.18) 50%),
+                rgba(3, 3, 10, 0.92);
+            background-size: 100% 4px, auto;
+            box-shadow:
+                inset 0 0 0 2px #000,
+                4px 4px 0 #000,
+                0 0 14px rgba(255, 153, 204, 0.45);
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .level-back-icon::before {
+            content: "";
+            position: absolute;
+            left: 13px;
+            top: 14px;
+            width: 13px;
+            height: 13px;
+            border-left: 4px solid #ff99cc;
+            border-bottom: 4px solid #ff99cc;
+            transform: rotate(45deg);
+            filter: drop-shadow(2px 2px 0 #000) drop-shadow(0 0 5px rgba(255, 153, 204, 0.8));
+        }
+
+        .level-back-icon::after {
+            content: "";
+            position: absolute;
+            left: 14px;
+            top: 20px;
+            width: 16px;
+            height: 4px;
+            background: #ff99cc;
+            box-shadow: 2px 2px 0 #000, 0 0 8px rgba(255, 153, 204, 0.78);
+        }
+
+        .level-back-icon:hover {
+            transform: translate(-1px, -1px);
+            border-color: #fff;
+            box-shadow:
+                inset 0 0 0 2px #000,
+                5px 5px 0 #000,
+                0 0 20px rgba(255, 153, 204, 0.72);
+        }
+
+        #level-screen .level-grid {
+            position: relative;
+            z-index: 1;
+            align-self: center;
         }
 
         .level-card {
             appearance: none;
             border: 2px solid #fff;
-            background: rgba(255, 153, 204, 0.12);
+            background:
+                linear-gradient(90deg, rgba(255, 153, 204, 0.2), rgba(255, 153, 204, 0.08)),
+                rgba(8, 8, 16, 0.88);
             color: #fff;
-            padding: 10px 6px;
-            min-height: 54px;
-            text-align: center;
+            padding: 16px 18px;
+            min-height: clamp(68px, 8vh, 76px);
+            text-align: left;
             font-family: 'Press Start 2P', cursive;
-            font-size: 7px;
-            line-height: 1.35;
+            font-size: 8px;
+            line-height: 1.45;
             cursor: pointer;
-            box-shadow: 2px 2px 0 #000;
+            box-shadow: 5px 5px 0 #000;
             display: flex;
-            flex-direction: column;
-            gap: 3px;
-            justify-content: center;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(255, 255, 255, 0.06) 50%, rgba(0, 0, 0, 0.12) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            opacity: 0.7;
         }
 
         .level-card:hover:not(:disabled) {
             transform: translate(-1px, -1px);
-            background: rgba(255, 153, 204, 0.22);
+            background:
+                linear-gradient(90deg, rgba(255, 153, 204, 0.34), rgba(255, 240, 106, 0.12)),
+                rgba(8, 8, 16, 0.92);
+            box-shadow: 6px 6px 0 #000, 0 0 18px rgba(255, 153, 204, 0.4);
         }
 
         .level-card:disabled {
@@ -261,12 +674,160 @@
 
         .level-chip {
             display: inline-block;
-            font-size: 8px;
+            font-size: 9px;
             color: #ff99cc;
+            line-height: 1.5;
+            text-shadow: 2px 2px 0 #000;
         }
 
         .level-chip.locked {
             color: #999;
+        }
+
+        .level-title {
+            position: relative;
+            z-index: 1;
+            color: #ff99cc;
+            font-size: clamp(11px, 1.08vw, 14px);
+            line-height: 1.45;
+            text-shadow: 3px 3px 0 #000, 0 0 12px rgba(255, 153, 204, 0.5);
+        }
+
+        .level-title.locked {
+            color: #999;
+        }
+
+        .level-skip-marker {
+            display: grid;
+            place-items: center;
+            min-height: 44px;
+            color: #ff99cc;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            line-height: 0.72;
+            text-align: center;
+            text-shadow: 2px 2px 0 #000, 0 0 12px rgba(255, 153, 204, 0.6);
+            pointer-events: none;
+        }
+
+        .level-skip-marker span {
+            display: block;
+        }
+
+        .level-card-icon {
+            position: relative;
+            z-index: 1;
+            flex: 0 0 auto;
+            width: 46px;
+            height: 42px;
+            filter: drop-shadow(3px 3px 0 #000);
+        }
+
+        .level-icon-tutorial::before {
+            content: "";
+            position: absolute;
+            left: 5px;
+            top: 9px;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #ff99cc;
+            background:
+                linear-gradient(90deg, transparent 46%, #ff99cc 46% 54%, transparent 54%),
+                rgba(255, 153, 204, 0.12);
+            box-shadow: inset 0 0 0 2px #06030a;
+        }
+
+        .level-icon-tutorial::after {
+            content: "";
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            width: 5px;
+            height: 30px;
+            background: #fff06a;
+            border: 2px solid #000;
+            transform: rotate(32deg);
+            box-shadow: 0 0 10px rgba(255, 240, 106, 0.5);
+        }
+
+        .level-icon-error::before {
+            content: "";
+            position: absolute;
+            left: 9px;
+            top: 8px;
+            width: 13px;
+            height: 13px;
+            background: #ff99cc;
+            border: 2px solid #3a0618;
+            box-shadow:
+                15px 0 0 #ff5fb3,
+                30px 0 0 #d83a67,
+                15px 15px 0 #ff2f6d,
+                30px 15px 0 #b71d42;
+        }
+
+        .level-icon-error::after {
+            content: "";
+            position: absolute;
+            left: 12px;
+            top: 11px;
+            width: 7px;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.55);
+            box-shadow:
+                15px 0 0 rgba(255, 255, 255, 0.38),
+                30px 0 0 rgba(255, 255, 255, 0.3),
+                15px 15px 0 rgba(255, 255, 255, 0.26),
+                30px 15px 0 rgba(255, 255, 255, 0.18);
+        }
+
+        .level-icon-boss::before {
+            content: "";
+            position: absolute;
+            left: 4px;
+            top: 8px;
+            width: 36px;
+            height: 24px;
+            border: 3px solid #ff3030;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 50%, #080006 0 19%, #ff3030 20% 38%, #f5ead0 39% 58%, #7e050c 59% 100%);
+            box-shadow: 0 0 16px rgba(255, 48, 48, 0.75);
+        }
+
+        .level-icon-boss::after {
+            content: "";
+            position: absolute;
+            left: 19px;
+            top: 17px;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            box-shadow: 8px -5px 0 rgba(255, 153, 204, 0.78);
+        }
+
+        .level-card.boss-level {
+            border-color: #ff3030;
+            background:
+                linear-gradient(90deg, rgba(255, 48, 48, 0.36), rgba(90, 0, 10, 0.48)),
+                rgba(8, 0, 4, 0.94);
+            box-shadow: 5px 5px 0 #000, 0 0 20px rgba(255, 48, 48, 0.35);
+        }
+
+        .level-card.boss-level:hover:not(:disabled) {
+            background:
+                linear-gradient(90deg, rgba(255, 48, 48, 0.52), rgba(255, 153, 204, 0.14)),
+                rgba(8, 0, 4, 0.96);
+            box-shadow: 6px 6px 0 #000, 0 0 24px rgba(255, 48, 48, 0.55);
+        }
+
+        .level-card.boss-level .level-chip {
+            color: #ff3030;
+            text-shadow: 2px 2px 0 #000, 0 0 12px rgba(255, 48, 48, 0.8);
+        }
+
+        .level-card.boss-level .level-title {
+            color: #ff3030;
+            text-shadow: 3px 3px 0 #000, 0 0 12px rgba(255, 48, 48, 0.78);
         }
 
         .level-meta {
@@ -299,12 +860,12 @@
             background: linear-gradient(90deg, #ff99cc, #fff06a);
         }
 
-        .btn { 
-            background: #ff99cc; 
-            color: #000; 
-            padding: 14px 26px; 
-            font-size: 13px; 
-            border: 4px solid #fff; 
+        .btn {
+            background: #ff99cc;
+            color: #000;
+            padding: 14px 26px;
+            font-size: 13px;
+            border: 4px solid #fff;
             box-shadow: 4px 4px 0px #000;
             cursor: pointer;
             transition: transform 0.1s;
@@ -332,9 +893,429 @@
             display: flex;
         }
 
+        #intro-overlay.boss-intro {
+            background:
+                radial-gradient(circle at 50% 48%, rgba(255, 0, 0, 0.18), rgba(80, 0, 0, 0) 36%),
+                linear-gradient(180deg, rgba(20, 0, 0, 0.32), rgba(0, 0, 0, 0.48));
+        }
+
+        #intro-overlay.boss-intro::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(rgba(255, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.16) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.12), rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08));
+            background-size: 100% 6px, 5px 100%;
+            animation: bossIntroNoise 0.12s steps(2, end) infinite;
+        }
+
+        #level-clear-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 230;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.32);
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            transition: background 0.28s ease;
+        }
+
+        #level-clear-overlay.active {
+            display: flex;
+        }
+
+        #level-clear-overlay.reveal {
+            background:
+                radial-gradient(circle at 50% 48%, rgba(255, 240, 106, 0.12), rgba(255, 240, 106, 0) 34%),
+                rgba(0, 0, 0, 0.44);
+        }
+
+        .level-clear-star-layer {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .level-clear-star {
+            position: absolute;
+            left: var(--x);
+            top: var(--y);
+            color: var(--star-color);
+            font-size: var(--size);
+            text-shadow: 0 0 18px currentColor, 3px 3px 0 #000;
+            transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+            animation: starBurst var(--duration) ease-out forwards;
+        }
+
+        .level-clear-panel {
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(14px) scale(0.92);
+            transition: opacity 0.22s ease, transform 0.34s cubic-bezier(0.18, 0.9, 0.22, 1);
+        }
+
+        #level-clear-overlay.reveal .level-clear-panel {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .level-clear-title {
+            color: #fff06a;
+            font-size: clamp(28px, 5vw, 76px);
+            line-height: 1.42;
+            text-shadow:
+                4px 4px 0 #000,
+                0 0 18px rgba(255, 240, 106, 0.9),
+                0 0 32px rgba(255, 153, 204, 0.45);
+            animation: introShimmer 0.28s steps(2, end) infinite;
+        }
+
+        .level-clear-hint {
+            margin-top: 24px;
+            color: #aaa;
+            font-size: 10px;
+            opacity: 0;
+            text-shadow: 2px 2px 0 #000;
+            animation: tutorialHintBlink 700ms steps(2, end) infinite;
+        }
+
+        #level-clear-overlay.ready .level-clear-hint {
+            opacity: 1;
+        }
+
+        #cinematic-intro-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 235;
+            display: none;
+            overflow: hidden;
+            background: #000;
+            pointer-events: auto;
+        }
+
+        #cinematic-intro-overlay.active {
+            display: block;
+        }
+
+        #cinematic-intro-overlay::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 30;
+            pointer-events: none;
+            background:
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+            background-size: 100% 4px, 3px 100%;
+        }
+
+        .cinematic-story-image {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 10;
+            width: min(100vw, calc(100vh * 1.777));
+            height: auto;
+            max-width: none;
+            opacity: 0;
+            filter: saturate(1.05) contrast(1.03);
+            transform:
+                translate(calc(-50% + var(--cinematic-x, 0vw)), calc(-50% + var(--cinematic-y, 0vh)))
+                scale(var(--cinematic-scale, 1));
+        }
+
+        .cinematic-dim {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            pointer-events: none;
+            background: rgba(0, 0, 0, var(--cinematic-dim, 0.16));
+        }
+
+        .cinematic-dialogue-box {
+            position: absolute;
+            left: var(--cinematic-dialogue-left, 12vw);
+            right: var(--cinematic-dialogue-right, 12vw);
+            bottom: var(--cinematic-dialogue-y, 7vh);
+            z-index: 38;
+            min-height: 168px;
+            padding: 18px 22px;
+            background: rgba(12, 12, 24, var(--cinematic-dialogue-bg, 0.86));
+            border: 4px solid #444;
+            box-shadow: 8px 8px 0 #000, 0 0 20px rgba(255, 153, 204, 0.18);
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: var(--cinematic-dialogue-font, 15px);
+            line-height: 1.75;
+            text-shadow: 3px 3px 0 #000;
+            opacity: 0;
+            transform: translateX(var(--cinematic-dialogue-x, 0vw));
+            white-space: pre-wrap;
+            overflow: hidden;
+        }
+
+        .cinematic-dialogue-box::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.08) 0 2px,
+                    rgba(0, 0, 0, 0.16) 2px 4px,
+                    rgba(255, 153, 204, 0.05) 4px 5px
+                );
+            mix-blend-mode: screen;
+            opacity: 0.5;
+            animation: cinematicDialogueScanline 0.22s steps(2, end) infinite;
+        }
+
+        .cinematic-dialogue-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cinematic-input-hint {
+            position: absolute;
+            right: 18px;
+            bottom: 12px;
+            z-index: 2;
+            color: #aaa;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            text-shadow: 2px 2px 0 #000;
+            opacity: 0;
+            animation: tutorialHintBlink 700ms steps(2, end) infinite;
+            pointer-events: none;
+        }
+
+        .cinematic-input-hint.visible {
+            opacity: 1;
+        }
+
+        @keyframes cinematicDialogueScanline {
+            0% { transform: translateY(0); opacity: 0.44; }
+            50% { transform: translateY(1px); opacity: 0.58; }
+            100% { transform: translateY(0); opacity: 0.5; }
+        }
+
+        @keyframes titleBgDrift {
+            0% { background-position: center, center, 50% 50%; }
+            50% { background-position: center, center, 52% 49%; }
+            100% { background-position: center, center, 48% 51%; }
+        }
+
+        @keyframes titleDataSweep {
+            0%, 18% { transform: translateX(-58%) skewX(-8deg); opacity: 0; }
+            24% { opacity: 0.78; }
+            46% { transform: translateX(38%) skewX(-8deg); opacity: 0.18; }
+            47%, 100% { opacity: 0; }
+        }
+
+        @keyframes titleScreenBoot {
+            0% {
+                filter: brightness(0.02) contrast(2.8) saturate(0);
+                background-position: center, center, 50% 50%;
+                transform: translate(0, 0);
+            }
+            10% {
+                filter: brightness(0.08) contrast(3) saturate(0.4);
+                background-position: center, center, 48% 52%;
+                transform: translate(-4px, 0);
+            }
+            18% {
+                filter: brightness(1.85) contrast(1.9) saturate(1.8) hue-rotate(24deg);
+                background-position: center, center, 55% 45%;
+                transform: translate(5px, -2px);
+            }
+            28% {
+                filter: brightness(0.04) contrast(3.2) saturate(0.2);
+                background-position: center, center, 43% 57%;
+                transform: translate(-6px, 2px);
+            }
+            42% {
+                filter: brightness(1.35) contrast(1.7) saturate(1.4) hue-rotate(-18deg);
+                background-position: center, center, 53% 50%;
+                transform: translate(3px, 0);
+            }
+            56% {
+                filter: brightness(0.18) contrast(2.4) saturate(0.7);
+                background-position: center, center, 46% 48%;
+                transform: translate(-2px, -1px);
+            }
+            72% {
+                filter: brightness(1.22) contrast(1.2) saturate(1.12);
+                background-position: center, center, 51% 49%;
+                transform: translate(1px, 0);
+            }
+            100% {
+                filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
+                background-position: center, center, 50% 50%;
+                transform: translate(0, 0);
+            }
+        }
+
+        @keyframes titleIntroStatic {
+            0% {
+                opacity: 1;
+                background:
+                    linear-gradient(rgba(255, 255, 255, 0.16) 50%, rgba(0, 0, 0, 0.88) 50%),
+                    linear-gradient(90deg, rgba(255, 0, 100, 0.6), rgba(255, 255, 255, 0.12), rgba(0, 220, 255, 0.24));
+                background-size: 100% 3px, 4px 100%;
+            }
+            18% {
+                opacity: 0.92;
+                transform: translate(-8px, 2px);
+            }
+            28% {
+                opacity: 1;
+                background:
+                    linear-gradient(rgba(255, 255, 255, 0.06) 50%, rgba(0, 0, 0, 0.92) 50%),
+                    linear-gradient(90deg, rgba(0, 220, 255, 0.28), rgba(255, 0, 100, 0.52), rgba(0, 0, 0, 0.28));
+                background-size: 100% 8px, 6px 100%;
+                transform: translate(7px, -1px);
+            }
+            48% {
+                opacity: 0.72;
+                transform: translate(-3px, 1px);
+            }
+            68% {
+                opacity: 0.95;
+                background:
+                    linear-gradient(rgba(255, 153, 204, 0.1) 50%, rgba(0, 0, 0, 0.4) 50%),
+                    linear-gradient(90deg, rgba(255, 0, 100, 0.16), rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.12));
+                background-size: 100% 5px, 5px 100%;
+                transform: translate(2px, 0);
+            }
+            100% {
+                opacity: 0.82;
+                transform: translate(0, 0);
+            }
+        }
+
+        @keyframes titleScanJitter {
+            0% { transform: translateY(0); opacity: 0.76; }
+            50% { transform: translateY(1px); opacity: 0.9; }
+            100% { transform: translateY(0); opacity: 0.82; }
+        }
+
+        @keyframes titleLogoBoot {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0);
+                filter: brightness(2.4) contrast(1.8) hue-rotate(40deg);
+                clip-path: inset(48% 0 48% 0);
+            }
+            12% {
+                opacity: 0.9;
+                transform: translate(-9px, 0);
+                clip-path: inset(8% 0 70% 0);
+            }
+            22% {
+                opacity: 0.35;
+                transform: translate(8px, -2px);
+                clip-path: inset(64% 0 12% 0);
+            }
+            34% {
+                opacity: 1;
+                transform: translate(-5px, 2px);
+                clip-path: inset(28% 0 42% 0);
+            }
+            48% {
+                opacity: 0.55;
+                transform: translate(6px, 0);
+                clip-path: inset(76% 0 4% 0);
+            }
+            62% {
+                opacity: 1;
+                transform: translate(-2px, 0);
+                clip-path: inset(0 0 0 0);
+                filter: brightness(1.7) contrast(1.3) hue-rotate(-18deg);
+            }
+            76% {
+                opacity: 0.82;
+                transform: translate(3px, -1px);
+                clip-path: inset(18% 0 58% 0);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(0, 0);
+                filter: brightness(1) contrast(1) hue-rotate(0deg);
+                clip-path: inset(0 0 0 0);
+            }
+        }
+
+        @keyframes titleLogoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
+        }
+
+        @keyframes titleLogoGlitchA {
+            0%, 84%, 100% { opacity: 0; clip-path: inset(0 0 0 0); }
+            86% { opacity: 0.62; clip-path: inset(10% 0 65% 0); }
+            88% { opacity: 0.3; clip-path: inset(54% 0 22% 0); }
+            90% { opacity: 0; clip-path: inset(0 0 0 0); }
+        }
+
+        @keyframes titleLogoGlitchB {
+            0%, 72%, 100% { opacity: 0; clip-path: inset(0 0 0 0); }
+            74% { opacity: 0.48; clip-path: inset(68% 0 12% 0); }
+            76% { opacity: 0.36; clip-path: inset(24% 0 48% 0); }
+            79% { opacity: 0; clip-path: inset(0 0 0 0); }
+        }
+
+        @keyframes titleTextBlink {
+            0%, 64%, 100% { opacity: 1; }
+            66%, 70% { opacity: 0.45; }
+        }
+
+        @keyframes titlePressBlink {
+            0%, 48% {
+                opacity: 1;
+                filter: brightness(1.2);
+            }
+            49%, 100% {
+                opacity: 0.22;
+                filter: brightness(0.82);
+            }
+        }
+
+        @keyframes levelPanelOpen {
+            0% {
+                opacity: 0;
+                clip-path: inset(0 0 100% 0);
+                transform: translateY(-18px) scaleY(0.22);
+            }
+            60% {
+                opacity: 1;
+                clip-path: inset(0 0 14% 0);
+                transform: translateY(0) scaleY(1.02);
+            }
+            100% {
+                opacity: 1;
+                clip-path: inset(0);
+                transform: translateY(0) scaleY(1);
+            }
+        }
+
+        @keyframes titleParticleFall {
+            0% { opacity: 0; transform: translate3d(0, -20px, 0) scale(calc(var(--particle-scale) * 0.45)) rotate(0deg); }
+            12% { opacity: 0.86; }
+            100% { opacity: 0; transform: translate3d(-64px, 118vh, 0) scale(calc(var(--particle-scale) * 1.4)) rotate(220deg); }
+        }
+
         .intro-stage {
             position: fixed;
             inset: 0;
+            z-index: 1;
             width: 100vw;
             height: 100vh;
             display: flex;
@@ -342,7 +1323,8 @@
             align-items: center;
             justify-content: flex-start;
             gap: 18px;
-            padding: 29vh 24px 24px;
+            padding: 45vh 24px 24px;
+            transform: translateX(0vw);
             box-sizing: border-box;
         }
 
@@ -360,6 +1342,27 @@
                 4px 4px 0 #000;
         }
 
+        .intro-line.start::after {
+            content: attr(data-text);
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            color: transparent;
+            background:
+                repeating-linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.9) 0 2px,
+                    rgba(0, 0, 0, 0.22) 2px 4px,
+                    rgba(255, 240, 106, 0.62) 4px 5px
+                );
+            -webkit-background-clip: text;
+            background-clip: text;
+            opacity: 0.8;
+            mix-blend-mode: screen;
+            text-shadow: none;
+            animation: introTextScanline 0.22s steps(2, end) infinite;
+        }
+
         .intro-line.level {
             display: none;
             color: #fff;
@@ -371,7 +1374,25 @@
         .intro-line.start {
             color: #fff06a;
             margin: 0;
-            font-size: clamp(64px, 8vw, 152px);
+            font-size: clamp(32px, 3vw, 152px);
+        }
+
+        #intro-overlay.boss-intro .intro-line.start {
+            color: #ff3030;
+            font-size: clamp(42px, 5.4vw, 92px);
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-shadow:
+                0 0 0 transparent,
+                3px 3px 0 #000,
+                0 0 22px rgba(255, 20, 20, 0.82);
+            animation-timing-function: steps(5, end);
+        }
+
+        #intro-overlay.boss-intro .intro-line.run.sparkle {
+            animation:
+                introBurst var(--intro-duration, 900ms) cubic-bezier(0.08, 0.7, 0.12, 1) both,
+                bossIntroTextGlitch 0.18s steps(2, end) infinite;
         }
 
         .intro-line.run {
@@ -406,6 +1427,166 @@
             transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
             animation: starBurst var(--duration) ease-out forwards;
             will-change: transform, opacity;
+        }
+
+        #seoa-dialogue-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 210;
+            display: none;
+            pointer-events: auto;
+            overflow: hidden;
+            background:
+                linear-gradient(rgba(255, 153, 204, 0.035) 50%, rgba(0, 0, 0, 0.18) 50%),
+                linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.46));
+            background-size: 100% 5px, auto;
+        }
+
+        #seoa-dialogue-overlay.active {
+            display: block;
+        }
+
+        #seoa-dialogue-overlay.closing {
+            opacity: 0;
+            transition: opacity 0.7s ease;
+        }
+
+        .seoa-dialogue-character {
+            position: absolute;
+            left: clamp(20px, 7vw, 118px);
+            bottom: 158px;
+            z-index: 1;
+            width: min(36vw, 430px);
+            height: min(74vh, 760px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            filter: drop-shadow(9px 9px 0 #000);
+            transform: translateX(var(--seoa-x, 0px));
+        }
+
+        .seoa-dialogue-character::after {
+            content: "";
+            position: absolute;
+            left: 22%;
+            right: 12%;
+            bottom: 8px;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.48);
+            transform: skewX(-18deg);
+            filter: blur(1px);
+        }
+
+        #seoa-dialogue-image {
+            position: relative;
+            z-index: 2;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            opacity: 1;
+            transform: translateY(var(--seoa-y, 0px)) scale(var(--seoa-scale, 1));
+            transform-origin: center bottom;
+            transition: opacity 0.12s ease;
+        }
+
+        #seoa-dialogue-image.fading {
+            opacity: 0;
+        }
+
+        .seoa-dialogue-box {
+            position: absolute;
+            z-index: 3;
+            left: var(--dialogue-left, 130px);
+            right: var(--dialogue-right, 220px);
+            bottom: var(--dialogue-bottom, 34px);
+            min-height: var(--dialogue-min-height, 228px);
+            padding: 22px 24px 20px;
+            background: #161628;
+            border: 4px solid #444;
+            box-shadow: 8px 8px 0 #000;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+        }
+
+        .seoa-dialogue-box::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.08) 0 2px,
+                    rgba(0, 0, 0, 0.16) 2px 4px,
+                    rgba(255, 153, 204, 0.05) 4px 5px
+                );
+            mix-blend-mode: screen;
+            opacity: 0.5;
+            animation: seoaDialogueScanline 0.22s steps(2, end) infinite;
+        }
+
+        .seoa-dialogue-head {
+            display: block;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        #seoa-dialogue-speaker {
+            color: #fff06a;
+            font-size: 12px;
+            line-height: 1.5;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        #seoa-dialogue-counter {
+            display: none;
+        }
+
+        #seoa-dialogue-text {
+            position: relative;
+            z-index: 1;
+            min-height: 86px;
+            color: #fff;
+            font-size: clamp(13px, 1.5vw, 20px);
+            line-height: 1.8;
+            word-break: keep-all;
+            overflow-wrap: anywhere;
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.35),
+                3px 3px 0 #000;
+        }
+
+        #seoa-dialogue-text.text-tremble {
+            animation: seoaTextTremble 0.12s steps(2, end) infinite;
+        }
+
+        .seoa-dialogue-hint {
+            position: fixed;
+            right: 28px;
+            bottom: 24px;
+            z-index: 4;
+            color: rgba(190, 190, 200, 0.88);
+            font-size: 9px;
+            line-height: 1.5;
+            animation: titlePressBlink 0.95s steps(2, end) infinite;
+        }
+
+        @keyframes seoaDialogueScanline {
+            0% { transform: translateY(0); opacity: 0.44; }
+            50% { transform: translateY(1px); opacity: 0.58; }
+            100% { transform: translateY(0); opacity: 0.5; }
+        }
+
+        @keyframes seoaTextTremble {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-1px, 0); }
+            50% { transform: translate(1px, 1px); }
+            75% { transform: translate(0, -1px); }
+            100% { transform: translate(0, 0); }
         }
 
         #tutorial-overlay {
@@ -539,6 +1720,50 @@
             }
         }
 
+        @keyframes introTextScanline {
+            0% { opacity: 0.72; transform: translateY(0); }
+            50% { opacity: 0.88; transform: translateY(1px); }
+            100% { opacity: 0.8; transform: translateY(0); }
+        }
+
+        @keyframes bossIntroNoise {
+            0% { transform: translate(0, 0); opacity: 0.78; }
+            25% { transform: translate(-2px, 1px); opacity: 0.9; }
+            50% { transform: translate(2px, -1px); opacity: 0.72; }
+            75% { transform: translate(-1px, -2px); opacity: 0.95; }
+            100% { transform: translate(1px, 1px); opacity: 0.78; }
+        }
+
+        @keyframes bossIntroTextGlitch {
+            0% {
+                transform: translate(0, 0);
+                text-shadow:
+                    3px 3px 0 #000,
+                    0 0 22px rgba(255, 20, 20, 0.82);
+            }
+            30% {
+                transform: translate(-2px, 1px);
+                text-shadow:
+                    3px 3px 0 #000,
+                    2px 0 0 rgba(255, 255, 255, 0.5),
+                    -3px 0 0 rgba(80, 0, 0, 0.8),
+                    0 0 20px rgba(255, 30, 30, 0.92);
+            }
+            62% {
+                transform: translate(2px, -1px);
+                text-shadow:
+                    3px 3px 0 #000,
+                    -2px 0 0 rgba(255, 120, 120, 0.44),
+                    0 0 26px rgba(255, 0, 0, 1);
+            }
+            100% {
+                transform: translate(0, 0);
+                text-shadow:
+                    3px 3px 0 #000,
+                    0 0 18px rgba(255, 20, 20, 0.75);
+            }
+        }
+
         @keyframes starBurst {
             0% {
                 opacity: 0;
@@ -562,12 +1787,26 @@
     <div id="game-wrapper" style="gap: 20px;">
         
         <!-- HOLD UI -->
-        <div class="hold-panel" style="background: rgba(22, 22, 40, 0.9); border: 4px solid #444; padding: 10px; text-align: center; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-200px);">
-            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px;">HOLD (F)</div>
-            <canvas id="holdCanvas" width="90" height="90" style="background: #000; border: 2px solid #111;"></canvas>
+        <div class="hold-panel" id="hold-panel" style="background: #000; border: 4px solid #444; padding: 4px; text-align: center; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-170px);">
+            <canvas id="holdCanvas" width="90" height="90" style="display: block; background: #000; border: 2px solid #111;"></canvas>
         </div>
 
         <div class="canvas-outer">
+            <div id="boss-hud">
+                <div class="boss-hud-window boss-hp-window" id="boss-hp-window">
+                    <div class="boss-hud-label">BOSS INTEGRITY</div>
+                    <div class="boss-hp-segments">
+                        <div class="boss-hp-segment"><div class="boss-hp-fill" id="boss-hp-left"></div></div>
+                        <div class="boss-hp-segment"><div class="boss-hp-fill" id="boss-hp-right"></div></div>
+                        <div class="boss-hp-segment"><div class="boss-hp-fill" id="boss-hp-eye"></div></div>
+                    </div>
+                    <div class="boss-part-name">
+                        <span>L-HAND</span>
+                        <span>R-HAND</span>
+                        <span>EYE</span>
+                    </div>
+                </div>
+            </div>
             <div class="canvas-container" id="main-container">
                 <canvas id="tetris" width="300" height="690"></canvas>
             </div>
@@ -575,38 +1814,47 @@
 
         <!-- SCORE UI -->
         <div class="score-panel" style="background: rgba(22, 22, 40, 0.9); border: 4px solid #444; padding: 20px; text-align: right; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-100px); min-width: 140px; font-family: 'Press Start 2P', cursive; flex-direction: column;">
-            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">SCORE</div>
+            <div id="ui-score-label" style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">SCORE</div>
             <div id="ui-score" style="font-size: 18px; color: #fff; margin-bottom: 24px; text-shadow: 3px 3px 0 #000;">0</div>
             
-            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">TARGET</div>
+            <div id="ui-target-label" style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">TARGET</div>
             <div id="ui-target-score" style="font-size: 14px; color: #fff06a; margin-bottom: 24px; text-shadow: 2px 2px 0 #000;">10,000</div>
             
-            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">COMBO</div>
+            <div id="ui-combo-label" style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">COMBO</div>
             <div id="ui-combo" style="font-size: 18px; color: #fff; margin-bottom: 24px; text-shadow: 3px 3px 0 #000;">0</div>
             
-            <div style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">PROGRESS</div>
-            <div style="width: 100%; height: 12px; border: 2px solid #fff; background: rgba(255,255,255,0.08); box-shadow: inset 0 0 0 2px #000;">
+            <div id="ui-progress-label" style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">PROGRESS</div>
+            <div id="ui-progress-box" style="width: 100%; height: 12px; border: 2px solid #fff; background: rgba(255,255,255,0.08); box-shadow: inset 0 0 0 2px #000;">
                 <div id="ui-progress" style="height: 100%; width: 0%; background: linear-gradient(90deg, #ff99cc, #fff06a);"></div>
             </div>
         </div>
 
         <div id="game-over-overlay">
             <div class="ui-shell">
-                <div class="ui-screen active" id="menu-screen">
-                    <div class="ui-badge">TETRIS_ERROR.EXE</div>
-                    <h1>MAIN START</h1>
-                    <p class="ui-copy">TUTORIAL / LEVEL 01 / LEVEL 10 BOSS</p>
-                    <div class="ui-actions">
-                        <button class="btn btn-cta" id="start-btn" onclick="openLevelSelect()">LET'S FIX</button>
+                <div class="ui-screen title-screen active" id="menu-screen">
+                    <div class="title-logo-wrap">
+                        <img class="title-logo" src="Resources/TE_TitleLogo.png" alt="TETRIS ERROR">
                     </div>
+                    <div class="title-press-prompt">-PRESS ANY BUTTON-</div>
+                    <p class="ui-copy">인공지능콘텐츠제작 기말과제<br>20221116 김영재</p>
+                    <i class="title-particle p1"></i>
+                    <i class="title-particle p2"></i>
+                    <i class="title-particle p3"></i>
+                    <i class="title-particle p4"></i>
+                    <i class="title-particle p5"></i>
+                    <i class="title-particle p6"></i>
+                    <i class="title-particle p7"></i>
+                    <i class="title-particle p8"></i>
+                    <i class="title-particle p9"></i>
+                    <i class="title-particle p10"></i>
                 </div>
 
                 <div class="ui-screen" id="level-screen">
-                    <h1 style="font-size: 24px; margin-bottom: 10px;">LEVEL</h1>
-                    <div class="level-grid" id="level-grid"></div>
-                    <div class="ui-actions">
-                        <button class="btn" onclick="showMenuScreen()">BACK</button>
+                    <div class="level-screen-head">
+                        <h1>LEVEL</h1>
+                        <button class="level-back-icon" onclick="showMenuScreen()" aria-label="돌아가기" title="돌아가기"></button>
                     </div>
+                    <div class="level-grid" id="level-grid"></div>
                 </div>
 
                 <div class="ui-screen" id="clear-screen">
@@ -641,6 +1889,29 @@
         </div>
     </div>
 
+    <div id="cinematic-intro-overlay" aria-hidden="true">
+        <img class="cinematic-story-image" id="cinematic-story-image" alt="스토리 인트로">
+        <div class="cinematic-dim"></div>
+        <div class="cinematic-dialogue-box" id="cinematic-dialogue-box">
+            <div class="cinematic-dialogue-text" id="cinematic-dialogue-text"></div>
+            <div class="cinematic-input-hint" id="cinematic-input-hint">아무 키 입력...</div>
+        </div>
+    </div>
+
+    <div id="seoa-dialogue-overlay" aria-hidden="true">
+        <div class="seoa-dialogue-character">
+            <img id="seoa-dialogue-image" src="Resources/Seoa_basic.png" alt="Seoa">
+        </div>
+        <section class="seoa-dialogue-box" aria-live="polite">
+            <div class="seoa-dialogue-head">
+                <div id="seoa-dialogue-speaker">SEOA</div>
+                <div id="seoa-dialogue-counter">01 / 05</div>
+            </div>
+            <div id="seoa-dialogue-text"></div>
+            <div class="seoa-dialogue-hint">아무 키 입력...</div>
+        </section>
+    </div>
+
     <div id="tutorial-overlay" aria-hidden="true">
         <div class="tutorial-panel" id="tutorial-panel">
             <div class="tutorial-title" id="tutorial-title">TUTORIAL</div>
@@ -648,10 +1919,19 @@
             <div class="tutorial-hint" id="tutorial-hint">아무 키 입력...</div>
         </div>
     </div>
+    <div id="level-clear-overlay" aria-hidden="true">
+        <div class="level-clear-star-layer" id="level-clear-star-layer"></div>
+        <div class="level-clear-panel">
+            <div class="level-clear-title" id="level-clear-title">LEVEL 01<br>Clear!!</div>
+            <div class="level-clear-hint">아무 키 입력...</div>
+        </div>
+    </div>
+    <div id="screen-fade" aria-hidden="true"></div>
     
     <script>
     const canvas = document.getElementById('tetris');
     const ctx = canvas.getContext('2d');
+    const holdPanel = document.getElementById('hold-panel');
     const holdCanvas = document.getElementById('holdCanvas');
     const hCtx = holdCanvas.getContext('2d');
     const overlay = document.getElementById('game-over-overlay');
@@ -667,10 +1947,24 @@
     const introStarLayer = document.getElementById('intro-star-layer');
     const introLevelLine = document.getElementById('intro-level-line');
     const introStartLine = document.getElementById('intro-start-line');
+    const cinematicIntroOverlay = document.getElementById('cinematic-intro-overlay');
+    const cinematicStoryImage = document.getElementById('cinematic-story-image');
+    const cinematicDialogueBox = document.getElementById('cinematic-dialogue-box');
+    const cinematicDialogueText = document.getElementById('cinematic-dialogue-text');
+    const cinematicInputHint = document.getElementById('cinematic-input-hint');
+    const seoaDialogueOverlay = document.getElementById('seoa-dialogue-overlay');
+    const seoaDialogueImage = document.getElementById('seoa-dialogue-image');
+    const seoaDialogueSpeaker = document.getElementById('seoa-dialogue-speaker');
+    const seoaDialogueCounter = document.getElementById('seoa-dialogue-counter');
+    const seoaDialogueText = document.getElementById('seoa-dialogue-text');
     const tutorialOverlay = document.getElementById('tutorial-overlay');
     const tutorialTitle = document.getElementById('tutorial-title');
     const tutorialText = document.getElementById('tutorial-text');
     const tutorialHint = document.getElementById('tutorial-hint');
+    const screenFade = document.getElementById('screen-fade');
+    const levelClearOverlay = document.getElementById('level-clear-overlay');
+    const levelClearStarLayer = document.getElementById('level-clear-star-layer');
+    const levelClearSequenceTitle = document.getElementById('level-clear-title');
     const ROWS = 23; 
     const COLS = 10; 
     const BLOCK_SIZE = 30;
@@ -699,6 +1993,64 @@
     };
     const GHOST_COLOR = 'rgba(139, 0, 0, 0.5)';
     const PLAYER_COLOR = '#A3E4D7';
+    const SEOA_EMOTION_ASSETS = {
+        basic: { src: 'Resources/Seoa_basic.png', scaleOffset: 0 },
+        excited: { src: 'Resources/Seoa_Exited.png', scaleOffset: 0 },
+        surprised: { src: 'Resources/Seoa_Suprized.png', scaleOffset: 0 },
+        angry: { src: 'Resources/Seoa_angry.png', scaleOffset: 0 },
+        sad: { src: 'Resources/Seoa_sad.png', scaleOffset: 0 }
+    };
+    const TUTORIAL_INTRO_DIALOGUE = {
+        id: 'tutorial_intro',
+        title: '튜토리얼 시작 대화',
+        ui: {
+            seoa: { scale: 1.62, xPx: 0, yPx: 52 },
+            dialogueBox: { leftPx: 130, rightPx: 220, bottomPx: 34, minHeightPx: 228 }
+        },
+        lines: [
+            { emotion: 'sad', speaker: 'SEOA', text: '여긴 어디지? ', note: '살짝 떨리는 느낌' },
+            { emotion: 'sad', speaker: 'SEOA', text: '난 분명 오락실이었는데..', note: '살짝 떨리는 느낌' },
+            { emotion: 'sad', speaker: 'SEOA', text: '설마..', note: '살짝 떨리는 느낌' },
+            { emotion: 'surprised', speaker: 'SEOA', text: '여긴 테트리스 게임 안이잖아..?', note: '' },
+            { emotion: 'excited', speaker: 'SEOA', text: '테트리스면 자신있지!', note: '' }
+        ]
+    };
+    const SEOA_DIALOGUE_WORD_MS = 145;
+    const SEOA_DIALOGUE_FORCE_HOLD_MS = 1000;
+    const SEOA_LANDING_CINEMATIC = {
+        fallGravity: 1900,
+        impactHold: 1000,
+        blinkDuration: 1200,
+        blinkMs: 160,
+        standDuration: 640,
+        zoom: 1.85,
+        proneHeight: 28
+    };
+    const SEOA_PRONE_CLOSED_IMG = new Image();
+    SEOA_PRONE_CLOSED_IMG.src = 'Resources/Sprite_seoa2.png';
+    const SEOA_PRONE_OPEN_IMG = new Image();
+    SEOA_PRONE_OPEN_IMG.src = 'Resources/Sprite_seoa1.png';
+    const seoaProneBoundsCache = new WeakMap();
+    const CINEMATIC_DIALOGUE_FORCE_HOLD_MS = 1000;
+    const CINEMATIC_STORY_CONFIG = {
+        slides: [
+            { key: 'story-1', name: 'STORY 1', src: 'Resources/스토리1.png', fadeInMs: 700, holdMs: 4300, fadeOutMs: 700, scale: 1.3, xVw: 7, yVh: 13, dimOpacity: 0.07, dialogues: [
+                { text: '서아는 오락실에서 테트리스를 하고 있었다.', startMs: 250, durationMs: 1750, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 },
+                { text: '익숙한 블록들이 쌓여 가고, 서아는 게임에 점점 더 몰입한다.', startMs: 2300, durationMs: 1850, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 }
+            ] },
+            { key: 'story-2', name: 'STORY 2', src: 'Resources/스토리2.png', fadeInMs: 700, holdMs: 4400, fadeOutMs: 700, scale: 1, xVw: 0, yVh: 0, dimOpacity: 0.16, dialogues: [
+                { text: '조작에 집중한 서아의 시선엔 게임 화면만이 가득했다.\n', startMs: 250, durationMs: 1750, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 },
+                { text: '그 순간, 화면이 지직거리며 정체불명의 에러 블록이 나타난다.\n', startMs: 2300, durationMs: 1850, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 }
+            ] },
+            { key: 'story-3', name: 'STORY 3', src: 'Resources/스토리3.png', fadeInMs: 400, holdMs: 2600, fadeOutMs: 400, scale: 1.04, xVw: 0, yVh: 0, dimOpacity: 0.16, dialogues: [
+                { text: '평범하던 테트리스는 붉게 뒤틀리고, 게임은 이상한 형태로 변하기 시작한다.', startMs: 250, durationMs: 2200, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 }
+            ] },
+            { key: 'story-4', name: 'STORY 4', src: 'Resources/스토리4', fadeInMs: 300, holdMs: 4300, fadeOutMs: 950, scale: 1.48, xVw: 0, yVh: 15.5, dimOpacity: 0.13, dialogues: [
+                { text: '화면 속 악마가 손을 내뻗자, 붉은 빛이 게임기 밖으로 새어 나온다.', startMs: 250, durationMs: 1750, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 },
+                { text: '서아는 저항할 틈도 없이 그 힘에 끌려, 테트리스 속 세계로 빨려 들어간다.', startMs: 2300, durationMs: 1850, typeMs: 42, widthVw: 76, leftVw: 12, rightVw: 12, heightPx: 168, xVw: 0, yVh: 7, fontSizePx: 15, bgOpacity: 0.86 }
+            ] }
+        ]
+    };
 
     function getEnemyColor(type) {
         return ENEMY_COLORS[type] || ENEMY_COLOR;
@@ -730,17 +2082,19 @@
 
     const LEVELS = [
         { id: 'tutorial', label: 'TUTORIAL', name: 'SYSTEM CHECK', targetScore: 1500, spawnInterval: 5.2, dropInterval: 1.05, laserMin: 9, laserMax: 13, scoreMultiplier: 1 },
-        { id: 'level-01', label: 'LEVEL 01', name: 'BOOT SECTOR', targetScore: 10000, spawnInterval: 4.2, dropInterval: 0.85, laserMin: 5, laserMax: 9, scoreMultiplier: 1 },
-        { id: 'boss-10', label: 'LEVEL 10', name: 'BOSS: FINAL REBOOT', targetScore: 80000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2 }
+        { id: 'level-01', label: 'LEVEL 01', name: 'BOOT SECTOR', targetScore: 10000, spawnInterval: 4.2, minSpawnInterval: 2.5, dropInterval: 0.85, laserMin: 5, laserMax: 9, scoreMultiplier: 1 },
+        { id: 'boss-10', label: 'LEVEL 10', name: 'BOSS: FINAL REBOOT', targetScore: 80000, spawnInterval: 2.4, dropInterval: 0.66, laserMin: 3.2, laserMax: 5.4, scoreMultiplier: 2, isBoss: true, bossHp: 1600, phaseThresholds: [0.7, 0.4, 0.15], bossAttackInterval: 4.6 }
     ];
 
     const TUTORIAL_STEPS = [
         { key: 'move', title: '목표로 이동하세요!', text: '이동 : A / D' },
         { key: 'jump', title: '목표로 이동하세요!', text: '점프 : W / spacebar' },
-        { key: 'hack-target', title: 'HACKING 01', text: '클릭 선택 / A D 이동 / W 회전 / S 소프트드롭 / Space 하드드롭' },
-        { key: 'hold', title: 'HACKING 02', text: 'F 홀드' },
-        { key: 'laser', title: 'LASER 01', text: '빨간 예고선을 피하세요' },
-        { key: 'complete', title: 'TUTORIAL', text: '튜토리얼 완료' }
+        { key: 'hack-select', title: '블록을 클릭하세요!', text: '블록 선택 : 클릭' },
+        { key: 'hack-place', title: '조작하여 설치하세요!', text: '블록 설치 : A D / W / S / Spacebar' },
+        { key: 'hold-store', title: '블록을 저장할 수 있습니다!', text: '블록 홀드 : F' },
+        { key: 'hold-place', title: '조작하여 설치하세요!', text: '홀드 꺼내기 : F' },
+        { key: 'laser', title: '레이저를 피하세요!', text: '약 2초뒤 레이저가 옵니다..' },
+        { key: 'complete', title: '튜토리얼 완료!', text: '축하합니다.' }
     ];
 
     const TUTORIAL_TARGET = {
@@ -750,8 +2104,19 @@
         matrix: [[0, 1, 0], [0, 1, 1], [0, 1, 0]]
     };
 
+    const TUTORIAL_HOLD_TARGET = {
+        type: 'L',
+        gridX: 3,
+        gridY: 21,
+        matrix: PIECES.L
+    };
+
+    const TUTORIAL_BLOCK_START_Y = (HIDDEN_ROWS + 3) * BLOCK_SIZE;
+    const TUTORIAL_HOLD_FEEDBACK_MS = 950;
+    const LEVEL_CLEAR_INPUT_DELAY_MS = 1500;
+
     const TUTORIAL_EXPLAIN_CONFIG = {
-        yVh: 50,
+        yVh: 43,
         titleSizeVw: 2,
         textSizeVw: 2.3,
         hintSizePx: 12,
@@ -766,6 +2131,7 @@
     let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
     let enemies = [];
     let particles = [];
+    let floatingScoreTexts = [];
     let hardDropTrails = [];
     let player = null;
     let controlMode = 'CHARACTER';
@@ -779,6 +2145,78 @@
     let survivalTimer = 0;
     let currentLevel = LEVELS[0];
     let levelClearShown = false;
+    let screenTransitioning = false;
+    let levelClearSequence = {
+        active: false,
+        revealed: false,
+        awaitingInput: false,
+        timer: 0,
+        tutorialStyle: false
+    };
+    let cinematicIntro = {
+        active: false,
+        slideIndex: 0,
+        dialogueIndex: 0,
+        currentDialogue: null,
+        typedCount: 0,
+        forceUntil: 0,
+        timers: [],
+        frameId: null,
+        onComplete: null
+    };
+    let bossHp = 0;
+    let bossMaxHp = 0;
+    let bossPhase = 0;
+    let bossAttackTimer = 0;
+    let bossStunTimer = 0;
+    let bossDamageTextTimer = 0;
+    let bossLastDamage = 0;
+    let bossHudShakeTimer = 0;
+    let bossHudShakeAmount = 0;
+    let bossAttackStars = [];
+    let bossParts = [
+        { id: 'left', label: 'L-HAND', hp: 0, maxHp: 0, alive: true },
+        { id: 'right', label: 'R-HAND', hp: 0, maxHp: 0, alive: true },
+        { id: 'eye', label: 'EYE', hp: 0, maxHp: 0, alive: true }
+    ];
+    let bossHands = [
+        { side: -1, x: 16, y: 100, w: 56, h: 34, attackX: 16, attackY: 100 },
+        { side: 1, x: 228, y: 100, w: 56, h: 34, attackX: 228, attackY: 100 }
+    ];
+    let bossEye = { x: 150, y: 138, targetX: 150, targetY: 138, pupilX: 0, pupilY: 0, radius: 24 };
+    let bossAttack = {
+        type: 'idle',
+        phase: 'idle',
+        timer: 0,
+        duration: 0,
+        side: 1,
+        laneCol: 4,
+        laneX: 4 * BLOCK_SIZE,
+        laneW: BLOCK_SIZE,
+        y: 210
+    };
+    let seoaDialogue = {
+        active: false,
+        config: null,
+        lineIndex: 0,
+        visibleTokens: 0,
+        tokenTimer: 0,
+        completedAt: 0,
+        onComplete: null,
+        pendingImageSrc: null,
+        closing: false
+    };
+    let seoaLandingCinematic = {
+        active: false,
+        phase: 'idle',
+        timer: 0,
+        onComplete: null,
+        actorX: 0,
+        actorY: 0,
+        actorVy: 0,
+        proneX: 0,
+        proneY: 0
+    };
     let tutorial = {
         active: false,
         stepIndex: 0,
@@ -787,9 +2225,15 @@
         moveCheckpointIndex: 0,
         laserStarted: false,
         laserComplete: false,
+        laserDeathCount: 0,
+        holdFeedbackTimer: 0,
+        placementFeedbackTimer: 0,
         explaining: false,
         dismissing: false,
         compact: false,
+        sceneHidden: false,
+        preserveSceneForNextExplanation: false,
+        skipSceneAppearParticles: false,
         explainStartAt: 0,
         explainMinMs: TUTORIAL_EXPLAIN_CONFIG.forceMs,
         explainReady: false
@@ -812,6 +2256,11 @@
         }
     }
 
+    function setHoldPanelHighlight(active) {
+        if (!holdPanel) return;
+        holdPanel.classList.toggle('hold-highlight', active);
+    }
+
     function spawnHeldPiece(type) {
         if (!type) return null;
 
@@ -819,7 +2268,7 @@
         newEnemy.type = type;
         newEnemy.matrix = PIECES[type];
         newEnemy.gridX = Math.floor(COLS / 2) - Math.floor(newEnemy.matrix[0].length / 2);
-        newEnemy.y = 0;
+        newEnemy.y = BLOCK_SIZE * 3;
 
         while (newEnemy.checkOverlap(newEnemy.gridX, newEnemy.y)) {
             newEnemy.y += BLOCK_SIZE;
@@ -828,6 +2277,9 @@
 
         newEnemy.isGhost = true;
         enemies.push(newEnemy);
+        for (let rect of newEnemy.getRects()) {
+            emitRectParticles(rect, ['#ff99cc', '#ffffff', '#ff5fb3'], 7, 'appear');
+        }
         selectedBlock = newEnemy;
         controlMode = 'BLOCK';
         canHold = false;
@@ -863,6 +2315,49 @@
         }
     }
 
+    function showFloatingScore(amount, x, y) {
+        floatingScoreTexts.push({
+            amount,
+            x,
+            y,
+            timer: 0,
+            duration: 0.72,
+            jitterSeed: Math.random() * 1000
+        });
+    }
+
+    function updateFloatingScoreTexts(dt) {
+        for (let i = floatingScoreTexts.length - 1; i >= 0; i--) {
+            floatingScoreTexts[i].timer += dt;
+            if (floatingScoreTexts[i].timer >= floatingScoreTexts[i].duration) {
+                floatingScoreTexts.splice(i, 1);
+            }
+        }
+    }
+
+    function drawFloatingScoreTexts() {
+        for (let item of floatingScoreTexts) {
+            let progress = Math.min(item.timer / item.duration, 1);
+            let alpha = 1 - progress;
+            let rise = progress * 34;
+            let jitter = Math.sin((performance.now() / 28) + item.jitterSeed) * 3;
+
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.font = '12px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = '#fff06a';
+            ctx.shadowBlur = 10;
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#000';
+            ctx.fillStyle = '#fff06a';
+            ctx.strokeText(`+${item.amount}`, item.x + jitter, item.y - rise);
+            ctx.fillText(`+${item.amount}`, item.x + jitter, item.y - rise);
+            ctx.restore();
+        }
+    }
+
     let isGameOver = false;
     let isDying = false;
     let isSoulStolen = false;
@@ -884,6 +2379,15 @@
     let introStartAt = 0;
     let introEndAt = 0;
     let introPhases = [];
+    let bossIntro = {
+        active: false,
+        timer: 0,
+        revealDuration: 3.1,
+        roarDuration: 0.9,
+        progress: 0,
+        roaring: false,
+        finished: false
+    };
 
     let laserAttack = {
         phase: 'idle',
@@ -965,6 +2469,266 @@
         }
     }
 
+    function isBossLevel() {
+        return currentLevel && currentLevel.isBoss;
+    }
+
+    function resetBossState() {
+        bossMaxHp = isBossLevel() ? currentLevel.bossHp : 0;
+        let partHp = Math.floor(bossMaxHp / 3);
+        bossParts = [
+            { id: 'left', label: 'L-HAND', hp: partHp, maxHp: partHp, alive: isBossLevel() },
+            { id: 'right', label: 'R-HAND', hp: partHp, maxHp: partHp, alive: isBossLevel() },
+            { id: 'eye', label: 'EYE', hp: bossMaxHp - partHp * 2, maxHp: bossMaxHp - partHp * 2, alive: isBossLevel() }
+        ];
+        bossHp = bossParts.reduce((sum, part) => sum + part.hp, 0);
+        bossPhase = 0;
+        bossAttackTimer = isBossLevel() ? 1.4 : 0;
+        bossStunTimer = 0;
+        bossDamageTextTimer = 0;
+        bossLastDamage = 0;
+        bossHudShakeTimer = 0;
+        bossHudShakeAmount = 0;
+        bossAttackStars = [];
+        bossEye.x = canvas.width / 2;
+        bossEye.y = isBossLevel() ? -84 : 138;
+        bossEye.targetX = bossEye.x;
+        bossEye.targetY = isBossLevel() ? -84 : bossEye.y;
+        bossEye.pupilX = 0;
+        bossEye.pupilY = 0;
+        bossIntro.active = false;
+        bossIntro.timer = 0;
+        bossIntro.progress = isBossLevel() ? 0 : 1;
+        bossIntro.roaring = false;
+        bossIntro.finished = false;
+        bossAttack = {
+            type: 'idle',
+            phase: 'idle',
+            timer: 0,
+            duration: 0,
+            side: 1,
+            laneCol: 4,
+            laneX: 4 * BLOCK_SIZE,
+            laneW: BLOCK_SIZE,
+            y: 210
+        };
+        bossHands[0].attackX = bossHands[0].x;
+        bossHands[0].attackY = bossHands[0].y;
+        bossHands[1].attackX = bossHands[1].x;
+        bossHands[1].attackY = bossHands[1].y;
+    }
+
+    function updateBossPhase() {
+        if (!isBossLevel() || bossMaxHp <= 0) return;
+        let defeatedParts = bossParts.filter(part => !part.alive).length;
+        let nextPhase = Math.min(defeatedParts, 2);
+        if (nextPhase > bossPhase) {
+            bossPhase = nextPhase;
+            bossStunTimer = Math.max(bossStunTimer, 0.55);
+            shakeAmount = Math.max(shakeAmount, 22 + bossPhase * 8);
+        }
+    }
+
+    function getActiveBossPart() {
+        return bossParts.find(part => part.alive) || null;
+    }
+
+    function getBossPartTarget(partId) {
+        if (partId === 'left') return { x: bossHands[0].x + bossHands[0].w / 2, y: bossHands[0].y + bossHands[0].h / 2 };
+        if (partId === 'right') return { x: bossHands[1].x + bossHands[1].w / 2, y: bossHands[1].y + bossHands[1].h / 2 };
+        return { x: bossEye.x, y: bossEye.y };
+    }
+
+    function damageBoss(clearedLines, origin) {
+        if (!isBossLevel() || bossHp <= 0 || levelClearShown) return;
+        let targetPart = getActiveBossPart();
+        if (!targetPart) return;
+        const damageByLines = [0, 90, 210, 380, 640];
+        let damage = damageByLines[Math.min(clearedLines, 4)] || clearedLines * 170;
+        damage += comboCount * 20;
+        let start = origin || { x: canvas.width / 2, y: canvas.height - 120 };
+        bossAttackStars.push({
+            x: start.x,
+            y: start.y,
+            startX: start.x,
+            startY: start.y,
+            targetId: targetPart.id,
+            damage,
+            clearedLines,
+            timer: 0,
+            duration: 0.72,
+            size: 5 + clearedLines * 2,
+            hit: false
+        });
+        bossDamageTextTimer = 1.05;
+        bossLastDamage = damage;
+
+        for (let i = 0; i < 16 + clearedLines * 10; i++) {
+            let spark = new Particle(start.x + (Math.random() - 0.5) * 28, start.y + (Math.random() - 0.5) * 28, i % 2 === 0 ? '#fff06a' : '#ffffff');
+            spark.speedX *= 0.55;
+            spark.speedY *= 0.55;
+            particles.push(spark);
+        }
+    }
+
+    function applyBossStarHit(star) {
+        let part = bossParts.find(item => item.id === star.targetId);
+        if (!part || !part.alive) return;
+
+        part.hp = Math.max(0, part.hp - star.damage);
+        if (part.hp <= 0) {
+            part.alive = false;
+        }
+        bossHp = bossParts.reduce((sum, item) => sum + item.hp, 0);
+        bossLastDamage = star.damage;
+        bossDamageTextTimer = 1.05;
+        bossStunTimer = Math.max(bossStunTimer, star.clearedLines >= 3 ? 1.15 : 0.38);
+        bossHudShakeTimer = 0.42;
+        bossHudShakeAmount = 9 + star.clearedLines * 4;
+        shakeAmount = Math.max(shakeAmount, 18 + star.clearedLines * 12);
+
+        let target = getBossPartTarget(star.targetId);
+        for (let i = 0; i < 34 + star.clearedLines * 18; i++) {
+            particles.push(new Particle(target.x + (Math.random() - 0.5) * 54, target.y + (Math.random() - 0.5) * 36, i % 3 === 0 ? '#fff06a' : '#ff3333'));
+        }
+
+        updateBossPhase();
+        if (bossHp <= 0) {
+            bossAttack.phase = 'idle';
+            bossStunTimer = 1.8;
+            showLevelClear();
+        }
+    }
+
+    function startBossAttack() {
+        bossAttack.type = 'laser';
+        bossAttack.phase = 'telegraph';
+        bossAttack.timer = 0;
+        bossAttack.side = Math.random() < 0.5 ? -1 : 1;
+        bossAttack.duration = 1.15;
+
+        let verticalLaser = Math.random() < 0.5;
+        if (verticalLaser) {
+            bossAttack.type = 'vertical-laser';
+            bossAttack.phase = 'telegraph';
+            bossAttack.duration = 0.72;
+            bossAttack.laneCol = Math.max(0, Math.min(COLS - 1, Math.floor(bossEye.x / BLOCK_SIZE)));
+            bossAttack.laneX = bossEye.x - BLOCK_SIZE / 2;
+            bossAttack.laneW = BLOCK_SIZE;
+            return;
+        }
+        let baseInterval = currentLevel.bossAttackInterval || 4.5;
+        bossAttack.phase = 'idle';
+        bossAttack.type = 'idle';
+        bossAttack.timer = 0;
+        bossAttackTimer = baseInterval;
+        startLaserTelegraph();
+    }
+
+    function updateBossFight(dt) {
+        if (!isBossLevel() || isGameOver || isDying || gameState !== 'playing') return;
+
+        if (bossDamageTextTimer > 0) bossDamageTextTimer -= dt;
+        if (bossHudShakeTimer > 0) {
+            bossHudShakeTimer -= dt;
+            if (bossHudShakeTimer <= 0) bossHudShakeAmount = 0;
+        }
+        updateBossEye(dt);
+        updateBossAttackStars(dt);
+
+        if (bossStunTimer > 0) {
+            bossStunTimer -= dt;
+            return;
+        }
+
+        if (bossAttack.phase === 'idle') {
+            bossAttackTimer -= dt;
+            if (bossAttackTimer <= 0) {
+                startBossAttack();
+            }
+            return;
+        }
+
+        bossAttack.timer += dt;
+
+        let telegraphDuration = bossAttack.type === 'vertical-laser' ? 2.0 : 0.8;
+        if (bossAttack.phase === 'telegraph' && bossAttack.timer >= telegraphDuration) {
+            bossAttack.phase = 'fire';
+            bossAttack.timer = 0;
+            return;
+        }
+
+        if (bossAttack.phase === 'fire') {
+            let hitRect = getBossAttackHitRect();
+            if (hitRect && player && rectIntersect({ x: player.x, y: player.y, w: player.w, h: player.h }, hitRect)) {
+                startDeathSequence('boss');
+            }
+
+            if (bossAttack.timer >= bossAttack.duration) {
+                bossAttack.phase = 'idle';
+                bossAttack.type = 'idle';
+                bossAttack.timer = 0;
+                let baseInterval = currentLevel.bossAttackInterval || 4.5;
+                bossAttackTimer = baseInterval;
+            }
+        }
+    }
+
+    function getBossAttackHitRect() {
+        if (!isBossLevel() || bossAttack.phase !== 'fire') return null;
+        if (bossAttack.type === 'vertical-laser') {
+            let laserX = Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
+            return { x: laserX + 8, y: bossEye.y, w: BLOCK_SIZE - 16, h: canvas.height - bossEye.y };
+        }
+        return null;
+    }
+
+    function updateBossEye(dt) {
+        if (!player) return;
+        let px = player.x + player.w / 2;
+        let py = player.y + player.h / 2;
+        bossEye.targetX = Math.max(92, Math.min(canvas.width - 92, px));
+        let introOffsetY = bossIntro.active ? -190 * (1 - bossIntro.progress) : 0;
+        bossEye.targetY = 138 + introOffsetY + Math.sin(performance.now() / 360) * 10;
+        bossEye.x += (bossEye.targetX - bossEye.x) * Math.min(dt * 2.7, 1);
+        bossEye.y += (bossEye.targetY - bossEye.y) * Math.min(dt * 2.2, 1);
+
+        let dx = px - bossEye.x;
+        let dy = py - bossEye.y;
+        let dist = Math.max(Math.hypot(dx, dy), 1);
+        bossEye.pupilX = (dx / dist) * 9;
+        bossEye.pupilY = (dy / dist) * 9;
+    }
+
+    function updateBossAttackStars(dt) {
+        for (let i = bossAttackStars.length - 1; i >= 0; i--) {
+            let star = bossAttackStars[i];
+            star.timer += dt;
+            let target = getBossPartTarget(star.targetId);
+            let progress = Math.min(star.timer / star.duration, 1);
+            let ease = 1 - Math.pow(1 - progress, 3);
+            let arc = Math.sin(progress * Math.PI) * (52 + star.clearedLines * 14);
+            star.x = star.startX + (target.x - star.startX) * ease;
+            star.y = star.startY + (target.y - star.startY) * ease - arc;
+            star.size = 5 + star.clearedLines * 2 + progress * (16 + star.clearedLines * 5);
+
+            if (Math.random() < 0.45) {
+                let trail = new Particle(star.x, star.y, Math.random() < 0.5 ? '#fff06a' : '#ffffff');
+                trail.speedX = (Math.random() - 0.5) * 2;
+                trail.speedY = (Math.random() - 0.5) * 2;
+                trail.size = Math.random() * 2 + 1;
+                trail.decay = 0.026;
+                particles.push(trail);
+            }
+
+            if (progress >= 1 && !star.hit) {
+                star.hit = true;
+                applyBossStarHit(star);
+                bossAttackStars.splice(i, 1);
+            }
+        }
+    }
+
     function isTutorialLevel() {
         return currentLevel && currentLevel.id === 'tutorial' && tutorial.active;
     }
@@ -975,6 +2739,14 @@
 
     function getTutorialStepKey() {
         return getTutorialStep().key;
+    }
+
+    function getTutorialStepText(step) {
+        if (step.key !== 'laser') return step.text;
+        if (tutorial.laserDeathCount === 1) return '어렵죠?';
+        if (tutorial.laserDeathCount === 2) return '흠..';
+        if (tutorial.laserDeathCount >= 3) return `레이저에 죽은 횟수 : ${tutorial.laserDeathCount}`;
+        return step.text;
     }
 
     function setTutorialOverlayVisible(visible) {
@@ -1016,11 +2788,109 @@
         tutorialOverlay.classList.toggle('dismiss', tutorial.dismissing);
         tutorialOverlay.classList.toggle('compact', tutorial.compact);
         if (tutorialTitle) tutorialTitle.textContent = step.title;
-        if (tutorialText) tutorialText.textContent = step.text;
+        if (tutorialText) tutorialText.textContent = getTutorialStepText(step);
         if (tutorialHint) tutorialHint.textContent = tutorial.compact ? '' : (tutorial.explainReady ? '아무 키 입력...' : '');
     }
 
+    function pickParticleColor(colors) {
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function emitRectParticles(rect, colors, count, mode) {
+        for (let i = 0; i < count; i++) {
+            let px = rect.x + Math.random() * rect.w;
+            let py = rect.y + Math.random() * rect.h;
+            let particle = new Particle(px, py, pickParticleColor(colors));
+            let spread = mode === 'appear' ? 7 : 11;
+            particle.speedX = (Math.random() - 0.5) * spread;
+            particle.speedY = (Math.random() - 0.5) * spread - (mode === 'appear' ? 1.5 : 0);
+            particle.size = Math.random() * 3 + 2;
+            particle.decay = 0.014 + Math.random() * 0.018;
+            particles.push(particle);
+        }
+    }
+
+    function emitTutorialTargetParticles(mode) {
+        if (tutorial.target) {
+            for (let r = 0; r < tutorial.target.matrix.length; r++) {
+                for (let c = 0; c < tutorial.target.matrix[r].length; c++) {
+                    if (!tutorial.target.matrix[r][c]) continue;
+                    emitRectParticles(
+                        {
+                            x: (tutorial.target.gridX + c) * BLOCK_SIZE,
+                            y: (tutorial.target.gridY + r) * BLOCK_SIZE,
+                            w: BLOCK_SIZE,
+                            h: BLOCK_SIZE
+                        },
+                        ['#ff99cc', '#ffffff', '#7a264f'],
+                        5,
+                        mode
+                    );
+                }
+            }
+        }
+    }
+
+    function emitTutorialSceneParticles(mode) {
+        if (!isTutorialLevel()) return;
+
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (board[r][c]) {
+                    emitRectParticles(
+                        { x: c * BLOCK_SIZE, y: r * BLOCK_SIZE, w: BLOCK_SIZE, h: BLOCK_SIZE },
+                        [board[r][c], '#ffffff', '#2a0000'],
+                        5,
+                        mode
+                    );
+                }
+            }
+        }
+
+        for (let enemy of enemies) {
+            if (enemy.deleted) continue;
+            let colors = [getEnemyColor(enemy.type), enemy.isGhost ? '#ff99cc' : '#ffffff', '#2a0000'];
+            for (let rect of enemy.getRects()) {
+                emitRectParticles(rect, colors, 6, mode);
+            }
+        }
+
+        if (player) {
+            emitRectParticles(
+                { x: player.x, y: player.y, w: player.w, h: player.h },
+                [PLAYER_COLOR, '#ffffff', '#ff99cc'],
+                14,
+                mode
+            );
+        }
+
+        if (tutorial.checkpoint) {
+            let cp = tutorial.checkpoint;
+            emitRectParticles(
+                { x: cp.x - cp.r, y: cp.y - cp.r, w: cp.r * 2, h: cp.r * 2 },
+                ['#fff06a', '#ffffff', '#ffcc33'],
+                12,
+                mode
+            );
+        }
+
+        emitTutorialTargetParticles(mode);
+    }
+
     function startTutorialExplanation() {
+        hardDropTrails = [];
+        if (tutorial.preserveSceneForNextExplanation) {
+            tutorial.sceneHidden = false;
+            tutorial.skipSceneAppearParticles = true;
+            tutorial.preserveSceneForNextExplanation = false;
+            emitTutorialTargetParticles('appear');
+        } else {
+            tutorial.skipSceneAppearParticles = false;
+            if (tutorial.stepIndex > 0) {
+                emitTutorialSceneParticles('disappear');
+            }
+            tutorial.sceneHidden = true;
+        }
         tutorial.explaining = true;
         tutorial.dismissing = false;
         tutorial.compact = false;
@@ -1050,6 +2920,12 @@
             tutorial.explaining = false;
             tutorial.dismissing = false;
             tutorial.compact = true;
+            tutorial.sceneHidden = false;
+            if (tutorial.skipSceneAppearParticles) {
+                tutorial.skipSceneAppearParticles = false;
+            } else {
+                emitTutorialSceneParticles('appear');
+            }
             keys = {};
             keysPressed = {};
             if (tutorialOverlay) {
@@ -1095,6 +2971,21 @@
         tutorial.checkpoint = { x, y, r: 17, label };
     }
 
+    function emitTutorialCheckpointParticles(checkpoint) {
+        if (!checkpoint) return;
+        emitRectParticles(
+            {
+                x: checkpoint.x - checkpoint.r,
+                y: checkpoint.y - checkpoint.r,
+                w: checkpoint.r * 2,
+                h: checkpoint.r * 2
+            },
+            ['#fff06a', '#ffffff', '#ffcc33'],
+            24,
+            'disappear'
+        );
+    }
+
     function clearTutorialActors() {
         enemies = [];
         selectedBlock = null;
@@ -1104,13 +2995,13 @@
         drawHoldUI();
     }
 
-    function spawnTutorialBlock(type, gridX, y, ghost = false) {
+    function spawnTutorialBlock(type, gridX, y, ghost = false, dropInterval = 999) {
         let enemy = new EnemyPiece();
         enemy.type = type;
         enemy.matrix = PIECES[type];
         enemy.gridX = gridX;
         enemy.y = y;
-        enemy.dropInterval = 999;
+        enemy.dropInterval = dropInterval;
         enemy.isGhost = ghost;
         enemies.push(enemy);
 
@@ -1124,24 +3015,33 @@
 
     function enterTutorialStep(stepIndex) {
         tutorial.stepIndex = stepIndex;
+        let key = getTutorialStepKey();
+        let preserveHackSelection = tutorial.preserveSceneForNextExplanation && key === 'hack-place';
         tutorial.checkpoint = null;
         tutorial.target = null;
         tutorial.moveCheckpointIndex = 0;
         tutorial.laserStarted = false;
         tutorial.laserComplete = false;
+        tutorial.holdFeedbackTimer = 0;
+        tutorial.placementFeedbackTimer = 0;
         tutorial.explaining = false;
         tutorial.dismissing = false;
         tutorial.compact = false;
+        tutorial.sceneHidden = false;
         tutorial.explainReady = false;
-        clearTutorialActors();
-        resetTutorialBoard();
+        tutorial.skipSceneAppearParticles = false;
+        if (!preserveHackSelection) {
+            tutorial.preserveSceneForNextExplanation = false;
+            clearTutorialActors();
+            resetTutorialBoard();
+        }
         laserAttack.phase = 'idle';
         laserAttack.timer = 0;
         laserAttack.cooldown = 999;
         keys = {};
         keysPressed = {};
+        setHoldPanelHighlight(false);
 
-        let key = getTutorialStepKey();
         if (key === 'move') {
             setPlayerPosition(canvas.width / 2 - 9);
             setTutorialCheckpoint(45, canvas.height - 42, '01');
@@ -1149,14 +3049,31 @@
             placeTutorialJumpBlocks();
             setPlayerPosition(canvas.width - 55);
             setTutorialCheckpoint(40, canvas.height - 42, '02');
-        } else if (key === 'hack-target') {
+        } else if (key === 'hack-select') {
             setPlayerPosition(25);
+            spawnTutorialBlock(TUTORIAL_TARGET.type, 4, TUTORIAL_BLOCK_START_Y, false);
+        } else if (key === 'hack-place') {
             tutorial.target = TUTORIAL_TARGET;
-            spawnTutorialBlock(TUTORIAL_TARGET.type, 4, HIDDEN_ROWS * BLOCK_SIZE, false);
-        } else if (key === 'hold') {
+            if (selectedBlock) {
+                selectedBlock.dropInterval = currentLevel.dropInterval;
+                selectedBlock.isGhost = true;
+                selectedBlock.dropTimer = 0;
+                controlMode = 'BLOCK';
+                tutorial.preserveSceneForNextExplanation = true;
+            } else {
+                setPlayerPosition(25);
+                spawnTutorialBlock(TUTORIAL_TARGET.type, 4, TUTORIAL_BLOCK_START_Y, true, currentLevel.dropInterval);
+            }
+        } else if (key === 'hold-store') {
             setPlayerPosition(25);
-            spawnTutorialBlock('L', 4, HIDDEN_ROWS * BLOCK_SIZE, true);
+            spawnTutorialBlock(TUTORIAL_HOLD_TARGET.type, 4, TUTORIAL_BLOCK_START_Y, true);
             canHold = true;
+        } else if (key === 'hold-place') {
+            setPlayerPosition(25);
+            tutorial.target = TUTORIAL_HOLD_TARGET;
+            heldPieceType = TUTORIAL_HOLD_TARGET.type;
+            canHold = false;
+            drawHoldUI();
         } else if (key === 'laser') {
             setPlayerPosition(canvas.width / 2 - 9);
             laserAttack.phase = 'telegraph';
@@ -1175,6 +3092,7 @@
 
     function startTutorialLevel() {
         tutorial.active = true;
+        tutorial.laserDeathCount = 0;
         enterTutorialStep(0);
     }
 
@@ -1185,7 +3103,11 @@
         tutorial.explaining = false;
         tutorial.dismissing = false;
         tutorial.compact = false;
+        tutorial.sceneHidden = false;
         tutorial.explainReady = false;
+        tutorial.holdFeedbackTimer = 0;
+        tutorial.placementFeedbackTimer = 0;
+        setHoldPanelHighlight(false);
         clearTutorialOverlayState();
     }
 
@@ -1245,24 +3167,33 @@
         if (!isTutorialLevel()) return false;
 
         let key = getTutorialStepKey();
-        if (key === 'hold') {
+        if (key === 'hold-store') {
             clearCellsFromBoard(getPieceGridCells(piece));
             failTutorialStep();
             return true;
         }
 
-        if (key !== 'hack-target') return false;
+        if (key !== 'hack-place' && key !== 'hold-place') return false;
 
         let pieceCells = getPieceGridCells(piece);
         let targetCells = getTargetGridCells(tutorial.target);
         if (cellsMatch(pieceCells, targetCells)) {
-            advanceTutorialStep();
+            tutorial.placementFeedbackTimer = 0.75;
+            selectedBlock = null;
+            controlMode = 'CHARACTER';
+            canHold = true;
+            for (let cell of targetCells) {
+                let [r, c] = cell.split(',').map(Number);
+                if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+                    board[r][c] = '#ff99cc';
+                }
+            }
             return true;
         }
 
         clearCellsFromBoard(pieceCells);
         shakeAmount = Math.max(shakeAmount, 42);
-        spawnTutorialBlock(TUTORIAL_TARGET.type, 4, HIDDEN_ROWS * BLOCK_SIZE, false);
+        failTutorialStep();
         return true;
     }
 
@@ -1273,9 +3204,30 @@
         updateTutorialOverlay();
 
         let key = getTutorialStepKey();
+        if (tutorial.placementFeedbackTimer > 0) {
+            tutorial.placementFeedbackTimer -= dt;
+            if (tutorial.placementFeedbackTimer <= 0) {
+                tutorial.placementFeedbackTimer = 0;
+                clearCellsFromBoard(getTargetGridCells(tutorial.target));
+                advanceTutorialStep();
+            }
+            return;
+        }
+
+        if (tutorial.holdFeedbackTimer > 0) {
+            tutorial.holdFeedbackTimer -= dt * 1000;
+            if (tutorial.holdFeedbackTimer <= 0) {
+                tutorial.holdFeedbackTimer = 0;
+                setHoldPanelHighlight(false);
+                advanceTutorialStep();
+            }
+            return;
+        }
+
         if ((key === 'move' || key === 'jump') && tutorial.checkpoint && player) {
             let pRect = { x: player.x, y: player.y, w: player.w, h: player.h };
             if (rectIntersectsCircle(pRect, tutorial.checkpoint)) {
+                emitTutorialCheckpointParticles(tutorial.checkpoint);
                 if (key === 'move' && tutorial.moveCheckpointIndex === 0) {
                     tutorial.moveCheckpointIndex = 1;
                     setTutorialCheckpoint(canvas.width - 45, canvas.height - 42, '02');
@@ -1291,7 +3243,7 @@
     }
 
     function drawTutorialCheckpoint() {
-        if (!isTutorialLevel() || !tutorial.checkpoint) return;
+        if (!isTutorialLevel() || tutorial.sceneHidden || !tutorial.checkpoint) return;
 
         let cp = tutorial.checkpoint;
         let pulse = 0.5 + Math.sin(performance.now() / 130) * 0.5;
@@ -1316,7 +3268,8 @@
     }
 
     function drawTutorialTarget() {
-        if (!isTutorialLevel() || getTutorialStepKey() !== 'hack-target' || !tutorial.target) return;
+        let stepKey = getTutorialStepKey();
+        if (!isTutorialLevel() || tutorial.sceneHidden || (stepKey !== 'hack-place' && stepKey !== 'hold-place') || !tutorial.target) return;
 
         let target = tutorial.target;
         let pulse = 0.5 + Math.sin(performance.now() / 160) * 0.5;
@@ -1340,6 +3293,47 @@
         ctx.restore();
     }
 
+    function drawTutorialHackSelectPrompt() {
+        if (!isTutorialLevel() || tutorial.sceneHidden || isTutorialInputLocked() || getTutorialStepKey() !== 'hack-select') return;
+
+        let targetEnemy = enemies.find(enemy => !enemy.deleted && !enemy.locked && !enemy.isGhost);
+        if (!targetEnemy) return;
+
+        let rects = targetEnemy.getRects();
+        if (rects.length === 0) return;
+
+        let pulse = 0.5 + Math.sin(performance.now() / 115) * 0.5;
+        let minX = Math.min(...rects.map(rect => rect.x));
+        let minY = Math.min(...rects.map(rect => rect.y));
+        let maxX = Math.max(...rects.map(rect => rect.x + rect.w));
+        let maxY = Math.max(...rects.map(rect => rect.y + rect.h));
+        let pad = 5 + pulse * 4;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.shadowColor = '#ff99cc';
+        ctx.shadowBlur = 18 + pulse * 12;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = `rgba(255, 153, 204, ${0.55 + pulse * 0.4})`;
+        ctx.strokeRect(minX - pad, minY - pad, maxX - minX + pad * 2, maxY - minY + pad * 2);
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.38 + pulse * 0.35})`;
+        for (let rect of rects) {
+            ctx.strokeRect(rect.x + 2, rect.y + 2, rect.w - 4, rect.h - 4);
+        }
+
+        ctx.fillStyle = `rgba(255, 153, 204, ${0.5 + pulse * 0.35})`;
+        let arrowY = minY - pad - 10 - pulse * 5;
+        ctx.beginPath();
+        ctx.moveTo((minX + maxX) / 2, arrowY + 10);
+        ctx.lineTo((minX + maxX) / 2 - 8, arrowY);
+        ctx.lineTo((minX + maxX) / 2 + 8, arrowY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
     function setOverlayScreen(screen) {
         [menuScreen, levelScreen, clearScreen, gameoverScreen].forEach(element => {
             if (element) element.classList.remove('active');
@@ -1348,12 +3342,43 @@
         overlay.style.display = 'flex';
     }
 
+    function transitionScreen(action) {
+        if (screenTransitioning) return;
+        if (!screenFade) {
+            action();
+            return;
+        }
+
+        screenTransitioning = true;
+        screenFade.classList.add('active');
+
+        setTimeout(() => {
+            action();
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    screenFade.classList.remove('active');
+                    screenTransitioning = false;
+                }, 80);
+            });
+        }, 340);
+    }
+
     function padLevelNumber(value) {
         return String(value).padStart(2, '0');
     }
 
     function getLevelLabel(levelIndex = currentLevelIndex) {
         return LEVELS[levelIndex]?.label || `LEVEL ${padLevelNumber(levelIndex + 1)}`;
+    }
+
+    function getCurrentSpawnInterval() {
+        if (!currentLevel) return 4;
+        let startInterval = currentLevel.spawnInterval;
+        let minInterval = currentLevel.minSpawnInterval || startInterval;
+        if (minInterval >= startInterval || !currentLevel.targetScore) return startInterval;
+
+        let progress = Math.max(0, Math.min(score / currentLevel.targetScore, 1));
+        return startInterval - (startInterval - minInterval) * progress;
     }
 
     function clearIntroSequence() {
@@ -1372,7 +3397,7 @@
         }
 
         if (introOverlay) {
-            introOverlay.classList.remove('active');
+            introOverlay.classList.remove('active', 'boss-intro');
             introOverlay.style.display = 'none';
             introOverlay.setAttribute('aria-hidden', 'true');
         }
@@ -1382,12 +3407,378 @@
     }
 
     function buildIntroSequence() {
+        if (isBossLevel()) {
+            return [
+                { body: '3', duration: 1500, color: '#ff3030' },
+                { body: '2', duration: 1500, color: '#ff3030' },
+                { body: '1', duration: 1500, color: '#ff3030' },
+                { body: 'START', duration: 1900, color: '#ff3030' }
+            ];
+        }
         return [
-            { body: '3', duration: 650, color: '#fff' },
-            { body: '2', duration: 650, color: '#fff06a' },
-            { body: '1', duration: 650, color: '#fff' },
+            { body: '3', duration: 550, color: '#fff06a' },
+            { body: '2', duration: 550, color: '#fff06a' },
+            { body: '1', duration: 550, color: '#fff06a' },
             { body: 'START!!', duration: 1050, color: '#fff06a' }
         ];
+    }
+
+    function getDialogueTokens(text) {
+        let parts = String(text || '').trim().match(/\S+\s*/g);
+        return parts && parts.length > 0 ? parts : [''];
+    }
+
+    function getCurrentDialogueLine() {
+        return seoaDialogue.config?.lines?.[seoaDialogue.lineIndex] || null;
+    }
+
+    function getCurrentDialogueTokens() {
+        let line = getCurrentDialogueLine();
+        return getDialogueTokens(line ? line.text : '');
+    }
+
+    function applySeoaDialogueUi() {
+        if (!seoaDialogueOverlay || !seoaDialogue.config) return;
+        let ui = seoaDialogue.config.ui;
+        let character = seoaDialogueOverlay.querySelector('.seoa-dialogue-character');
+        let box = seoaDialogueOverlay.querySelector('.seoa-dialogue-box');
+        if (character && ui?.seoa) {
+            character.style.setProperty('--seoa-x', `${ui.seoa.xPx}px`);
+        }
+        if (box && ui?.dialogueBox) {
+            box.style.setProperty('--dialogue-left', `${ui.dialogueBox.leftPx}px`);
+            box.style.setProperty('--dialogue-right', `${ui.dialogueBox.rightPx}px`);
+            box.style.setProperty('--dialogue-bottom', `${ui.dialogueBox.bottomPx}px`);
+            box.style.setProperty('--dialogue-min-height', `${ui.dialogueBox.minHeightPx}px`);
+        }
+    }
+
+    function setSeoaDialogueImage(emotion) {
+        if (!seoaDialogueImage || !seoaDialogue.config) return;
+        let asset = SEOA_EMOTION_ASSETS[emotion] || SEOA_EMOTION_ASSETS.basic;
+        let ui = seoaDialogue.config.ui?.seoa || { scale: 1, yPx: 0 };
+        let scale = Math.max(0.2, Number(ui.scale || 1));
+        seoaDialogueImage.style.setProperty('--seoa-scale', scale);
+        seoaDialogueImage.style.setProperty('--seoa-y', `${ui.yPx || 0}px`);
+
+        if (seoaDialogueImage.getAttribute('src') === asset.src || seoaDialogue.pendingImageSrc === asset.src) return;
+        seoaDialogue.pendingImageSrc = asset.src;
+        seoaDialogueImage.classList.add('fading');
+        setTimeout(() => {
+            seoaDialogueImage.src = asset.src;
+            seoaDialogue.pendingImageSrc = null;
+            requestAnimationFrame(() => {
+                seoaDialogueImage.classList.remove('fading');
+            });
+        }, 120);
+    }
+
+    function renderSeoaDialogueLine() {
+        let line = getCurrentDialogueLine();
+        if (!line) return;
+
+        let tokens = getCurrentDialogueTokens();
+        let visibleText = tokens.slice(0, seoaDialogue.visibleTokens).join('');
+        setSeoaDialogueImage(line.emotion);
+        if (seoaDialogueSpeaker) seoaDialogueSpeaker.textContent = line.speaker || 'SEOA';
+        if (seoaDialogueCounter) {
+            let current = String(seoaDialogue.lineIndex + 1).padStart(2, '0');
+            let total = String(seoaDialogue.config.lines.length).padStart(2, '0');
+            seoaDialogueCounter.textContent = `${current} / ${total}`;
+        }
+        if (seoaDialogueText) {
+            seoaDialogueText.textContent = visibleText;
+            seoaDialogueText.classList.toggle('text-tremble', String(line.note || '').includes('떨'));
+        }
+    }
+
+    function completeCurrentSeoaDialogueLine() {
+        seoaDialogue.visibleTokens = getCurrentDialogueTokens().length;
+        seoaDialogue.completedAt = performance.now();
+        renderSeoaDialogueLine();
+    }
+
+    function startSeoaDialogueLine(index) {
+        seoaDialogue.lineIndex = index;
+        seoaDialogue.visibleTokens = 0;
+        seoaDialogue.tokenTimer = 0;
+        seoaDialogue.completedAt = 0;
+        renderSeoaDialogueLine();
+    }
+
+    function endSeoaDialogue() {
+        if (seoaDialogue.closing) return;
+        let onComplete = seoaDialogue.onComplete;
+        seoaDialogue.closing = true;
+        if (seoaDialogueOverlay) {
+            seoaDialogueOverlay.classList.add('closing');
+        }
+        setTimeout(() => {
+            seoaDialogue.active = false;
+            seoaDialogue.config = null;
+            seoaDialogue.onComplete = null;
+            seoaDialogue.completedAt = 0;
+            seoaDialogue.pendingImageSrc = null;
+            seoaDialogue.closing = false;
+            if (seoaDialogueOverlay) {
+                seoaDialogueOverlay.classList.remove('active', 'closing');
+                seoaDialogueOverlay.setAttribute('aria-hidden', 'true');
+            }
+            if (typeof onComplete === 'function') onComplete();
+        }, 700);
+    }
+
+    function startSeoaDialogue(config, onComplete) {
+        seoaDialogue.active = true;
+        seoaDialogue.config = config;
+        seoaDialogue.onComplete = onComplete;
+        seoaDialogue.pendingImageSrc = null;
+        seoaDialogue.closing = false;
+        gameState = 'seoaDialogue';
+        keys = {};
+        keysPressed = {};
+        applySeoaDialogueUi();
+        if (seoaDialogueOverlay) {
+            seoaDialogueOverlay.classList.remove('closing');
+            seoaDialogueOverlay.classList.add('active');
+            seoaDialogueOverlay.setAttribute('aria-hidden', 'false');
+        }
+        startSeoaDialogueLine(0);
+    }
+
+    function updateSeoaDialogue(dt) {
+        if (!seoaDialogue.active) return;
+        let tokens = getCurrentDialogueTokens();
+        if (seoaDialogue.visibleTokens >= tokens.length) return;
+
+        seoaDialogue.tokenTimer += dt * 1000;
+        if (seoaDialogue.visibleTokens === 0 || seoaDialogue.tokenTimer >= SEOA_DIALOGUE_WORD_MS) {
+            seoaDialogue.tokenTimer = 0;
+            seoaDialogue.visibleTokens = Math.min(seoaDialogue.visibleTokens + 1, tokens.length);
+            if (seoaDialogue.visibleTokens >= tokens.length) {
+                seoaDialogue.completedAt = performance.now();
+            }
+            renderSeoaDialogueLine();
+        }
+    }
+
+    function handleSeoaDialogueInput(event) {
+        if (!seoaDialogue.active) return false;
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (seoaDialogue.closing) return true;
+
+        let tokens = getCurrentDialogueTokens();
+        if (seoaDialogue.visibleTokens < tokens.length) {
+            completeCurrentSeoaDialogueLine();
+            return true;
+        }
+
+        if (performance.now() - seoaDialogue.completedAt < SEOA_DIALOGUE_FORCE_HOLD_MS) {
+            return true;
+        }
+
+        if (seoaDialogue.lineIndex < seoaDialogue.config.lines.length - 1) {
+            startSeoaDialogueLine(seoaDialogue.lineIndex + 1);
+            return true;
+        }
+
+        endSeoaDialogue();
+        return true;
+    }
+
+    function emitSeoaLandingParticles(x, y, mode = 'appear') {
+        emitRectParticles(
+            { x: x - 18, y: y - 28, w: 36, h: 34 },
+            ['#ff99cc', '#ffffff', '#fff06a'],
+            mode === 'impact' ? 24 : 14,
+            mode
+        );
+    }
+
+    function startSeoaLandingCinematic(onComplete) {
+        seoaLandingCinematic.active = true;
+        seoaLandingCinematic.phase = 'fall';
+        seoaLandingCinematic.timer = 0;
+        seoaLandingCinematic.onComplete = onComplete;
+        seoaLandingCinematic.actorX = canvas.width / 2 - (player ? player.w / 2 : 9);
+        seoaLandingCinematic.actorY = -42;
+        seoaLandingCinematic.actorVy = 0;
+        seoaLandingCinematic.proneX = canvas.width / 2;
+        seoaLandingCinematic.proneY = canvas.height - 42;
+        gameState = 'tutorialLanding';
+        keys = {};
+        keysPressed = {};
+        if (player) {
+            player.x = seoaLandingCinematic.actorX;
+            player.y = seoaLandingCinematic.actorY;
+            player.vx = 0;
+            player.vy = 0;
+            player.isGrounded = false;
+        }
+        emitSeoaLandingParticles(canvas.width / 2, 72, 'appear');
+    }
+
+    function finishSeoaLandingCinematic() {
+        let onComplete = seoaLandingCinematic.onComplete;
+        seoaLandingCinematic.active = false;
+        seoaLandingCinematic.phase = 'idle';
+        seoaLandingCinematic.timer = 0;
+        seoaLandingCinematic.onComplete = null;
+        if (typeof onComplete === 'function') onComplete();
+    }
+
+    function updateSeoaLandingCinematic(dt) {
+        if (!seoaLandingCinematic.active) return;
+        seoaLandingCinematic.timer += dt * 1000;
+
+        if (seoaLandingCinematic.phase === 'fall') {
+            seoaLandingCinematic.actorVy += SEOA_LANDING_CINEMATIC.fallGravity * dt;
+            seoaLandingCinematic.actorY += seoaLandingCinematic.actorVy * dt;
+            let groundY = canvas.height - (player ? player.h : 26) - 1;
+            if (seoaLandingCinematic.actorY >= groundY) {
+                seoaLandingCinematic.actorY = groundY;
+                seoaLandingCinematic.phase = 'proneClosed';
+                seoaLandingCinematic.timer = 0;
+                shakeAmount = Math.max(shakeAmount, 18);
+                emitSeoaLandingParticles(canvas.width / 2, canvas.height - 18, 'impact');
+            }
+        } else if (seoaLandingCinematic.phase === 'proneClosed') {
+            if (seoaLandingCinematic.timer >= SEOA_LANDING_CINEMATIC.impactHold) {
+                seoaLandingCinematic.phase = 'blink';
+                seoaLandingCinematic.timer = 0;
+            }
+        } else if (seoaLandingCinematic.phase === 'blink') {
+            if (seoaLandingCinematic.timer >= SEOA_LANDING_CINEMATIC.blinkDuration) {
+                seoaLandingCinematic.phase = 'stand';
+                seoaLandingCinematic.timer = 0;
+                emitSeoaLandingParticles(canvas.width / 2, canvas.height - 34, 'appear');
+            }
+        } else if (seoaLandingCinematic.phase === 'stand') {
+            if (seoaLandingCinematic.timer >= SEOA_LANDING_CINEMATIC.standDuration) {
+                finishSeoaLandingCinematic();
+            }
+        }
+
+        if (player) {
+            player.x = seoaLandingCinematic.actorX;
+            player.y = seoaLandingCinematic.actorY;
+            player.vx = 0;
+            player.vy = 0;
+            player.isGrounded = seoaLandingCinematic.phase !== 'fall';
+        }
+
+        if (shakeAmount > 0) {
+            shakeAmount *= 0.92;
+            if (shakeAmount < 0.5) shakeAmount = 0;
+        }
+    }
+
+    function drawProneSeoa(ctx, openEyes) {
+        let img = openEyes ? SEOA_PRONE_OPEN_IMG : SEOA_PRONE_CLOSED_IMG;
+        if (!img.complete || img.naturalWidth <= 0) return;
+
+        let bounds = getOpaqueImageBounds(img);
+        let drawH = SEOA_LANDING_CINEMATIC.proneHeight;
+        let drawW = drawH * (bounds.w / bounds.h);
+        let x = seoaLandingCinematic.proneX - drawW / 2;
+        let y = canvas.height - drawH - 1;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.shadowColor = openEyes ? '#ff99cc' : '#000';
+        ctx.shadowBlur = openEyes ? 12 : 0;
+        ctx.drawImage(img, bounds.x, bounds.y, bounds.w, bounds.h, x, y, drawW, drawH);
+        ctx.restore();
+    }
+
+    function getOpaqueImageBounds(img) {
+        if (seoaProneBoundsCache.has(img)) return seoaProneBoundsCache.get(img);
+
+        let fallback = { x: 0, y: 0, w: img.naturalWidth || img.width, h: img.naturalHeight || img.height };
+        try {
+            let tempCanvas = document.createElement('canvas');
+            tempCanvas.width = img.naturalWidth || img.width;
+            tempCanvas.height = img.naturalHeight || img.height;
+            let tCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+            tCtx.drawImage(img, 0, 0);
+            let imageData = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            let data = imageData.data;
+            let minX = tempCanvas.width;
+            let minY = tempCanvas.height;
+            let maxX = -1;
+            let maxY = -1;
+
+            for (let y = 0; y < tempCanvas.height; y++) {
+                for (let x = 0; x < tempCanvas.width; x++) {
+                    let alpha = data[(y * tempCanvas.width + x) * 4 + 3];
+                    if (alpha <= 40) continue;
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                }
+            }
+
+            if (maxX >= minX && maxY >= minY) {
+                fallback = {
+                    x: minX,
+                    y: minY,
+                    w: maxX - minX + 1,
+                    h: maxY - minY + 1
+                };
+            }
+        } catch (error) {
+            // 서버 없이 직접 파일을 열 때 픽셀 접근이 막히면 원본 박스를 사용한다.
+        }
+
+        seoaProneBoundsCache.set(img, fallback);
+        return fallback;
+    }
+
+    function getSeoaLandingCamera() {
+        if (!seoaLandingCinematic.active) return null;
+        if (seoaLandingCinematic.phase !== 'fall') return null;
+
+        let groundY = canvas.height - (player ? player.h : 26) - 1;
+        let fallProgress = Math.max(0, Math.min(seoaLandingCinematic.actorY / groundY, 1));
+        fallProgress = 1 - Math.pow(1 - fallProgress, 2);
+        let zoom = SEOA_LANDING_CINEMATIC.zoom + (1 - SEOA_LANDING_CINEMATIC.zoom) * fallProgress;
+        if (zoom <= 1.01) return null;
+        let targetX = seoaLandingCinematic.actorX + (player ? player.w / 2 : 9);
+        let targetY = seoaLandingCinematic.actorY + (player ? player.h / 2 : 13);
+        targetY = Math.max(110, Math.min(targetY, canvas.height - 68));
+        return { zoom, x: targetX, y: targetY };
+    }
+
+    function applySeoaLandingCamera(ctx) {
+        let camera = getSeoaLandingCamera();
+        if (!camera) return;
+
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.scale(camera.zoom, camera.zoom);
+        ctx.translate(-camera.x, -camera.y);
+    }
+
+    function drawSeoaLandingCinematic(ctx) {
+        if (!seoaLandingCinematic.active) return false;
+        if (seoaLandingCinematic.phase === 'fall') {
+            if (player) player.draw(ctx);
+            return true;
+        }
+        if (seoaLandingCinematic.phase === 'stand') {
+            if (player) {
+                let rise = 10 * (1 - Math.min(seoaLandingCinematic.timer / SEOA_LANDING_CINEMATIC.standDuration, 1));
+                player.y = canvas.height - player.h - 1 - rise;
+                player.draw(ctx);
+            }
+            return true;
+        }
+        let openEyes = seoaLandingCinematic.phase === 'blink'
+            && Math.floor(seoaLandingCinematic.timer / SEOA_LANDING_CINEMATIC.blinkMs) % 2 === 0;
+        drawProneSeoa(ctx, openEyes);
+        return true;
     }
 
     function spawnIntroStars(originX, originY, count) {
@@ -1426,6 +3817,307 @@
         }, 1400);
     }
 
+    function spawnLevelClearStars(originX, originY, count) {
+        if (!levelClearStarLayer) return;
+        levelClearStarLayer.innerHTML = '';
+
+        for (let i = 0; i < count; i++) {
+            let star = document.createElement('span');
+            star.className = 'level-clear-star';
+
+            let angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.55;
+            let distance = 95 + Math.random() * 220;
+            let dx = Math.cos(angle) * distance;
+            let dy = Math.sin(angle) * distance * 0.74;
+
+            star.textContent = Math.random() > 0.45 ? '★' : '✦';
+            star.style.setProperty('--x', `${originX}px`);
+            star.style.setProperty('--y', `${originY}px`);
+            star.style.setProperty('--dx', `${dx}px`);
+            star.style.setProperty('--dy', `${dy}px`);
+            star.style.setProperty('--rot', `${(Math.random() * 2 - 1) * 300}deg`);
+            star.style.setProperty('--size', `${12 + Math.random() * 22}px`);
+            star.style.setProperty('--duration', `${0.72 + Math.random() * 0.46}s`);
+            star.style.setProperty('--star-color', Math.random() > 0.35 ? '#fff06a' : '#ffffff');
+
+            levelClearStarLayer.appendChild(star);
+        }
+    }
+
+    function clearCinematicTimers() {
+        cinematicIntro.timers.forEach(timer => clearTimeout(timer));
+        cinematicIntro.timers = [];
+        if (cinematicIntro.frameId !== null) {
+            cancelAnimationFrame(cinematicIntro.frameId);
+            cinematicIntro.frameId = null;
+        }
+    }
+
+    function setCinematicImageOpacity(opacity) {
+        if (!cinematicStoryImage) return;
+        cinematicStoryImage.style.opacity = opacity.toFixed(3);
+    }
+
+    function setCinematicInputHintVisible(visible) {
+        if (!cinematicInputHint) return;
+        cinematicInputHint.classList.toggle('visible', visible);
+    }
+
+    function applyCinematicDialogue(dialogue, text, opacity) {
+        if (!cinematicDialogueBox || !cinematicDialogueText || !cinematicIntroOverlay) return;
+        cinematicDialogueText.textContent = text;
+        cinematicIntroOverlay.style.setProperty('--cinematic-dialogue-left', `${dialogue.leftVw ?? 12}vw`);
+        cinematicIntroOverlay.style.setProperty('--cinematic-dialogue-right', `${dialogue.rightVw ?? 12}vw`);
+        cinematicIntroOverlay.style.setProperty('--cinematic-dialogue-x', `${dialogue.xVw}vw`);
+        cinematicIntroOverlay.style.setProperty('--cinematic-dialogue-y', `${dialogue.yVh}vh`);
+        cinematicIntroOverlay.style.setProperty('--cinematic-dialogue-font', `${dialogue.fontSizePx}px`);
+        cinematicIntroOverlay.style.setProperty('--cinematic-dialogue-bg', dialogue.bgOpacity);
+        cinematicDialogueBox.style.opacity = opacity.toFixed(3);
+    }
+
+    function applyCinematicSlide(slide, visible) {
+        if (!cinematicIntroOverlay || !cinematicStoryImage || !cinematicDialogueBox) return;
+        setCinematicInputHintVisible(false);
+        cinematicStoryImage.src = slide.src;
+        cinematicIntroOverlay.style.setProperty('--cinematic-scale', slide.scale);
+        cinematicIntroOverlay.style.setProperty('--cinematic-x', `${slide.xVw}vw`);
+        cinematicIntroOverlay.style.setProperty('--cinematic-y', `${slide.yVh}vh`);
+        cinematicIntroOverlay.style.setProperty('--cinematic-dim', slide.dimOpacity);
+        let firstDialogue = slide.dialogues.find(dialogue => dialogue.text.trim().length > 0) || slide.dialogues[0];
+        if (firstDialogue) {
+            applyCinematicDialogue(firstDialogue, '', 1);
+        } else {
+            cinematicDialogueText.textContent = '';
+            cinematicDialogueBox.style.opacity = '1';
+        }
+        setCinematicImageOpacity(visible ? 1 : 0);
+    }
+
+    function animateCinematicImage(from, to, duration, done) {
+        let startedAt = performance.now();
+        let run = now => {
+            let progress = duration <= 0 ? 1 : Math.min((now - startedAt) / duration, 1);
+            let eased = progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            setCinematicImageOpacity(from + (to - from) * eased);
+            if (progress < 1) {
+                cinematicIntro.frameId = requestAnimationFrame(run);
+            } else {
+                cinematicIntro.frameId = null;
+                if (done) done();
+            }
+        };
+        cinematicIntro.frameId = requestAnimationFrame(run);
+    }
+
+    function getCinematicDialogueEnd(dialogue) {
+        return dialogue.startMs + getCinematicDialogueVisibleMs(dialogue);
+    }
+
+    function getCinematicDialogueVisibleMs(dialogue) {
+        let charCount = Array.from(dialogue.text || '').length;
+        return Math.max(
+            dialogue.durationMs,
+            charCount * dialogue.typeMs + CINEMATIC_DIALOGUE_FORCE_HOLD_MS
+        );
+    }
+
+    function getCinematicSlideHold(slide) {
+        let hasDialogue = false;
+        let dialogueEnd = slide.dialogues.reduce((max, dialogue) => {
+            if (!dialogue.text.trim()) return max;
+            hasDialogue = true;
+            return Math.max(max, getCinematicDialogueEnd(dialogue));
+        }, 0);
+        return hasDialogue ? dialogueEnd : slide.holdMs;
+    }
+
+    function showCinematicDialogueText(fullText) {
+        if (!cinematicIntro.currentDialogue) return;
+        let chars = Array.from(fullText);
+        let visible = chars.slice(0, cinematicIntro.typedCount).join('');
+        applyCinematicDialogue(cinematicIntro.currentDialogue, visible, 1);
+    }
+
+    function startCinematicDialogue(index) {
+        let slide = CINEMATIC_STORY_CONFIG.slides[cinematicIntro.slideIndex];
+        let dialogue = slide.dialogues[index];
+        if (!dialogue || !dialogue.text.trim()) return;
+
+        cinematicIntro.dialogueIndex = index;
+        cinematicIntro.currentDialogue = dialogue;
+        cinematicIntro.typedCount = 0;
+        cinematicIntro.forceUntil = 0;
+        setCinematicInputHintVisible(false);
+        applyCinematicDialogue(dialogue, '', 1);
+
+        let chars = Array.from(dialogue.text);
+        chars.forEach((_, charIndex) => {
+            cinematicIntro.timers.push(setTimeout(() => {
+                if (!cinematicIntro.active || cinematicIntro.currentDialogue !== dialogue) return;
+                if (cinematicIntro.typedCount >= chars.length || cinematicIntro.typedCount >= charIndex + 1) return;
+                cinematicIntro.typedCount = charIndex + 1;
+                showCinematicDialogueText(dialogue.text);
+                if (cinematicIntro.typedCount >= chars.length) {
+                    cinematicIntro.forceUntil = performance.now() + CINEMATIC_DIALOGUE_FORCE_HOLD_MS;
+                    cinematicIntro.timers.push(setTimeout(() => {
+                        if (!cinematicIntro.active || cinematicIntro.currentDialogue !== dialogue) return;
+                        setCinematicInputHintVisible(true);
+                    }, CINEMATIC_DIALOGUE_FORCE_HOLD_MS));
+                }
+            }, charIndex * dialogue.typeMs));
+        });
+
+        cinematicIntro.timers.push(setTimeout(() => {
+            if (!cinematicIntro.active || cinematicIntro.currentDialogue !== dialogue) return;
+            if (cinematicDialogueText) cinematicDialogueText.textContent = '';
+            setCinematicInputHintVisible(false);
+            goToNextCinematicDialogue(false);
+        }, getCinematicDialogueVisibleMs(dialogue)));
+    }
+
+    function completeCurrentCinematicDialogue() {
+        let dialogue = cinematicIntro.currentDialogue;
+        if (!dialogue) return;
+        cinematicIntro.typedCount = Array.from(dialogue.text).length;
+        cinematicIntro.forceUntil = performance.now() + CINEMATIC_DIALOGUE_FORCE_HOLD_MS;
+        setCinematicInputHintVisible(false);
+        showCinematicDialogueText(dialogue.text);
+        cinematicIntro.timers.push(setTimeout(() => {
+            if (!cinematicIntro.active || cinematicIntro.currentDialogue !== dialogue) return;
+            setCinematicInputHintVisible(true);
+        }, CINEMATIC_DIALOGUE_FORCE_HOLD_MS));
+    }
+
+    function goToNextCinematicDialogue(fromInput) {
+        let slide = CINEMATIC_STORY_CONFIG.slides[cinematicIntro.slideIndex];
+        let nextDialogueIndex = cinematicIntro.dialogueIndex + 1;
+        if (nextDialogueIndex >= slide.dialogues.length) {
+            finishCinematicSlide(fromInput);
+            return;
+        }
+
+        let currentDialogue = slide.dialogues[cinematicIntro.dialogueIndex];
+        let nextDialogue = slide.dialogues[nextDialogueIndex];
+        let delay = fromInput ? 0 : Math.max(0, nextDialogue.startMs - getCinematicDialogueEnd(currentDialogue));
+        cinematicIntro.timers.push(setTimeout(() => {
+            if (!cinematicIntro.active) return;
+            startCinematicDialogue(nextDialogueIndex);
+        }, delay));
+    }
+
+    function advanceCinematicFromInput() {
+        let dialogue = cinematicIntro.currentDialogue;
+        if (!dialogue) return true;
+        let fullLength = Array.from(dialogue.text).length;
+        if (cinematicIntro.typedCount < fullLength) {
+            completeCurrentCinematicDialogue();
+            return true;
+        }
+        if (performance.now() < cinematicIntro.forceUntil) {
+            return true;
+        }
+
+        goToNextCinematicDialogue(true);
+        return true;
+    }
+
+    function finishCinematicSlide(skipFade = false) {
+        if (!cinematicIntro.active) return;
+        let slide = CINEMATIC_STORY_CONFIG.slides[cinematicIntro.slideIndex];
+        clearCinematicTimers();
+        cinematicIntro.currentDialogue = null;
+        if (cinematicDialogueText) cinematicDialogueText.textContent = '';
+        setCinematicInputHintVisible(false);
+
+        let goNext = () => {
+            cinematicIntro.slideIndex++;
+            if (cinematicIntro.slideIndex >= CINEMATIC_STORY_CONFIG.slides.length) {
+                finishCinematicIntro();
+            } else {
+                playCinematicSlide(cinematicIntro.slideIndex);
+            }
+        };
+
+        if (skipFade) {
+            setCinematicImageOpacity(0);
+            goNext();
+        } else {
+            animateCinematicImage(1, 0, slide.fadeOutMs, goNext);
+        }
+    }
+
+    function playCinematicSlide(index) {
+        let slide = CINEMATIC_STORY_CONFIG.slides[index];
+        cinematicIntro.slideIndex = index;
+        cinematicIntro.dialogueIndex = 0;
+        cinematicIntro.currentDialogue = null;
+        applyCinematicSlide(slide, false);
+
+        animateCinematicImage(0, 1, slide.fadeInMs);
+        let firstDialogueIndex = slide.dialogues.findIndex(dialogue => dialogue.text.trim().length > 0);
+        if (firstDialogueIndex >= 0) {
+            let firstDialogue = slide.dialogues[firstDialogueIndex];
+            cinematicIntro.timers.push(setTimeout(() => {
+                startCinematicDialogue(firstDialogueIndex);
+            }, slide.fadeInMs + firstDialogue.startMs));
+        } else {
+            cinematicIntro.timers.push(setTimeout(() => {
+                finishCinematicSlide(false);
+            }, slide.fadeInMs + getCinematicSlideHold(slide)));
+        }
+    }
+
+    function startCinematicIntro() {
+        if (!cinematicIntroOverlay) {
+            openLevelSelect();
+            return;
+        }
+        clearCinematicTimers();
+        gameState = 'cinematicIntro';
+        cinematicIntro.active = true;
+        cinematicIntro.slideIndex = 0;
+        cinematicIntro.dialogueIndex = 0;
+        cinematicIntro.currentDialogue = null;
+        cinematicIntro.typedCount = 0;
+        cinematicIntro.forceUntil = 0;
+        cinematicIntroOverlay.classList.add('active');
+        cinematicIntroOverlay.setAttribute('aria-hidden', 'false');
+        playCinematicSlide(0);
+    }
+
+    function finishCinematicIntro() {
+        clearCinematicTimers();
+        cinematicIntro.active = false;
+        cinematicIntro.currentDialogue = null;
+        setCinematicInputHintVisible(false);
+        if (!screenFade) {
+            if (cinematicIntroOverlay) {
+                cinematicIntroOverlay.classList.remove('active');
+                cinematicIntroOverlay.setAttribute('aria-hidden', 'true');
+            }
+            openLevelSelectNow();
+            return;
+        }
+
+        screenTransitioning = true;
+        screenFade.classList.add('active');
+        setTimeout(() => {
+            if (cinematicIntroOverlay) {
+                cinematicIntroOverlay.classList.remove('active');
+                cinematicIntroOverlay.setAttribute('aria-hidden', 'true');
+            }
+            openLevelSelectNow();
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    screenFade.classList.remove('active');
+                    screenTransitioning = false;
+                }, 80);
+            });
+        }, 340);
+    }
+
     function restartElementAnimation(element) {
         if (!element) return;
         element.classList.remove('run', 'sparkle');
@@ -1438,10 +4130,16 @@
 
         introLevelLine.textContent = '';
         introStartLine.textContent = phase.body || '';
+        introStartLine.dataset.text = phase.body || '';
         introStartLine.style.color = phase.color || '#fff06a';
         introStartLine.style.setProperty('--intro-duration', `${phase.duration}ms`);
         introOverlay.style.display = 'flex';
         introOverlay.classList.add('active');
+        if (isBossLevel()) {
+            introOverlay.classList.add('boss-intro');
+        } else {
+            introOverlay.classList.remove('boss-intro');
+        }
         introOverlay.setAttribute('aria-hidden', 'false');
 
         restartElementAnimation(introStartLine);
@@ -1464,6 +4162,11 @@
 
         introOverlay.style.display = 'flex';
         introOverlay.classList.add('active');
+        if (isBossLevel()) {
+            introOverlay.classList.add('boss-intro');
+        } else {
+            introOverlay.classList.remove('boss-intro');
+        }
         introOverlay.setAttribute('aria-hidden', 'false');
         introPhases = buildIntroSequence();
         introStartAt = performance.now();
@@ -1481,6 +4184,10 @@
 
         introTimeoutIds.push(setTimeout(() => {
             clearIntroSequence();
+            if (isBossLevel()) {
+                startBossRevealIntro();
+                return;
+            }
             gameState = 'playing';
             if (currentLevel.id === 'tutorial') {
                 startTutorialLevel();
@@ -1488,8 +4195,59 @@
         }, introEndAt - introStartAt));
     }
 
+    function startBossRevealIntro() {
+        bossIntro.active = true;
+        bossIntro.timer = 0;
+        bossIntro.progress = 0;
+        bossIntro.roaring = false;
+        bossIntro.finished = false;
+        bossAttackTimer = currentLevel.bossAttackInterval || 4.5;
+        document.body.classList.add('boss-fight', 'boss-revealing');
+        keys = {};
+        keysPressed = {};
+    }
+
+    function finishBossRevealIntro() {
+        bossIntro.active = false;
+        bossIntro.progress = 1;
+        bossIntro.roaring = false;
+        bossIntro.finished = true;
+        document.body.classList.remove('boss-revealing');
+        gameState = 'playing';
+        keys = {};
+        keysPressed = {};
+    }
+
+    function updateBossRevealIntro(dt) {
+        if (!bossIntro.active) return;
+
+        bossIntro.timer += dt;
+        let revealProgress = Math.min(bossIntro.timer / bossIntro.revealDuration, 1);
+        bossIntro.progress = 1 - Math.pow(1 - revealProgress, 3);
+
+        if (revealProgress < 1) {
+            shakeAmount = Math.max(shakeAmount, 6 + bossIntro.progress * 16);
+            return;
+        }
+
+        if (!bossIntro.roaring) {
+            bossIntro.roaring = true;
+            shakeAmount = Math.max(shakeAmount, 86);
+        }
+
+        let roarElapsed = bossIntro.timer - bossIntro.revealDuration;
+        shakeAmount = Math.max(shakeAmount, 28 * Math.max(1 - roarElapsed / bossIntro.roarDuration, 0));
+        if (roarElapsed >= bossIntro.roarDuration) {
+            finishBossRevealIntro();
+        }
+    }
+
     function updateLevelHeader() {
         // unlockLabel and selectedLabel removed in simplified UI
+    }
+
+    function isLevelSelectable(level, index) {
+        return index <= highestUnlockedLevel || level.id === 'level-01' || level.isBoss;
     }
 
     function renderLevelList() {
@@ -1499,13 +4257,23 @@
         LEVELS.forEach((level, index) => {
             let card = document.createElement('button');
             card.type = 'button';
-            card.className = 'level-card';
-            let unlocked = index <= highestUnlockedLevel;
+            card.className = `level-card${level.isBoss ? ' boss-level' : ''}`;
+            let unlocked = isLevelSelectable(level, index);
             if (!unlocked) card.disabled = true;
+            let levelTitle = level.id === 'tutorial'
+                ? 'TUTORIAL'
+                : level.isBoss
+                ? 'LEVEL 10 : FINAL BOSS'
+                : 'LEVEL 01';
+            let iconClass = level.id === 'tutorial'
+                ? 'level-icon-tutorial'
+                : level.isBoss
+                ? 'level-icon-boss'
+                : 'level-icon-error';
 
             card.innerHTML = `
-                <span class="level-chip ${unlocked ? '' : 'locked'}">${level.label}</span>
-                <span style="font-size: 7px; opacity: 0.9;">${level.name}</span>
+                <span class="level-title ${unlocked ? '' : 'locked'}">${levelTitle}</span>
+                <span class="level-card-icon ${iconClass}" aria-hidden="true"></span>
             `;
 
             if (unlocked) {
@@ -1513,26 +4281,44 @@
             }
 
             levelGrid.appendChild(card);
+
+            if (level.id === 'level-01') {
+                let skipMarker = document.createElement('div');
+                skipMarker.className = 'level-skip-marker';
+                skipMarker.setAttribute('aria-label', 'LEVEL 02부터 LEVEL 09까지 생략');
+                skipMarker.innerHTML = '<span>.</span><span>.</span><span>.</span>';
+                levelGrid.appendChild(skipMarker);
+            }
         });
     }
 
-    function showMenuScreen() {
+    function showMenuScreenNow() {
+        clearLevelClearSequence();
         stopTutorialLevel();
         gameState = 'menu';
         overlay.style.background = 'rgba(5, 5, 12, 0.92)';
-        document.body.classList.remove('playing');
+        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing');
         setOverlayScreen(menuScreen);
         updateLevelHeader();
     }
 
-    function openLevelSelect() {
+    function showMenuScreen() {
+        transitionScreen(showMenuScreenNow);
+    }
+
+    function openLevelSelectNow() {
+        clearLevelClearSequence();
         stopTutorialLevel();
         gameState = 'levelSelect';
         overlay.style.background = 'rgba(5, 5, 12, 0.92)';
-        document.body.classList.remove('playing');
+        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing');
         renderLevelList();
         updateLevelHeader();
         setOverlayScreen(levelScreen);
+    }
+
+    function openLevelSelect() {
+        transitionScreen(openLevelSelectNow);
     }
 
     function updateClearPanel() {
@@ -1540,10 +4326,12 @@
             clearTitle.textContent = `${getLevelLabel()} CLEAR!`;
         }
         if (clearDesc) {
-            clearDesc.textContent = `${score.toLocaleString()} / ${currentLevel.targetScore.toLocaleString()} SCORE`;
+            clearDesc.textContent = isBossLevel()
+                ? `ERROR DEMON DEFEATED / ${score.toLocaleString()} SCORE`
+                : `${score.toLocaleString()} / ${currentLevel.targetScore.toLocaleString()} SCORE`;
         }
         if (clearProgress) {
-            let ratio = Math.min(score / currentLevel.targetScore, 1);
+            let ratio = isBossLevel() ? 1 : Math.min(score / currentLevel.targetScore, 1);
             clearProgress.style.width = `${Math.round(ratio * 100)}%`;
         }
         let nextLevelBtn = document.getElementById('next-level-btn');
@@ -1552,8 +4340,106 @@
         }
     }
 
+    function clearLevelClearSequence() {
+        levelClearSequence.active = false;
+        levelClearSequence.revealed = false;
+        levelClearSequence.awaitingInput = false;
+        levelClearSequence.timer = 0;
+        levelClearSequence.tutorialStyle = false;
+        if (levelClearOverlay) {
+            levelClearOverlay.classList.remove('active', 'reveal', 'ready');
+            levelClearOverlay.setAttribute('aria-hidden', 'true');
+        }
+        if (levelClearStarLayer) {
+            levelClearStarLayer.innerHTML = '';
+        }
+    }
+
+    function revealLevelClearSequence() {
+        if (!levelClearSequence.active || levelClearSequence.revealed) return;
+        levelClearSequence.revealed = true;
+        if (levelClearOverlay) {
+            levelClearOverlay.classList.add('reveal');
+        }
+
+        let originX = window.innerWidth / 2;
+        let originY = window.innerHeight / 2;
+        spawnLevelClearStars(originX, originY, 46);
+        for (let i = 0; i < 80; i++) {
+            let p = new Particle(
+                canvas.width / 2 + (Math.random() - 0.5) * 120,
+                canvas.height / 2 + (Math.random() - 0.5) * 110,
+                Math.random() > 0.45 ? '#fff06a' : '#ffffff'
+            );
+            p.speedX = (Math.random() - 0.5) * 10;
+            p.speedY = (Math.random() - 0.5) * 10 - 4;
+            p.size = Math.random() * 4 + 3;
+            particles.push(p);
+        }
+    }
+
+    function startLevelClearSequence() {
+        if (levelClearSequence.active) return;
+        let wasTutorial = currentLevel && currentLevel.id === 'tutorial';
+        gameState = 'levelClearSequence';
+        levelClearShown = true;
+        if (wasTutorial) {
+            tutorial.explaining = false;
+            tutorial.dismissing = false;
+            tutorial.compact = false;
+            tutorial.sceneHidden = false;
+            clearTutorialOverlayState();
+            setHoldPanelHighlight(false);
+        } else {
+            stopTutorialLevel();
+        }
+        if (currentLevelIndex === highestUnlockedLevel && currentLevelIndex < LEVELS.length - 1) {
+            highestUnlockedLevel = currentLevelIndex + 1;
+        }
+        levelClearSequence.active = true;
+        levelClearSequence.revealed = false;
+        levelClearSequence.awaitingInput = false;
+        levelClearSequence.timer = 0;
+        levelClearSequence.tutorialStyle = wasTutorial;
+        keys = {};
+        keysPressed = {};
+        if (levelClearSequenceTitle) {
+            levelClearSequenceTitle.innerHTML = wasTutorial
+                ? 'TUTORIAL<br>Clear!!'
+                : 'LEVEL 01<br>Clear!!';
+        }
+        if (levelClearOverlay) {
+            levelClearOverlay.classList.add('active');
+            levelClearOverlay.classList.remove('reveal', 'ready');
+            levelClearOverlay.setAttribute('aria-hidden', 'false');
+        }
+    }
+
+    function finishLevelClearSequence() {
+        if (!levelClearSequence.awaitingInput) return;
+        clearLevelClearSequence();
+        openLevelSelect();
+    }
+
+    function updateLevelClearSequence(dt) {
+        levelClearSequence.timer += dt;
+        if (!levelClearSequence.revealed && levelClearSequence.timer >= 0.5) {
+            revealLevelClearSequence();
+        }
+        if (levelClearSequence.revealed && !levelClearSequence.awaitingInput && levelClearSequence.timer >= 0.5 + LEVEL_CLEAR_INPUT_DELAY_MS / 1000) {
+            levelClearSequence.awaitingInput = true;
+            if (levelClearOverlay) {
+                levelClearOverlay.classList.add('ready');
+            }
+        }
+    }
+
     function showLevelClear() {
-        if (gameState === 'levelClear') return;
+        if (gameState === 'levelClear' || gameState === 'levelClearSequence') return;
+        if (currentLevel && (currentLevel.id === 'tutorial' || currentLevel.id === 'level-01')) {
+            startLevelClearSequence();
+            return;
+        }
         gameState = 'levelClear';
         levelClearShown = true;
         stopTutorialLevel();
@@ -1561,7 +4447,7 @@
             highestUnlockedLevel = currentLevelIndex + 1;
         }
         overlay.style.background = 'rgba(5, 5, 12, 0.94)';
-        document.body.classList.remove('playing');
+        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing');
         updateClearPanel();
         updateLevelHeader();
         setOverlayScreen(clearScreen);
@@ -1571,7 +4457,7 @@
         stopTutorialLevel();
         gameState = 'gameOver';
         overlay.style.background = '#000';
-        document.body.classList.remove('playing');
+        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing');
         setOverlayScreen(gameoverScreen);
         let title = document.getElementById('crash-title');
         let desc = document.getElementById('crash-desc');
@@ -1600,10 +4486,16 @@
     function resetRunState() {
         stopTutorialLevel();
         clearIntroSequence();
+        clearLevelClearSequence();
         board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
         enemies = [];
         particles = [];
+        floatingScoreTexts = [];
         hardDropTrails = [];
+        seoaLandingCinematic.active = false;
+        seoaLandingCinematic.phase = 'idle';
+        seoaLandingCinematic.timer = 0;
+        seoaLandingCinematic.onComplete = null;
         player = new Player();
         controlMode = 'CHARACTER';
         selectedBlock = null;
@@ -1621,33 +4513,47 @@
         laserAttack.phase = 'idle';
         laserAttack.cooldown = getRandomLaserCooldown();
         laserAttack.timer = 0;
-        enemySpawnTimer = currentLevel.spawnInterval;
+        enemySpawnTimer = getCurrentSpawnInterval();
         enemySpawnWarningTimer = 0;
         enemySpawnWarningPiece = null;
         shakeAmount = 0;
         playerIdleTimer = 0;
         lastPlayerX = null;
         lastPlayerY = null;
-        document.body.classList.remove('warning-zone', 'critical-zone');
+        resetBossState();
+        document.body.classList.remove('warning-zone', 'critical-zone', 'boss-fight', 'boss-revealing');
         keys = {};
         keysPressed = {};
         lastTime = performance.now();
         drawHoldUI();
     }
 
-    function startLevel(levelIndex) {
+    function startLevelNow(levelIndex) {
         currentLevelIndex = levelIndex;
         currentLevel = LEVELS[currentLevelIndex];
-        if (currentLevelIndex > highestUnlockedLevel) {
+        if (currentLevelIndex > highestUnlockedLevel && !currentLevel.isBoss) {
             highestUnlockedLevel = currentLevelIndex;
         }
         resetRunState();
         introEndAt = performance.now() + 4300;
-        gameState = 'intro';
         overlay.style.display = 'none';
         document.body.classList.add('playing');
-        playStartIntro();
+        if (currentLevel.id === 'tutorial') {
+            startSeoaLandingCinematic(() => {
+                startSeoaDialogue(TUTORIAL_INTRO_DIALOGUE, () => {
+                    gameState = 'playing';
+                    startTutorialLevel();
+                });
+            });
+        } else {
+            gameState = 'intro';
+            playStartIntro();
+        }
         updateLevelHeader();
+    }
+
+    function startLevel(levelIndex) {
+        transitionScreen(() => startLevelNow(levelIndex));
     }
 
     function retryCurrentLevel() {
@@ -1779,6 +4685,9 @@
     
     function startDeathSequence(cause = 'crush') {
         if (isTutorialLevel()) {
+            if (cause === 'laser' && getTutorialStepKey() === 'laser') {
+                tutorial.laserDeathCount++;
+            }
             failTutorialStep();
             return;
         }
@@ -1805,14 +4714,61 @@
     
     let keys = {};
     let keysPressed = {};
-    
-    window.addEventListener('keydown', e => { 
+
+    function handleAnyInputAdvance(event) {
+        if (seoaLandingCinematic.active) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            return true;
+        }
+
+        if (seoaDialogue.active) {
+            return handleSeoaDialogueInput(event);
+        }
+
+        if (cinematicIntro.active) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            return advanceCinematicFromInput();
+        }
+
+        if (gameState === 'menu' && menuScreen && menuScreen.classList.contains('active') && !screenTransitioning) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            startCinematicIntro();
+            return true;
+        }
+
+        if (levelClearSequence.awaitingInput) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            finishLevelClearSequence();
+            return true;
+        }
+
         if (isTutorialInputLocked()) {
-            e.preventDefault();
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             updateTutorialExplanationMode();
             dismissTutorialExplanation();
-            return;
+            return true;
         }
+
+        return false;
+    }
+
+    window.addEventListener('keydown', e => {
+        if (handleAnyInputAdvance(e)) return;
 
         keys[e.code] = true; 
         keysPressed[e.code] = true; 
@@ -1821,6 +4777,10 @@
     window.addEventListener('keyup', e => { 
         keys[e.code] = false; 
     });
+
+    window.addEventListener('mousedown', e => {
+        handleAnyInputAdvance(e);
+    }, true);
     
     // 마우스 클릭으로 에러 블록 선택 로직
     canvas.addEventListener('mousedown', e => {
@@ -1849,6 +4809,10 @@
             selectedBlock = hitPattern;
             selectedBlock.isGhost = true;
             controlMode = 'BLOCK';
+            if (isTutorialLevel() && getTutorialStepKey() === 'hack-select') {
+                tutorial.preserveSceneForNextExplanation = true;
+                advanceTutorialStep();
+            }
         } else {
             if (selectedBlock) selectedBlock.isGhost = false;
             selectedBlock = null;
@@ -2322,9 +5286,13 @@
                         heldPieceType = this.type;
                         this.deleted = true;
 
-                        if (isTutorialLevel() && getTutorialStepKey() === 'hold') {
-                            advanceTutorialStep();
+                        if (isTutorialLevel() && getTutorialStepKey() === 'hold-store') {
+                            selectedBlock = null;
+                            controlMode = 'CHARACTER';
+                            canHold = false;
                             drawHoldUI();
+                            setHoldPanelHighlight(true);
+                            tutorial.holdFeedbackTimer = TUTORIAL_HOLD_FEEDBACK_MS;
                             return;
                         }
 
@@ -2437,6 +5405,7 @@
             // 보드에 그리드 데이터 병합
             let gy = Math.round(this.y / BLOCK_SIZE);
             let lockedRows = [];
+            let lockedCells = [];
             for (let r = 0; r < this.matrix.length; r++) {
                 for (let c = 0; c < this.matrix[r].length; c++) {
                     if (this.matrix[r][c]) {
@@ -2445,6 +5414,7 @@
                         if (ny >= 0 && ny < ROWS && nx >=0 && nx < COLS) {
                             board[ny][nx] = getEnemyColor(this.type);
                             lockedRows.push(ny);
+                            lockedCells.push({ row: ny, col: nx });
                         }
                     }
                 }
@@ -2457,6 +5427,18 @@
 
             if (checkDeadZoneLockRows(lockedRows)) {
                 startDeathSequence('deadzone');
+            }
+
+            let attackOrigin = null;
+            if (lockedCells.length > 0) {
+                let minCol = Math.min(...lockedCells.map(cell => cell.col));
+                let maxCol = Math.max(...lockedCells.map(cell => cell.col));
+                let minRow = Math.min(...lockedCells.map(cell => cell.row));
+                let maxRow = Math.max(...lockedCells.map(cell => cell.row));
+                attackOrigin = {
+                    x: (minCol + maxCol + 1) * BLOCK_SIZE / 2,
+                    y: (minRow + maxRow + 1) * BLOCK_SIZE / 2
+                };
             }
             
             // 라인 클리어 (가로 한 줄이 모두 채워지면 파괴) 및 이펙트 연출
@@ -2487,7 +5469,10 @@
             }
             if (clearedLines > 0) {
                 let comboBonus = SCORE_CONFIG.comboBonus * comboCount;
-                score += Math.floor((SCORE_CONFIG.lineClear[clearedLines] + comboBonus) * currentLevel.scoreMultiplier);
+                let scoreGain = Math.floor((SCORE_CONFIG.lineClear[clearedLines] + comboBonus) * currentLevel.scoreMultiplier);
+                score += scoreGain;
+                if (attackOrigin) showFloatingScore(scoreGain, attackOrigin.x, attackOrigin.y);
+                damageBoss(clearedLines, attackOrigin);
                 comboCount++;
                 shakeAmount = Math.min(clearedLines * 25, 50); // 흔들림 강도를 이전보다 약 1.5배 상향
             } else {
@@ -2662,14 +5647,281 @@
         });
     }
 
+    function drawBossPixelRect(x, y, w, h, color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+    }
+
+    function drawBossHand(hand, activeRect = null) {
+        let pulse = Math.sin(performance.now() / 120) * 3;
+        let x = activeRect ? activeRect.x : hand.attackX + pulse * hand.side;
+        let y = activeRect ? activeRect.y : hand.attackY + Math.sin(performance.now() / 180 + hand.side) * 4;
+        let w = activeRect ? activeRect.w : hand.w;
+        let h = activeRect ? activeRect.h : hand.h;
+
+        ctx.save();
+        ctx.shadowColor = '#ff2222';
+        ctx.shadowBlur = activeRect ? 18 : 8;
+        drawBossPixelRect(x + 10, y + 8, w - 20, h - 14, '#5c0208');
+        drawBossPixelRect(x + 16, y + 3, w - 32, h - 6, '#9b0710');
+        drawBossPixelRect(x + 22, y + 10, w - 44, h - 16, '#d81f2a');
+        for (let i = 0; i < 4; i++) {
+            let fingerX = hand.side < 0 ? x + w - 14 - i * 2 : x + 2 + i * 2;
+            drawBossPixelRect(fingerX, y + 3 + i * 7, 16, 5, '#210004');
+            drawBossPixelRect(fingerX + (hand.side < 0 ? 9 : -3), y + 4 + i * 7, 7, 3, '#f03535');
+        }
+        drawBossPixelRect(x + (hand.side < 0 ? 4 : w - 12), y + 14, 10, 10, '#210004');
+        ctx.restore();
+    }
+
+    function drawBossStar(star) {
+        ctx.save();
+        ctx.translate(star.x, star.y);
+        ctx.rotate(performance.now() / 90);
+        ctx.shadowColor = '#fff06a';
+        ctx.shadowBlur = 18 + star.clearedLines * 4;
+        ctx.fillStyle = '#fff06a';
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++) {
+            let radius = i % 2 === 0 ? star.size : star.size * 0.42;
+            let angle = -Math.PI / 2 + i * Math.PI / 5;
+            let x = Math.cos(angle) * radius;
+            let y = Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-2, -2, 4, 4);
+        ctx.restore();
+    }
+
+    function drawBossTelegraphs() {
+        if (!isBossLevel()) return;
+
+        if (bossAttack.phase === 'telegraph' && bossAttack.type === 'vertical-laser') {
+            let blink = Math.floor(performance.now() / 80) % 2 === 0;
+            if (blink) {
+                let laserX = Math.max(BLOCK_SIZE / 2, Math.min(canvas.width - BLOCK_SIZE / 2, bossEye.x));
+                ctx.strokeStyle = 'rgba(255, 60, 60, 0.95)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 6]);
+                ctx.beginPath();
+                ctx.moveTo(laserX, bossEye.y + bossEye.radius * 0.45);
+                ctx.lineTo(laserX, canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        if (bossAttack.phase === 'fire' && bossAttack.type === 'vertical-laser') {
+            let laserX = Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
+            let laserY = bossEye.y + bossEye.radius * 0.45;
+            ctx.fillStyle = 'rgba(255, 20, 20, 0.9)';
+            ctx.fillRect(laserX + 8, laserY, BLOCK_SIZE - 16, canvas.height - laserY);
+            ctx.fillStyle = 'rgba(255, 220, 220, 0.9)';
+            ctx.fillRect(laserX + BLOCK_SIZE / 2 - 2, laserY, 4, canvas.height - laserY);
+            ctx.fillStyle = 'rgba(255, 80, 80, 0.22)';
+            ctx.fillRect(laserX, laserY, BLOCK_SIZE, canvas.height - laserY);
+        }
+    }
+
+    function drawBossEye() {
+        let eyePart = bossParts.find(part => part.id === 'eye');
+        if (!eyePart || !eyePart.alive) return;
+        let t = performance.now();
+        let stunJitter = bossStunTimer > 0 ? 5 : 1;
+        let jx = (Math.random() - 0.5) * stunJitter;
+        let jy = (Math.random() - 0.5) * stunJitter;
+        let cx = bossEye.x + jx;
+        let cy = bossEye.y + jy;
+        let radius = bossEye.radius + Math.sin(t / 170) * 2;
+        let eyeGlow = bossStunTimer > 0 ? '#fff06a' : '#ff3030';
+
+        ctx.save();
+        ctx.shadowColor = bossStunTimer > 0 ? '#fff06a' : '#a00010';
+        ctx.shadowBlur = bossStunTimer > 0 ? 30 : 18;
+        ctx.fillStyle = '#f5ead0';
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#d8b78f';
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 0.72, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = eyeGlow;
+        ctx.beginPath();
+        ctx.arc(cx + bossEye.pupilX, cy + bossEye.pupilY, radius * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#080006';
+        ctx.beginPath();
+        ctx.arc(cx + bossEye.pupilX, cy + bossEye.pupilY, radius * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx + bossEye.pupilX - 6, cy + bossEye.pupilY - 8, 5, 5);
+        ctx.strokeStyle = '#7e050c';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let i = 0; i < 16; i++) {
+            let angle = i * Math.PI * 2 / 16;
+            let inner = radius + 2;
+            let outer = radius + 6 + (i % 3) * 3;
+            ctx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner);
+            ctx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer);
+        }
+        ctx.stroke();
+
+        if (bossStunTimer > 0 || bossDamageTextTimer > 0) {
+            ctx.globalAlpha = 0.8;
+            for (let i = 0; i < 8; i++) {
+                drawBossPixelRect(cx - 38 + Math.random() * 76, cy - 34 + Math.random() * 68, 8 + Math.random() * 18, 3, i % 2 ? '#fff06a' : '#ff3333');
+            }
+            ctx.globalAlpha = 1;
+        }
+        ctx.restore();
+    }
+
+    function drawBossFight() {
+        if (!isBossLevel()) return;
+        if (gameState === 'intro' && !bossIntro.active) return;
+        ctx.save();
+        if (bossIntro.roaring) {
+            let roarElapsed = Math.max(bossIntro.timer - bossIntro.revealDuration, 0);
+            let pulse = Math.sin(Math.min(roarElapsed / bossIntro.roarDuration, 1) * Math.PI);
+            let scale = 1 + pulse * 0.22;
+            ctx.translate(canvas.width / 2, 128);
+            ctx.scale(scale, scale);
+            ctx.translate(-canvas.width / 2, -128);
+        }
+        ctx.fillStyle = 'rgba(90, 0, 10, 0.18)';
+        ctx.fillRect(0, 0, canvas.width, 138);
+        ctx.fillStyle = 'rgba(255, 20, 20, 0.08)';
+        for (let i = 0; i < 9; i++) {
+            let x = (i * 47 + Math.floor(performance.now() / 40)) % canvas.width;
+            ctx.fillRect(x, 0, 2, 138);
+        }
+
+        if (bossParts[0]?.alive) drawBossHand(bossHands[0]);
+        if (bossParts[1]?.alive) drawBossHand(bossHands[1]);
+        drawBossEye();
+        drawBossTelegraphs();
+        for (let star of bossAttackStars) drawBossStar(star);
+        ctx.restore();
+    }
+
+    function updateBossHud() {
+        let bossHudWindow = document.getElementById('boss-hp-window');
+        let fills = {
+            left: document.getElementById('boss-hp-left'),
+            right: document.getElementById('boss-hp-right'),
+            eye: document.getElementById('boss-hp-eye')
+        };
+        let hudIntroProgress = 1;
+        if (isBossLevel() && bossIntro.active) {
+            hudIntroProgress = bossIntro.roaring
+                ? 1
+                : Math.min(bossIntro.timer / (bossIntro.revealDuration * 0.86), 1);
+            hudIntroProgress = 1 - Math.pow(1 - hudIntroProgress, 2);
+        } else if (isBossLevel() && !bossIntro.finished && gameState === 'intro') {
+            hudIntroProgress = 0;
+        }
+
+        let partOrder = { left: 0, right: 1, eye: 2 };
+        for (let part of bossParts) {
+            let fill = fills[part.id];
+            if (!fill) continue;
+            let ratio = part.maxHp > 0 ? Math.max(0, part.hp / part.maxHp) : 0;
+            let introFillProgress = 1;
+            if (isBossLevel() && hudIntroProgress < 1) {
+                let order = partOrder[part.id] || 0;
+                introFillProgress = Math.min(Math.max((hudIntroProgress - order * 0.18) / 0.52, 0), 1);
+            }
+            fill.style.width = `${Math.round(ratio * introFillProgress * 100)}%`;
+            fill.style.opacity = part.alive ? (introFillProgress > 0 ? '1' : '0') : '0.18';
+            fill.style.background = part.id === 'eye'
+                ? 'linear-gradient(90deg, #ff3030, #ff99cc)'
+                : 'linear-gradient(90deg, #ff3030, #fff06a)';
+            if (fill.parentElement) {
+                fill.parentElement.style.opacity = `${0.25 + introFillProgress * 0.75}`;
+            }
+        }
+
+        if (bossHudWindow) {
+            let windowProgress = isBossLevel() ? Math.min(hudIntroProgress * 1.18, 1) : 1;
+            bossHudWindow.style.clipPath = `inset(0 ${Math.round((1 - windowProgress) * 100)}% 0 0)`;
+            bossHudWindow.style.opacity = `${windowProgress}`;
+            if (isBossLevel() && bossHudShakeTimer > 0) {
+                let shake = bossHudShakeAmount * (bossHudShakeTimer / 0.42);
+                let dx = (Math.random() - 0.5) * shake;
+                let dy = (Math.random() - 0.5) * shake;
+                bossHudWindow.style.transform = `translate(${dx}px, ${dy}px)`;
+                bossHudWindow.style.borderColor = '#fff06a';
+            } else {
+                bossHudWindow.style.transform = 'translate(0, 0)';
+                bossHudWindow.style.borderColor = '#ff99cc';
+            }
+        }
+    }
+
     function update(dt) {
         if (gameState !== 'playing') {
+            if (seoaLandingCinematic.active) {
+                updateSeoaLandingCinematic(dt);
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    if (particles[i].alpha <= 0) particles.splice(i, 1);
+                }
+                keys = {};
+                keysPressed = {};
+                return;
+            }
+            if (seoaDialogue.active) {
+                updateSeoaDialogue(dt);
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    if (particles[i].alpha <= 0) particles.splice(i, 1);
+                }
+                keys = {};
+                keysPressed = {};
+                return;
+            }
+            if (levelClearSequence.active) {
+                updateLevelClearSequence(dt);
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    if (particles[i].alpha <= 0) particles.splice(i, 1);
+                }
+                keys = {};
+                keysPressed = {};
+                return;
+            }
+            if (bossIntro.active) {
+                updateBossRevealIntro(dt);
+                updateBossEye(dt);
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    if (particles[i].alpha <= 0) particles.splice(i, 1);
+                }
+                if (shakeAmount > 0) {
+                    shakeAmount *= 0.95;
+                    if (shakeAmount < 0.5) shakeAmount = 0;
+                }
+            }
             keysPressed = {};
             return;
         }
 
         if (isTutorialInputLocked()) {
             updateTutorialExplanationMode();
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                if (particles[i].alpha <= 0) particles.splice(i, 1);
+            }
+            if (shakeAmount > 0) {
+                shakeAmount *= 0.95;
+                if (shakeAmount < 0.5) shakeAmount = 0;
+            }
             keys = {};
             keysPressed = {};
             return;
@@ -2680,9 +5932,9 @@
         if (!isTutorialLevel()) {
             survivalTimer += dt;
         }
-        if (!isTutorialLevel() && survivalTimer >= 1.0) {
-            survivalTimer -= 1.0;
-            score += Math.floor(SCORE_CONFIG.survivalPerSec * currentLevel.scoreMultiplier);
+        while (!isTutorialLevel() && survivalTimer >= 0.01) {
+            survivalTimer -= 0.01;
+            score += Math.floor(1 * currentLevel.scoreMultiplier);
         }
 
         // 에러 사이클 연속 스폰 및 주기 스폰 (숨겨진 영역에서 바로 시작)
@@ -2703,11 +5955,12 @@
             newEnemy.y = 30 - (maxR + 1) * BLOCK_SIZE;
             
             enemies.push(newEnemy);
-            enemySpawnTimer = currentLevel.spawnInterval;
+            enemySpawnTimer = getCurrentSpawnInterval();
         }
         
         player.update(dt);
         updatePlayerIdleTimer(dt);
+        updateBossFight(dt);
         if (!isTutorialLevel() || getTutorialStepKey() === 'laser') {
             updateLaserAttack(dt);
         }
@@ -2736,6 +5989,7 @@
             particles[i].update();
             if (particles[i].alpha <= 0) particles.splice(i, 1);
         }
+        updateFloatingScoreTexts(dt);
         
         if (shakeAmount > 0) {
             shakeAmount *= 0.95; // 0.9에서 0.95로 변경하여 흔들림 유지 시간을 훨씬 길게 연장
@@ -2757,7 +6011,7 @@
 
         updateTutorial(dt);
 
-        if (!isTutorialLevel() && !levelClearShown && score >= currentLevel.targetScore) {
+        if (!isTutorialLevel() && !isBossLevel() && !levelClearShown && score >= currentLevel.targetScore) {
             showLevelClear();
         }
 
@@ -2780,6 +6034,7 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         ctx.save();
+        applySeoaLandingCamera(ctx);
         
         if (isDying) {
             // 사망 시 극단적 줌 인
@@ -2837,12 +6092,14 @@
         ctx.stroke();
         
         // 굳어진 보드 블록 그리기
-        for (let r = 0; r < ROWS; r++) {
-            for (let c = 0; c < COLS; c++) {
-                if (board[r][c]) {
-                    let px = c * BLOCK_SIZE; 
-                    let py = r * BLOCK_SIZE;
-                    drawErrorBlock(ctx, px, py, BLOCK_SIZE, board[r][c], 0.05);
+        if (!tutorial.sceneHidden) {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c]) {
+                        let px = c * BLOCK_SIZE;
+                        let py = r * BLOCK_SIZE;
+                        drawErrorBlock(ctx, px, py, BLOCK_SIZE, board[r][c], 0.05);
+                    }
                 }
             }
         }
@@ -2851,10 +6108,13 @@
         drawTutorialCheckpoint();
         
         // 에러 블록 그리기
-        for (let e of enemies) e.draw(ctx);
+        if (!tutorial.sceneHidden) {
+            for (let e of enemies) e.draw(ctx);
+            drawTutorialHackSelectPrompt();
+        }
 
         // 레이저 공격 렌더링
-        if (laserAttack.phase === 'telegraph') {
+        if (!tutorial.sceneHidden && laserAttack.phase === 'telegraph') {
             let blinkOn = Math.floor(performance.now() / 80) % 2 === 0;
             if (blinkOn) {
                 ctx.strokeStyle = 'rgba(255, 60, 60, 0.9)';
@@ -2866,7 +6126,7 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
             }
-        } else if (laserAttack.phase === 'fire') {
+        } else if (!tutorial.sceneHidden && laserAttack.phase === 'fire') {
             let beamY = laserAttack.y - laserAttack.thickness / 2;
             ctx.fillStyle = 'rgba(255, 20, 20, 0.9)';
             ctx.fillRect(laserAttack.x, beamY, laserAttack.width, laserAttack.thickness);
@@ -2876,16 +6136,21 @@
             ctx.fillRect(laserAttack.x - 40, beamY - 8, laserAttack.width + 40, laserAttack.thickness + 16);
         }
 
-        drawHardDropTrails();
+        if (!isTutorialInputLocked() && !tutorial.sceneHidden) drawHardDropTrails();
         
-        // 플레이어 그리기 (인트로/튜토리얼 설명 전환 중에는 UI 잔상 방지를 위해 숨김)
-        if (player && gameState !== 'intro' && !isTutorialInputLocked()) player.draw(ctx);
+        // 유지 전환 중인 해킹 튜토리얼은 설명 모드에서도 플레이어와 선택 블록을 그대로 보여준다.
+        let keepTutorialSceneVisible = tutorial.skipSceneAppearParticles;
+        let landingCinematicDrawn = drawSeoaLandingCinematic(ctx);
+        if (!landingCinematicDrawn && player && gameState !== 'intro' && !tutorial.sceneHidden && (!isTutorialInputLocked() || keepTutorialSceneVisible)) player.draw(ctx);
         
         // 파티클 그리기
         for (let p of particles) p.draw(ctx);
+        drawFloatingScoreTexts();
+
+        if (!tutorial.sceneHidden) drawBossFight();
 
         for (let enemy of enemies) {
-            if (!enemy.locked && !enemy.deleted && !enemy.isGhost) {
+            if (!tutorial.sceneHidden && !enemy.locked && !enemy.deleted && !enemy.isGhost) {
                 let maxR = 0;
                 for (let r = 0; r < enemy.matrix.length; r++) {
                     for (let c = 0; c < enemy.matrix[r].length; c++) {
@@ -2903,29 +6168,54 @@
         
         ctx.restore(); // 화면 흔들림 복구
         
-        // 좌측 상단 모드 HUD (캔버스 내부 간소화)
-        ctx.fillStyle = controlMode === 'BLOCK' ? '#ff99cc' : '#eee';
-        ctx.font = '10px "Press Start 2P"';
-        ctx.fillText(getLevelLabel(), 10, 20);
-        ctx.fillText(currentLevel.name, 10, 36);
-        ctx.fillText(`MODE: ${controlMode === 'BLOCK' ? 'HACKING' : 'SURVIVAL'}`, 10, 52);
-
         // 우측 패널 UI 업데이트
+        let uiScoreLabel = document.getElementById('ui-score-label');
+        let uiTargetLabel = document.getElementById('ui-target-label');
+        let uiComboLabel = document.getElementById('ui-combo-label');
+        let uiProgressLabel = document.getElementById('ui-progress-label');
         let uiScore = document.getElementById('ui-score');
         let uiTarget = document.getElementById('ui-target-score');
         let uiCombo = document.getElementById('ui-combo');
         let uiProgress = document.getElementById('ui-progress');
+        let tutorialUi = isTutorialLevel() || levelClearSequence.tutorialStyle;
 
+        if (uiScoreLabel) uiScoreLabel.style.display = tutorialUi ? 'none' : 'block';
+        if (uiScore) uiScore.style.display = tutorialUi ? 'none' : 'block';
+        if (uiTargetLabel) uiTargetLabel.style.display = (tutorialUi || isBossLevel()) ? 'none' : 'block';
+        if (uiTarget) uiTarget.style.display = (tutorialUi || isBossLevel()) ? 'none' : 'block';
+        if (uiComboLabel) uiComboLabel.style.display = tutorialUi ? 'none' : 'block';
+        if (uiCombo) uiCombo.style.display = tutorialUi ? 'none' : 'block';
+        if (uiProgressLabel) uiProgressLabel.style.display = 'block';
+
+        if (uiScoreLabel) uiScoreLabel.innerText = 'SCORE';
+        if (uiTargetLabel) {
+            uiTargetLabel.innerText = 'TARGET';
+        }
         if (uiScore) uiScore.innerText = score.toLocaleString();
-        if (uiTarget) uiTarget.innerText = currentLevel.targetScore.toLocaleString();
+        if (uiTarget) {
+            uiTarget.innerText = currentLevel.targetScore.toLocaleString();
+            uiTarget.style.color = '#fff06a';
+        }
         if (uiCombo) {
             uiCombo.innerText = comboCount;
             uiCombo.style.color = comboCount > 0 ? '#ff99cc' : '#fff';
         }
         if (uiProgress) {
-            let ratio = Math.min(score / currentLevel.targetScore, 1);
+            let tutorialProgress = TUTORIAL_STEPS.length > 1
+                ? Math.max(0, Math.min(tutorial.stepIndex / (TUTORIAL_STEPS.length - 1), 1))
+                : 0;
+            if (levelClearSequence.tutorialStyle) tutorialProgress = 1;
+            let ratio = tutorialUi
+                ? Math.min(tutorialProgress, 1)
+                : (isBossLevel() ? Math.max(0, bossHp / bossMaxHp) : Math.min(score / currentLevel.targetScore, 1));
             uiProgress.style.width = `${Math.round(ratio * 100)}%`;
+            uiProgress.style.background = tutorialUi
+                ? 'linear-gradient(90deg, #ff99cc, #fff06a)'
+                : isBossLevel()
+                ? 'linear-gradient(90deg, #ff3030, #fff06a)'
+                : 'linear-gradient(90deg, #ff99cc, #fff06a)';
         }
+        updateBossHud();
         
         // 삭제된 전역 글로우 오버레이 자리
     }
@@ -2948,7 +6238,7 @@
 
         let x = occupiedMinX * BLOCK_SIZE;
         let w = (occupiedMaxX - occupiedMinX + 1) * BLOCK_SIZE;
-        let visibleTopY = HIDDEN_ROWS * BLOCK_SIZE;
+        let visibleTopY = isBossLevel() ? 0 : HIDDEN_ROWS * BLOCK_SIZE;
         let gradientHeight = BLOCK_SIZE * 4;
 
         ctx.save();
@@ -3015,7 +6305,7 @@
     }
     
     // 초기 시작
-    showMenuScreen();
+    showMenuScreenNow();
     renderLevelList();
     updateLevelHeader();
     requestAnimationFrame(gameLoop);

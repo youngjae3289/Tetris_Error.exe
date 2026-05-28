@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris_Error.exe Seoa Dialogue Stack Editor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * { box-sizing: border-box; }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 430px;
+            overflow: hidden;
+            background: #141426;
+            color: #f4f4ff;
+            font-family: Arial, sans-serif;
+        }
+
+        .preview {
+            position: relative;
+            min-width: 0;
+            overflow: hidden;
+            background:
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)),
+                #1a1a2e;
+            background-size: 100% 4px, 3px 100%, auto;
+        }
+
+        .preview::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 50% 42%, rgba(255, 240, 106, 0.045), rgba(255, 240, 106, 0) 34%),
+                linear-gradient(180deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.52));
+        }
+
+        .preview-stage {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .seoa-wrap {
+            position: absolute;
+            left: clamp(20px, 7vw, 118px);
+            bottom: 158px;
+            z-index: 3;
+            width: min(36vw, 430px);
+            height: min(74vh, 760px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            filter: drop-shadow(9px 9px 0 #000);
+            transform: translateX(var(--seoa-x, 0px));
+            transform-origin: center bottom;
+            transition:
+                opacity 0.24s ease,
+                filter 0.24s ease,
+                transform 0.24s cubic-bezier(0.18, 0.9, 0.22, 1);
+        }
+
+        .seoa-wrap.inactive-speaker {
+            opacity: 0.52;
+            filter: brightness(0.42) saturate(0.7) drop-shadow(6px 6px 0 #000);
+            transform: translateX(var(--seoa-x, 0px)) scale(0.92);
+        }
+
+        .seoa-wrap::after {
+            content: "";
+            position: absolute;
+            left: 22%;
+            right: 12%;
+            bottom: 8px;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.48);
+            transform: skewX(-18deg);
+            filter: blur(1px);
+        }
+
+        #seoa-image {
+            position: relative;
+            z-index: 2;
+            --seoa-scale: 1;
+            --seoa-y: 0px;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            image-rendering: auto;
+            transform: translateY(var(--seoa-y, 0px)) scale(var(--seoa-scale, 1));
+            transform-origin: center bottom;
+            transition:
+                opacity 0.18s ease,
+                transform 0.18s cubic-bezier(0.18, 0.9, 0.22, 1);
+        }
+
+        #seoa-image.switching {
+            opacity: 0.25;
+            transform: translateY(calc(var(--seoa-y, 0px) + 8px)) scale(calc(var(--seoa-scale, 1) * 0.98));
+        }
+
+        .demon-wrap {
+            position: absolute;
+            right: clamp(24px, 8vw, 138px);
+            bottom: 150px;
+            z-index: 3;
+            width: min(28vw, 310px);
+            height: min(58vh, 560px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0.96;
+            filter: drop-shadow(-9px 9px 0 #000);
+            transform-origin: center bottom;
+            transition:
+                opacity 0.24s ease,
+                filter 0.24s ease,
+                transform 0.24s cubic-bezier(0.18, 0.9, 0.22, 1);
+        }
+
+        .demon-wrap.inactive-speaker {
+            opacity: 0.44;
+            filter: brightness(0.34) saturate(0.6) drop-shadow(-6px 6px 0 #000);
+            transform: scale(0.9);
+        }
+
+        .demon-shadow {
+            position: absolute;
+            left: 12%;
+            right: 10%;
+            bottom: 8px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.55);
+            transform: skewX(18deg);
+            filter: blur(1px);
+        }
+
+        .demon-silhouette {
+            position: relative;
+            width: 72%;
+            height: 82%;
+            align-self: flex-end;
+        }
+
+        .demon-head {
+            position: absolute;
+            left: 50%;
+            top: 8%;
+            width: 34%;
+            aspect-ratio: 0.78;
+            background: linear-gradient(180deg, #180008, #050004 72%);
+            border: 3px solid rgba(255, 42, 42, 0.45);
+            border-radius: 45% 45% 38% 38%;
+            box-shadow:
+                inset 0 -16px 20px rgba(0, 0, 0, 0.72),
+                0 0 24px rgba(255, 0, 0, 0.28);
+            transform: translateX(-50%);
+        }
+
+        .demon-head::before,
+        .demon-head::after {
+            content: "";
+            position: absolute;
+            top: -24%;
+            width: 34%;
+            height: 42%;
+            background: linear-gradient(180deg, #39000a, #070004);
+            border: 3px solid rgba(255, 45, 45, 0.5);
+            box-shadow: 0 0 16px rgba(255, 0, 0, 0.3);
+        }
+
+        .demon-head::before {
+            left: -14%;
+            clip-path: polygon(80% 0, 100% 100%, 0 92%);
+            transform: rotate(-18deg);
+        }
+
+        .demon-head::after {
+            right: -14%;
+            clip-path: polygon(20% 0, 100% 92%, 0 100%);
+            transform: rotate(18deg);
+        }
+
+        .demon-eyes {
+            position: absolute;
+            left: 24%;
+            right: 24%;
+            top: 45%;
+            height: 6%;
+            background:
+                linear-gradient(90deg, #ff3030 0 32%, transparent 32% 68%, #ff3030 68% 100%);
+            box-shadow: 0 0 18px #ff3030;
+            animation: demonEyePulse 1.7s steps(2, end) infinite;
+        }
+
+        .demon-body {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 68%;
+            height: 68%;
+            background:
+                radial-gradient(circle at 50% 16%, rgba(255, 30, 30, 0.2), rgba(255, 30, 30, 0) 28%),
+                linear-gradient(180deg, #130006, #030003 78%);
+            border: 3px solid rgba(255, 30, 30, 0.28);
+            border-radius: 42% 42% 14% 14%;
+            clip-path: polygon(22% 0, 78% 0, 100% 100%, 0 100%);
+            box-shadow: inset 0 0 32px rgba(0, 0, 0, 0.86);
+            transform: translateX(-50%);
+        }
+
+        .demon-shoulders {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 100%;
+            height: 46%;
+            background: linear-gradient(180deg, rgba(58, 0, 10, 0.9), #020002);
+            clip-path: polygon(12% 20%, 88% 20%, 100% 100%, 0 100%);
+            transform: translateX(-50%);
+        }
+
+        @keyframes demonEyePulse {
+            0%, 62%, 100% { opacity: 0.72; }
+            64%, 76% { opacity: 1; }
+        }
+
+        .game-ui-preview {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 1;
+            width: 700px;
+            height: 760px;
+            transform: translate(-50%, -50%) scale(var(--game-preview-scale, 1));
+            transform-origin: center center;
+            opacity: 0.62;
+            pointer-events: none;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .game-board-shell {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 332px;
+            height: 722px;
+            padding: 10px;
+            background: #222;
+            border: 4px solid #444;
+            box-shadow: 10px 10px 0 #000;
+            transform: translate(-50%, -50%);
+        }
+
+        .game-board {
+            position: relative;
+            width: 300px;
+            height: 690px;
+            background: #020204;
+            border: 2px solid #111;
+            background-image:
+                linear-gradient(#151515 1px, transparent 1px),
+                linear-gradient(90deg, #151515 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .game-board::before {
+            content: "";
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 16px;
+            height: 30px;
+            background:
+                repeating-linear-gradient(
+                    135deg,
+                    rgba(120, 0, 0, 0.22) 0 12px,
+                    rgba(255, 60, 60, 0.24) 12px 14px,
+                    rgba(120, 0, 0, 0.22) 14px 26px
+                );
+            border-bottom: 2px solid rgba(255, 70, 70, 0.95);
+        }
+
+        .game-hold-panel {
+            position: absolute;
+            left: 54px;
+            top: 210px;
+            width: 110px;
+            height: 110px;
+            padding: 4px;
+            background: #000;
+            border: 4px solid #444;
+            box-shadow: 6px 6px 0 #000;
+        }
+
+        .game-hold-window {
+            width: 90px;
+            height: 90px;
+            background: #000;
+            border: 2px solid #111;
+            display: grid;
+            place-items: center;
+        }
+
+        .game-hold-piece {
+            width: 48px;
+            height: 32px;
+            display: grid;
+            grid-template-columns: repeat(3, 16px);
+            grid-template-rows: repeat(2, 16px);
+            filter: drop-shadow(3px 3px 0 #000);
+        }
+
+        .game-hold-piece span {
+            width: 16px;
+            height: 16px;
+            background: #d43b54;
+            border: 2px solid #3b060a;
+            box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.28);
+        }
+
+        .game-hold-piece span:nth-child(1),
+        .game-hold-piece span:nth-child(3),
+        .game-hold-piece span:nth-child(4) {
+            opacity: 0;
+        }
+
+        .game-score-panel {
+            position: absolute;
+            left: 536px;
+            top: 280px;
+            min-width: 140px;
+            padding: 20px;
+            background: rgba(22, 22, 40, 0.9);
+            border: 4px solid #444;
+            box-shadow: 6px 6px 0 #000;
+            text-align: right;
+        }
+
+        .game-score-label {
+            margin-bottom: 10px;
+            color: #ff99cc;
+            font-size: 10px;
+            line-height: 1.4;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .game-score-value {
+            margin-bottom: 24px;
+            color: #fff;
+            font-size: 18px;
+            line-height: 1.3;
+            text-shadow: 3px 3px 0 #000;
+        }
+
+        .game-score-value.target {
+            color: #fff06a;
+            font-size: 14px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .game-progress-box {
+            width: 100%;
+            height: 12px;
+            border: 2px solid #fff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 0 2px #000;
+        }
+
+        .game-progress-fill {
+            width: 38%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff99cc, #fff06a);
+        }
+
+        .dialogue-box {
+            position: absolute;
+            z-index: 5;
+            left: var(--dialogue-left, 44px);
+            right: var(--dialogue-right, 44px);
+            bottom: var(--dialogue-bottom, 34px);
+            min-height: var(--dialogue-min-height, 122px);
+            padding: 18px 20px 18px;
+            background: #161628;
+            border: 4px solid #444;
+            box-shadow: 8px 8px 0 #000;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+        }
+
+        .dialogue-box::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.08) 0 2px,
+                    rgba(0, 0, 0, 0.16) 2px 4px,
+                    rgba(255, 153, 204, 0.05) 4px 5px
+                );
+            mix-blend-mode: screen;
+            opacity: 0.5;
+            animation: dialogueScanline 0.22s steps(2, end) infinite;
+        }
+
+        .speaker-row {
+            display: block;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        #preview-speaker {
+            color: #fff06a;
+            font-size: 12px;
+            line-height: 1.5;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        #preview-speaker.demon-speaker {
+            color: #ff3030;
+            text-shadow:
+                2px 2px 0 #000,
+                0 0 14px rgba(255, 30, 30, 0.9);
+        }
+
+        #preview-counter {
+            display: none;
+        }
+
+        #preview-text {
+            position: relative;
+            z-index: 1;
+            min-height: 48px;
+            color: #fff;
+            font-size: clamp(13px, 1.5vw, 20px);
+            line-height: 1.8;
+            word-break: keep-all;
+            overflow-wrap: anywhere;
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.35),
+                3px 3px 0 #000;
+        }
+
+        #preview-text.text-tremble {
+            animation: textTremble 0.12s steps(2, end) infinite;
+        }
+
+        #preview-note {
+            margin-top: 10px;
+            color: rgba(255, 153, 204, 0.82);
+            font-size: 9px;
+            line-height: 1.6;
+            min-height: 15px;
+        }
+
+        .hint {
+            position: fixed;
+            right: 28px;
+            bottom: 24px;
+            z-index: 8;
+            color: rgba(190, 190, 200, 0.88);
+            font-size: 9px;
+            line-height: 1.5;
+            animation: blinkHint 0.7s steps(2, end) infinite;
+        }
+
+        @keyframes blinkHint {
+            0%, 48% { opacity: 1; }
+            49%, 100% { opacity: 0.35; }
+        }
+
+        @keyframes dialogueScanline {
+            0% { transform: translateY(0); opacity: 0.44; }
+            50% { transform: translateY(1px); opacity: 0.58; }
+            100% { transform: translateY(0); opacity: 0.5; }
+        }
+
+        @keyframes textTremble {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-1px, 0); }
+            50% { transform: translate(1px, 1px); }
+            75% { transform: translate(0, -1px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        aside {
+            height: 100vh;
+            overflow: auto;
+            padding: 22px;
+            background: rgba(13, 13, 20, 0.98);
+            border-left: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        h1 {
+            margin: 0 0 18px;
+            color: #fff06a;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        h2 {
+            margin: 22px 0 8px;
+            color: #ff99cc;
+            font-size: 14px;
+        }
+
+        label {
+            display: grid;
+            gap: 7px;
+            margin: 12px 0;
+            color: #d8d8e8;
+            font-size: 13px;
+        }
+
+        input,
+        button,
+        textarea,
+        select {
+            width: 100%;
+            font: inherit;
+        }
+
+        input,
+        textarea,
+        select {
+            padding: 10px;
+            color: #fff;
+            background: #050508;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #fff06a;
+            box-shadow: 0 0 0 2px rgba(255, 240, 106, 0.15);
+        }
+
+        textarea {
+            min-height: 86px;
+            resize: vertical;
+            line-height: 1.55;
+        }
+
+        input[type="range"] {
+            padding: 0;
+            accent-color: #fff06a;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 12px 14px;
+            border: 0;
+            background: #ff99cc;
+            color: #000;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        button.secondary { background: #fff06a; }
+        button.ghost {
+            color: #f4f4ff;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+        button.danger {
+            color: #fff;
+            background: #8b0000;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.42;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .line-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .line-card {
+            display: grid;
+            grid-template-columns: 36px minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            cursor: pointer;
+        }
+
+        .line-card.active {
+            border-color: #fff06a;
+            box-shadow: inset 0 0 0 1px rgba(255, 240, 106, 0.55);
+        }
+
+        .line-card.demon-line {
+            border-color: rgba(255, 48, 48, 0.42);
+            background: rgba(120, 0, 12, 0.12);
+        }
+
+        .line-index {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            color: #000;
+            background: #fff06a;
+            font-weight: 800;
+        }
+
+        .line-summary {
+            min-width: 0;
+            color: #fff;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .line-emotion {
+            color: #ff99cc;
+            font-size: 11px;
+        }
+
+        .demon-line .line-emotion {
+            color: #ff3030;
+            text-shadow: 0 0 8px rgba(255, 30, 30, 0.72);
+        }
+
+        .tiny-thumb {
+            width: 34px;
+            height: 34px;
+            object-fit: cover;
+            object-position: top center;
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+        }
+
+        .demon-thumb {
+            display: grid;
+            place-items: center;
+            color: #ff3030;
+            font-size: 9px;
+            font-weight: 900;
+            border-color: rgba(255, 48, 48, 0.62);
+            box-shadow: inset 0 0 12px rgba(255, 0, 0, 0.22);
+            text-shadow: 0 0 8px rgba(255, 40, 40, 0.9);
+        }
+
+        .status {
+            min-height: 20px;
+            margin-top: 12px;
+            color: #aaaabb;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .output-box {
+            min-height: 240px;
+            margin-top: 14px;
+            color: #d7fce6;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+        }
+
+        @media (max-width: 980px) {
+            body {
+                grid-template-columns: 1fr;
+                overflow: auto;
+            }
+
+            .preview {
+                min-height: 720px;
+            }
+
+            .preview-stage {
+                min-height: 720px;
+            }
+
+            .game-ui-preview {
+                left: 50%;
+                top: 46%;
+            }
+
+            .seoa-wrap {
+                height: 500px;
+                width: min(70vw, 360px);
+                left: 50%;
+                bottom: 150px;
+                transform: translateX(calc(-50% + var(--seoa-x, 0px)));
+            }
+
+            .seoa-wrap.inactive-speaker {
+                transform: translateX(calc(-50% + var(--seoa-x, 0px))) scale(0.92);
+            }
+
+            .demon-wrap {
+                right: 2px;
+                bottom: 150px;
+                width: min(48vw, 260px);
+                height: 430px;
+            }
+
+            aside {
+                height: auto;
+                overflow: visible;
+                border-left: 0;
+                border-top: 1px solid rgba(255, 255, 255, 0.14);
+            }
+
+            .dialogue-box {
+                left: 18px;
+                right: 18px;
+                bottom: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="preview">
+        <div class="preview-stage">
+            <div class="game-ui-preview" aria-hidden="true">
+                <div class="game-hold-panel">
+                    <div class="game-hold-window">
+                        <div class="game-hold-piece">
+                            <span></span><span></span><span></span>
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-board-shell">
+                    <div class="game-board"></div>
+                </div>
+                <div class="game-score-panel">
+                    <div class="game-score-label">SCORE</div>
+                    <div class="game-score-value">0</div>
+                    <div class="game-score-label">TARGET</div>
+                    <div class="game-score-value target">10,000</div>
+                    <div class="game-score-label">COMBO</div>
+                    <div class="game-score-value">0</div>
+                    <div class="game-score-label">PROGRESS</div>
+                    <div class="game-progress-box">
+                        <div class="game-progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="seoa-wrap">
+                <img id="seoa-image" src="Resources/Seoa_basic.png" alt="Seoa emotion preview">
+            </div>
+            <div class="demon-wrap inactive-speaker" aria-hidden="true">
+                <div class="demon-shadow"></div>
+                <div class="demon-silhouette">
+                    <div class="demon-shoulders"></div>
+                    <div class="demon-body"></div>
+                    <div class="demon-head">
+                        <div class="demon-eyes"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="dialogue-box" aria-live="polite">
+            <div class="speaker-row">
+                <div id="preview-speaker">SEOA</div>
+                <div id="preview-counter">01 / 05</div>
+            </div>
+            <div id="preview-text">드디어 연결됐어. 여기는 Tetris_Error.exe 내부야.</div>
+            <div id="preview-note"></div>
+            <div class="hint">아무 키 입력...</div>
+        </section>
+    </main>
+
+    <aside>
+        <h1>SEOA DIALOGUE STACK EDITOR</h1>
+
+        <label>대화 ID
+            <input id="dialogue-id" type="text" value="tutorial_intro">
+        </label>
+
+        <label>대화 제목
+            <input id="dialogue-title" type="text" value="튜토리얼 시작 대화">
+        </label>
+
+        <h2>UI 위치 / 크기</h2>
+
+        <div class="control-grid">
+            <label>Seoa 크기: <span id="seoa-scale-value">1.62</span>
+                <input id="ui-seoa-scale" type="range" min="0.8" max="2.2" step="0.01" value="1.62">
+            </label>
+
+            <label>Seoa X(px): <span id="seoa-x-value">0</span>
+                <input id="ui-seoa-x" type="range" min="-220" max="220" step="1" value="0">
+            </label>
+
+            <label>Seoa Y(px): <span id="seoa-y-value">52</span>
+                <input id="ui-seoa-y" type="range" min="-120" max="220" step="1" value="52">
+            </label>
+
+            <label>창 하단(px): <span id="dialogue-bottom-value">34</span>
+                <input id="ui-dialogue-bottom" type="range" min="0" max="160" step="1" value="34">
+            </label>
+
+            <label>창 왼쪽(px): <span id="dialogue-left-value">44</span>
+                <input id="ui-dialogue-left" type="range" min="0" max="220" step="1" value="44">
+            </label>
+
+            <label>창 오른쪽(px): <span id="dialogue-right-value">44</span>
+                <input id="ui-dialogue-right" type="range" min="0" max="220" step="1" value="44">
+            </label>
+
+            <label>창 높이(px): <span id="dialogue-height-value">122</span>
+                <input id="ui-dialogue-height" type="range" min="92" max="260" step="1" value="122">
+            </label>
+        </div>
+
+        <h2>현재 대사</h2>
+
+        <label>감정 이미지
+            <select id="line-emotion">
+                <option value="basic">기본 / basic</option>
+                <option value="excited">신남 / excited</option>
+                <option value="surprised">놀람 / surprised</option>
+                <option value="angry">화남 / angry</option>
+                <option value="sad">슬픔 / sad</option>
+            </select>
+        </label>
+
+        <label>화자
+            <select id="line-speaker">
+                <option value="SEOA">서아 / SEOA</option>
+                <option value="DEMON">악마 / DEMON</option>
+            </select>
+        </label>
+
+        <label>대사
+            <textarea id="line-text">드디어 연결됐어. 여기는 Tetris_Error.exe 내부야.</textarea>
+        </label>
+
+        <label>연출 메모
+            <textarea id="line-note" placeholder="예: 살짝 떨리는 느낌, 글리치 강하게 등"></textarea>
+        </label>
+
+        <div class="button-grid">
+            <button onclick="addLine()">ADD LINE</button>
+            <button class="secondary" onclick="duplicateLine()">DUPLICATE</button>
+            <button class="ghost" onclick="moveLine(-1)">MOVE UP</button>
+            <button class="ghost" onclick="moveLine(1)">MOVE DOWN</button>
+            <button class="danger" onclick="deleteLine()">DELETE</button>
+            <button class="secondary" onclick="playPreview()">PREVIEW</button>
+        </div>
+
+        <h2>대화 스택</h2>
+        <div class="line-list" id="line-list"></div>
+
+        <h2>전달용 출력</h2>
+        <div class="button-grid">
+            <button onclick="copyJson()">COPY JSON</button>
+            <button class="secondary" onclick="copyForCodex()">COPY FOR CODEX</button>
+        </div>
+
+        <div class="status" id="status">감정과 대사를 편집하면 미리보기가 즉시 갱신됩니다.</div>
+        <textarea id="output" class="output-box" readonly></textarea>
+    </aside>
+
+    <script>
+        const emotionAssets = {
+            basic: {
+                label: '기본',
+                src: 'Resources/Seoa_basic.png'
+            },
+            excited: {
+                label: '신남',
+                src: 'Resources/Seoa_Exited.png'
+            },
+            surprised: {
+                label: '놀람',
+                src: 'Resources/Seoa_Suprized.png',
+                scaleOffset: -0.42
+            },
+            angry: {
+                label: '화남',
+                src: 'Resources/Seoa_angry.png'
+            },
+            sad: {
+                label: '슬픔',
+                src: 'Resources/Seoa_sad.png'
+            }
+        };
+
+        let lines = [
+            {
+                emotion: 'basic',
+                speaker: 'SEOA',
+                text: '드디어 연결됐어. 여기는 Tetris_Error.exe 내부야.',
+                note: ''
+            },
+            {
+                emotion: 'surprised',
+                speaker: 'SEOA',
+                text: '잠깐, 블록들이 정상 데이터가 아니야!',
+                note: '첫 에러 상황을 발견하는 컷'
+            },
+            {
+                emotion: 'sad',
+                speaker: 'SEOA',
+                text: '이대로 두면 시스템이 완전히 무너질 거야.',
+                note: ''
+            },
+            {
+                emotion: 'angry',
+                speaker: 'SEOA',
+                text: '그래도 포기할 수 없어. 에러 블록을 정리하자.',
+                note: ''
+            },
+            {
+                emotion: 'excited',
+                speaker: 'SEOA',
+                text: '좋아, 내가 옆에서 안내할게. 시작하자!',
+                note: '이후 기존 START 인트로로 전환'
+            }
+        ];
+
+        let selectedIndex = 0;
+        let previewTimers = [];
+
+        const dialogueId = document.getElementById('dialogue-id');
+        const dialogueTitle = document.getElementById('dialogue-title');
+        const lineEmotion = document.getElementById('line-emotion');
+        const lineSpeaker = document.getElementById('line-speaker');
+        const lineText = document.getElementById('line-text');
+        const lineNote = document.getElementById('line-note');
+        const lineList = document.getElementById('line-list');
+        const output = document.getElementById('output');
+        const status = document.getElementById('status');
+        const previewStage = document.querySelector('.preview-stage');
+        const gameUiPreview = document.querySelector('.game-ui-preview');
+        const seoaWrap = document.querySelector('.seoa-wrap');
+        const demonWrap = document.querySelector('.demon-wrap');
+        const seoaImage = document.getElementById('seoa-image');
+        const dialogueBox = document.querySelector('.dialogue-box');
+        const previewSpeaker = document.getElementById('preview-speaker');
+        const previewCounter = document.getElementById('preview-counter');
+        const previewText = document.getElementById('preview-text');
+        const previewNote = document.getElementById('preview-note');
+        const uiInputs = {
+            seoaScale: document.getElementById('ui-seoa-scale'),
+            seoaX: document.getElementById('ui-seoa-x'),
+            seoaY: document.getElementById('ui-seoa-y'),
+            dialogueBottom: document.getElementById('ui-dialogue-bottom'),
+            dialogueLeft: document.getElementById('ui-dialogue-left'),
+            dialogueRight: document.getElementById('ui-dialogue-right'),
+            dialogueHeight: document.getElementById('ui-dialogue-height')
+        };
+
+        function clampSelectedIndex() {
+            if (lines.length === 0) {
+                selectedIndex = 0;
+                return;
+            }
+            selectedIndex = Math.max(0, Math.min(selectedIndex, lines.length - 1));
+        }
+
+        function getSelectedLine() {
+            clampSelectedIndex();
+            return lines[selectedIndex];
+        }
+
+        function normalizeSpeaker(value) {
+            const normalized = String(value || '').trim().toUpperCase();
+            if (normalized === 'DEMON' || normalized === '???' || normalized === '악마') {
+                return 'DEMON';
+            }
+            return 'SEOA';
+        }
+
+        function getSpeakerDisplay(speaker) {
+            return normalizeSpeaker(speaker) === 'DEMON' ? '???' : 'SEOA';
+        }
+
+        function stopPreviewPlayback() {
+            previewTimers.forEach(timer => clearTimeout(timer));
+            previewTimers = [];
+        }
+
+        function updateGamePreviewScale() {
+            const rect = previewStage.getBoundingClientRect();
+            const scale = Math.min(rect.width / 760, rect.height / 800, 1);
+            gameUiPreview.style.setProperty('--game-preview-scale', scale.toFixed(3));
+        }
+
+        function getUiConfig() {
+            return {
+                seoa: {
+                    scale: Number(uiInputs.seoaScale.value),
+                    xPx: Number(uiInputs.seoaX.value),
+                    yPx: Number(uiInputs.seoaY.value)
+                },
+                dialogueBox: {
+                    leftPx: Number(uiInputs.dialogueLeft.value),
+                    rightPx: Number(uiInputs.dialogueRight.value),
+                    bottomPx: Number(uiInputs.dialogueBottom.value),
+                    minHeightPx: Number(uiInputs.dialogueHeight.value)
+                }
+            };
+        }
+
+        function getDialogueConfig() {
+            return {
+                id: dialogueId.value.trim() || 'untitled_dialogue',
+                title: dialogueTitle.value.trim() || '제목 없는 대화',
+                ui: getUiConfig(),
+                lines: lines.map(line => ({
+                    emotion: line.emotion,
+                    speaker: normalizeSpeaker(line.speaker),
+                    text: line.text,
+                    note: line.note
+                }))
+            };
+        }
+
+        function getCodexText() {
+            return [
+                '아래 Seoa/악마 대화 스택과 ui 값을 main.html 인트로 대화모드에 그대로 반영해줘.',
+                '',
+                JSON.stringify(getDialogueConfig(), null, 2)
+            ].join('\n');
+        }
+
+        function applyUiConfig() {
+            const ui = getUiConfig();
+            seoaWrap.style.setProperty('--seoa-x', `${ui.seoa.xPx}px`);
+            dialogueBox.style.setProperty('--dialogue-left', `${ui.dialogueBox.leftPx}px`);
+            dialogueBox.style.setProperty('--dialogue-right', `${ui.dialogueBox.rightPx}px`);
+            dialogueBox.style.setProperty('--dialogue-bottom', `${ui.dialogueBox.bottomPx}px`);
+            dialogueBox.style.setProperty('--dialogue-min-height', `${ui.dialogueBox.minHeightPx}px`);
+
+            document.getElementById('seoa-scale-value').textContent = ui.seoa.scale.toFixed(2);
+            document.getElementById('seoa-x-value').textContent = ui.seoa.xPx;
+            document.getElementById('seoa-y-value').textContent = ui.seoa.yPx;
+            document.getElementById('dialogue-left-value').textContent = ui.dialogueBox.leftPx;
+            document.getElementById('dialogue-right-value').textContent = ui.dialogueBox.rightPx;
+            document.getElementById('dialogue-bottom-value').textContent = ui.dialogueBox.bottomPx;
+            document.getElementById('dialogue-height-value').textContent = ui.dialogueBox.minHeightPx;
+        }
+
+        function getScaleForEmotion(emotion) {
+            const asset = emotionAssets[emotion] || emotionAssets.basic;
+            return Math.max(0.2, getUiConfig().seoa.scale + (asset.scaleOffset || 0));
+        }
+
+        function setImageForEmotion(emotion) {
+            const asset = emotionAssets[emotion] || emotionAssets.basic;
+            const ui = getUiConfig();
+            const scale = getScaleForEmotion(emotion);
+            if (seoaImage.getAttribute('src') === asset.src) {
+                seoaImage.style.setProperty('--seoa-scale', scale);
+                seoaImage.style.setProperty('--seoa-y', `${ui.seoa.yPx}px`);
+                return;
+            }
+
+            seoaImage.classList.add('switching');
+            setTimeout(() => {
+                seoaImage.src = asset.src;
+                seoaImage.style.setProperty('--seoa-scale', scale);
+                seoaImage.style.setProperty('--seoa-y', `${ui.seoa.yPx}px`);
+                void seoaImage.offsetWidth;
+                seoaImage.classList.remove('switching');
+            }, 90);
+        }
+
+        function applyPreview(index = selectedIndex) {
+            clampSelectedIndex();
+            const line = lines[index] || {
+                emotion: 'basic',
+                speaker: 'SEOA',
+                text: '',
+                note: ''
+            };
+
+            const speaker = normalizeSpeaker(line.speaker);
+            if (speaker !== 'DEMON') {
+                setImageForEmotion(line.emotion);
+            }
+            previewSpeaker.textContent = getSpeakerDisplay(speaker);
+            previewSpeaker.classList.toggle('demon-speaker', speaker === 'DEMON');
+            seoaWrap.classList.toggle('inactive-speaker', speaker === 'DEMON');
+            demonWrap.classList.toggle('inactive-speaker', speaker !== 'DEMON');
+            previewCounter.textContent = lines.length > 0
+                ? `${String(index + 1).padStart(2, '0')} / ${String(lines.length).padStart(2, '0')}`
+                : '00 / 00';
+            previewText.textContent = line.text || '대사를 입력하세요.';
+            previewText.classList.toggle('text-tremble', String(line.note || '').includes('떨'));
+            previewNote.textContent = line.note ? `NOTE: ${line.note}` : '';
+        }
+
+        function syncEditorFromSelected() {
+            const line = getSelectedLine();
+            if (!line) return;
+            lineEmotion.value = line.emotion;
+            lineSpeaker.value = normalizeSpeaker(line.speaker);
+            lineText.value = line.text;
+            lineNote.value = line.note;
+        }
+
+        function syncSelectedFromEditor() {
+            const line = getSelectedLine();
+            if (!line) return;
+            line.emotion = lineEmotion.value;
+            line.speaker = normalizeSpeaker(lineSpeaker.value);
+            line.text = lineText.value;
+            line.note = lineNote.value;
+        }
+
+        function renderLineList() {
+            lineList.innerHTML = '';
+            lines.forEach((line, index) => {
+                const asset = emotionAssets[line.emotion] || emotionAssets.basic;
+                const speaker = normalizeSpeaker(line.speaker);
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = `line-card${index === selectedIndex ? ' active' : ''}${speaker === 'DEMON' ? ' demon-line' : ''}`;
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <span class="line-index">${index + 1}</span>
+                    <span>
+                        <span class="line-summary">${escapeHtml(line.text || '빈 대사')}</span>
+                        <span class="line-emotion">${speaker === 'DEMON' ? '??? / DEMON' : `${asset.label} / ${line.emotion}`}</span>
+                    </span>
+                    ${speaker === 'DEMON'
+                        ? '<span class="tiny-thumb demon-thumb" aria-hidden="true">???</span>'
+                        : `<img class="tiny-thumb" src="${asset.src}" alt="">`}
+                `;
+                lineList.appendChild(card);
+            });
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function updateOutput() {
+            output.value = JSON.stringify(getDialogueConfig(), null, 2);
+        }
+
+        function renderAll() {
+            clampSelectedIndex();
+            applyUiConfig();
+            syncEditorFromSelected();
+            renderLineList();
+            applyPreview();
+            updateOutput();
+        }
+
+        function selectLine(index) {
+            stopPreviewPlayback();
+            selectedIndex = Number(index);
+            renderAll();
+            status.textContent = `${selectedIndex + 1}번 대사를 편집 중입니다.`;
+        }
+
+        function addLine() {
+            stopPreviewPlayback();
+            lines.splice(selectedIndex + 1, 0, {
+                emotion: 'basic',
+                speaker: 'SEOA',
+                text: '새 대사를 입력하세요.',
+                note: ''
+            });
+            selectedIndex += 1;
+            renderAll();
+            lineText.focus();
+            lineText.select();
+            status.textContent = '새 대사를 추가했습니다.';
+        }
+
+        function duplicateLine() {
+            stopPreviewPlayback();
+            const line = getSelectedLine();
+            if (!line) return;
+            lines.splice(selectedIndex + 1, 0, { ...line });
+            selectedIndex += 1;
+            renderAll();
+            status.textContent = '현재 대사를 복제했습니다.';
+        }
+
+        function deleteLine() {
+            stopPreviewPlayback();
+            if (lines.length <= 1) {
+                status.textContent = '대사는 최소 1개가 필요합니다.';
+                return;
+            }
+            lines.splice(selectedIndex, 1);
+            clampSelectedIndex();
+            renderAll();
+            status.textContent = '현재 대사를 삭제했습니다.';
+        }
+
+        function moveLine(direction) {
+            stopPreviewPlayback();
+            const targetIndex = selectedIndex + direction;
+            if (targetIndex < 0 || targetIndex >= lines.length) {
+                status.textContent = direction < 0 ? '이미 첫 번째 대사입니다.' : '이미 마지막 대사입니다.';
+                return;
+            }
+            const [line] = lines.splice(selectedIndex, 1);
+            lines.splice(targetIndex, 0, line);
+            selectedIndex = targetIndex;
+            renderAll();
+            status.textContent = '대사 순서를 변경했습니다.';
+        }
+
+        function playPreview() {
+            stopPreviewPlayback();
+            syncSelectedFromEditor();
+            renderLineList();
+            updateOutput();
+
+            let delay = 0;
+            lines.forEach((line, index) => {
+                previewTimers.push(setTimeout(() => {
+                    selectedIndex = index;
+                    syncEditorFromSelected();
+                    renderLineList();
+                    applyPreview(index);
+                    status.textContent = `미리보기 재생 중: ${index + 1} / ${lines.length}`;
+                }, delay));
+                delay += Math.max(1700, Math.min(4200, line.text.length * 90 + 1000));
+            });
+
+            previewTimers.push(setTimeout(() => {
+                status.textContent = '미리보기 재생 완료';
+                previewTimers = [];
+            }, delay));
+        }
+
+        function copyText(text, successMessage) {
+            navigator.clipboard.writeText(text).then(() => {
+                status.textContent = successMessage;
+            }).catch(() => {
+                output.value = text;
+                output.focus();
+                output.select();
+                status.textContent = '클립보드 복사 실패: 출력창 텍스트를 직접 복사하세요.';
+            });
+        }
+
+        function copyJson() {
+            syncSelectedFromEditor();
+            updateOutput();
+            copyText(output.value, 'JSON을 클립보드에 복사했습니다.');
+        }
+
+        function copyForCodex() {
+            syncSelectedFromEditor();
+            updateOutput();
+            copyText(getCodexText(), 'Codex 전달용 문구를 클립보드에 복사했습니다.');
+        }
+
+        [dialogueId, dialogueTitle].forEach(input => {
+            input.addEventListener('input', updateOutput);
+        });
+
+        window.addEventListener('resize', updateGamePreviewScale);
+
+        Object.values(uiInputs).forEach(input => {
+            input.addEventListener('input', () => {
+                stopPreviewPlayback();
+                applyUiConfig();
+                applyPreview();
+                updateOutput();
+                status.textContent = 'UI 위치/크기 설정을 업데이트했습니다.';
+            });
+        });
+
+        [lineEmotion, lineSpeaker, lineText, lineNote].forEach(input => {
+            input.addEventListener('input', () => {
+                stopPreviewPlayback();
+                syncSelectedFromEditor();
+                renderLineList();
+                applyPreview();
+                updateOutput();
+                status.textContent = '현재 대사를 업데이트했습니다.';
+            });
+        });
+
+        lineList.addEventListener('click', event => {
+            const card = event.target.closest('.line-card');
+            if (!card) return;
+            selectLine(card.dataset.index);
+        });
+
+        document.querySelector('.preview').addEventListener('click', () => {
+            if (previewTimers.length > 0) return;
+            selectLine((selectedIndex + 1) % lines.length);
+        });
+
+        window.addEventListener('keydown', event => {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+            if (event.code !== 'Space' && event.code !== 'Enter') return;
+            event.preventDefault();
+            if (previewTimers.length > 0) return;
+            selectLine((selectedIndex + 1) % lines.length);
+        });
+
+        updateGamePreviewScale();
+        renderAll();
+    </script>
+</body>
+</html>
