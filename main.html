@@ -148,12 +148,18 @@
             left: calc(50% - (var(--board-shell-width) / 2) - var(--side-gap) - var(--hold-panel-width));
             top: 50%;
             transform: translateY(-170px) !important;
+            flex-direction: column;
+            align-items: center;
         }
 
         body.playing .score-panel {
             left: calc(50% + (var(--board-shell-width) / 2) + var(--side-gap));
             top: 50%;
             transform: translateY(-100px) !important;
+        }
+
+        body.boss-fight .score-panel {
+            display: none !important;
         }
 
         body.boss-revealing #main-container {
@@ -177,6 +183,189 @@
 
         body.critical-zone #main-container {
             height: 690px;
+        }
+
+        #phase3-psychic-ui {
+            position: absolute;
+            left: calc(100% + 14px);
+            right: auto;
+            top: 96px;
+            width: 70px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            font-family: 'Press Start 2P', cursive;
+            z-index: 14;
+            pointer-events: none;
+        }
+
+        #phase3-psychic-ui.active {
+            display: flex;
+        }
+
+        .phase3-psychic-alert {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: var(--phase3-guide-y, 50vh);
+            padding: 0 24px;
+            box-sizing: border-box;
+            background: transparent;
+            border: 0;
+            color: #ff3030;
+            font-size: clamp(32px, var(--phase3-guide-size, 3vw), 152px);
+            line-height: 1.35;
+            text-align: center;
+            white-space: pre-line;
+            text-shadow:
+                0 0 8px rgba(255, 48, 48, 0.9),
+                0 0 18px rgba(255, 48, 48, 0.58),
+                4px 4px 0 #000;
+            box-shadow: none;
+            opacity: 0;
+            transform: translate(var(--phase3-guide-x, 0vw), -50%) scale(0.92);
+        }
+
+        .phase3-psychic-alert.show {
+            opacity: 1;
+            animation:
+                phase3AlertBurst var(--phase3-alert-duration, 1350ms) cubic-bezier(0.18, 0.9, 0.22, 1) both,
+                phase3AlertShimmer 0.28s steps(2, end) infinite;
+        }
+
+        .phase3-psychic-alert.shrink {
+            opacity: 0;
+            transform: translate(var(--phase3-guide-x, 0vw), -50%) scale(0.18);
+            transition: opacity 0.42s steps(5, end), transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .phase3-psychic-panel {
+            padding: 8px 7px;
+            background: rgba(10, 5, 14, 0.88);
+            border: 3px solid #444;
+            box-shadow: 5px 5px 0 #000;
+        }
+
+        .phase3-psychic-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 132px;
+            margin-bottom: 8px;
+            font-size: 9px;
+            line-height: 1.35;
+            color: #ff99cc;
+            text-shadow: 2px 2px 0 #000;
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+        }
+
+        #phase3-psychic-clear {
+            color: #fff06a;
+            font-size: 11px;
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.72),
+                2px 2px 0 #000;
+        }
+
+        .phase3-psychic-bar {
+            width: 14px;
+            height: 138px;
+            border: 2px solid #ff3030;
+            background: rgba(255, 48, 48, 0.12);
+            box-shadow: inset 0 0 0 2px #000;
+            margin: 0 auto;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        #phase3-psychic-time {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(180deg, #fff06a, #ff3030);
+            box-shadow: 0 0 14px rgba(255, 48, 48, 0.8);
+        }
+
+        .phase3-combo-panel {
+            display: none;
+            padding: 7px 6px;
+            background: rgba(8, 6, 16, 0.9);
+            border: 3px solid #00ffff;
+            box-shadow:
+                5px 5px 0 #000,
+                0 0 16px rgba(0, 255, 255, 0.42);
+            text-align: center;
+            color: #00ffff;
+        }
+
+        #phase3-psychic-ui.active .phase3-combo-panel {
+            display: block;
+        }
+
+        .phase3-combo-label {
+            font-size: 7px;
+            line-height: 1.4;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        #phase3-combo-count {
+            margin: 6px 0 4px;
+            font-size: 18px;
+            color: #fff;
+            text-shadow:
+                0 0 10px rgba(0, 255, 255, 0.85),
+                3px 3px 0 #000;
+            transition: transform 0.12s steps(2, end);
+        }
+
+        #phase3-combo-multiplier {
+            font-size: 9px;
+            color: #fff06a;
+            text-shadow:
+                0 0 8px rgba(255, 240, 106, 0.8),
+                2px 2px 0 #000;
+        }
+
+        .phase3-combo-bar {
+            height: 5px;
+            margin-top: 7px;
+            background: rgba(0, 255, 255, 0.12);
+            border: 1px solid rgba(0, 255, 255, 0.8);
+            overflow: hidden;
+        }
+
+        #phase3-combo-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #fff06a);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.75);
+        }
+
+        #phase3-hold-timer {
+            display: none;
+            margin-top: 10px;
+            min-width: 108px;
+            padding: 10px 8px 8px;
+            box-sizing: border-box;
+            background: rgba(22, 22, 40, 0.94);
+            border: 3px solid #ff3030;
+            color: #fff06a;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 18px;
+            line-height: 1.3;
+            text-align: center;
+            text-shadow:
+                0 0 10px rgba(255, 240, 106, 0.82),
+                3px 3px 0 #000;
+            box-shadow:
+                5px 5px 0 #000,
+                0 0 18px rgba(255, 48, 48, 0.55);
+        }
+
+        #phase3-hold-timer.active {
+            display: block;
         }
 
         body.boss-fight #main-container {
@@ -232,6 +421,12 @@
             gap: 5px;
         }
 
+        .boss-hp-window.phase3-merged .boss-hp-segments {
+            grid-template-columns: 0fr 0fr 1fr;
+            gap: 0;
+            transition: grid-template-columns 0.55s cubic-bezier(0.19, 1, 0.22, 1), gap 0.55s ease;
+        }
+
         .boss-hp-segment {
             height: 16px;
             border: 2px solid rgba(255, 255, 255, 0.9);
@@ -239,6 +434,20 @@
             box-shadow: inset 0 0 0 2px #000;
             position: relative;
             overflow: hidden;
+        }
+
+        .boss-hp-window.phase3-merged .boss-hp-segment {
+            border-color: rgba(255, 153, 204, 0.95);
+        }
+
+        .boss-hp-window.phase3-merged .boss-hp-segment:nth-child(1),
+        .boss-hp-window.phase3-merged .boss-hp-segment:nth-child(2) {
+            opacity: 0 !important;
+            border-width: 0;
+        }
+
+        .boss-hp-window.phase3-merged .boss-part-name {
+            opacity: 0;
         }
 
         .boss-hp-fill {
@@ -518,7 +727,8 @@
             padding-right: 0;
         }
 
-        #level-screen {
+        #level-screen,
+        #boss-phase-screen {
             position: relative;
             width: min(82vw, 620px);
             align-items: stretch;
@@ -534,11 +744,13 @@
             transform-origin: top center;
         }
 
-        #level-screen.active {
+        #level-screen.active,
+        #boss-phase-screen.active {
             animation: levelPanelOpen 0.42s steps(8, end) both;
         }
 
-        #level-screen::before {
+        #level-screen::before,
+        #boss-phase-screen::before {
             content: "";
             position: absolute;
             inset: 0;
@@ -619,10 +831,106 @@
                 0 0 20px rgba(255, 153, 204, 0.72);
         }
 
-        #level-screen .level-grid {
+        #level-screen .level-grid,
+        #boss-phase-screen .level-grid {
             position: relative;
             z-index: 1;
             align-self: center;
+        }
+
+        #gameover-screen {
+            position: relative;
+            width: min(82vw, 620px);
+            align-items: stretch;
+            gap: 18px;
+            padding: clamp(24px, 3.2vw, 34px);
+            border-color: #ff3030;
+            background:
+                linear-gradient(rgba(255, 48, 48, 0.055) 50%, rgba(0, 0, 0, 0.22) 50%),
+                linear-gradient(180deg, rgba(16, 1, 4, 0.98), rgba(46, 5, 10, 0.94));
+            background-size: 100% 5px, auto;
+            box-shadow: 10px 10px 0 #000, 0 0 28px rgba(255, 48, 48, 0.34);
+            overflow: hidden;
+            transform-origin: top center;
+        }
+
+        #gameover-screen.active {
+            animation: levelPanelOpen 0.42s steps(8, end) both;
+        }
+
+        #gameover-screen::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(90deg, rgba(255, 48, 48, 0.18), transparent 30%, rgba(255, 240, 106, 0.05) 52%, transparent 78%, rgba(255, 48, 48, 0.18));
+            opacity: 0.88;
+        }
+
+        #gameover-screen .ui-badge,
+        #gameover-screen .ui-actions,
+        #crash-title,
+        #crash-desc {
+            position: relative;
+            z-index: 1;
+        }
+
+        #gameover-screen .ui-badge {
+            align-self: flex-start;
+            color: #ff3030;
+            font-size: 10px;
+            line-height: 1.5;
+            text-shadow: 2px 2px 0 #000, 0 0 12px rgba(255, 48, 48, 0.65);
+        }
+
+        #gameover-screen #crash-desc {
+            min-height: 84px;
+            margin: 8px 0 4px;
+            padding: 20px 18px;
+            display: grid;
+            place-items: center;
+            border: 2px solid #ff3030;
+            background:
+                linear-gradient(rgba(255, 48, 48, 0.08) 50%, rgba(0, 0, 0, 0.22) 50%),
+                rgba(10, 0, 3, 0.9);
+            background-size: 100% 4px, auto;
+            box-shadow: inset 0 0 0 2px #000, 5px 5px 0 #000;
+            color: #ff3333;
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(14px, 2vw, 24px);
+            line-height: 1.65;
+            text-align: center;
+        }
+
+        #gameover-screen .ui-actions {
+            justify-content: stretch;
+            gap: 12px;
+        }
+
+        #gameover-screen .btn {
+            flex: 1 1 180px;
+            min-height: 54px;
+            border: 2px solid #ff3030;
+            background:
+                linear-gradient(rgba(255, 48, 48, 0.1) 50%, rgba(0, 0, 0, 0.22) 50%),
+                rgba(12, 0, 4, 0.92);
+            background-size: 100% 4px, auto;
+            color: #ff3030;
+            box-shadow:
+                inset 0 0 0 2px #000,
+                4px 4px 0 #000,
+                0 0 14px rgba(255, 48, 48, 0.34);
+        }
+
+        #gameover-screen .btn:hover {
+            transform: translate(-1px, -1px);
+            border-color: #fff;
+            color: #fff;
+            box-shadow:
+                inset 0 0 0 2px #000,
+                5px 5px 0 #000,
+                0 0 20px rgba(255, 48, 48, 0.58);
         }
 
         .level-card {
@@ -990,6 +1298,94 @@
             opacity: 1;
         }
 
+        #ending-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 260;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Press Start 2P', cursive;
+            pointer-events: auto;
+        }
+
+        #ending-overlay.active {
+            display: flex;
+        }
+
+        .ending-image {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-rendering: auto;
+            transform: scale(1.015);
+            animation: endingImageReveal 1.2s ease-out both;
+        }
+
+        .ending-dim {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(rgba(255, 255, 255, 0.035) 50%, rgba(0, 0, 0, 0.16) 50%),
+                rgba(0, 0, 0, 0.34);
+            background-size: 100% 5px, auto;
+            z-index: 1;
+        }
+
+        .ending-credits {
+            position: absolute;
+            left: 50%;
+            bottom: clamp(38px, 7vh, 78px);
+            z-index: 2;
+            width: min(88vw, 920px);
+            transform: translateX(-50%);
+            color: #ff99cc;
+            text-align: center;
+            text-shadow:
+                3px 3px 0 #000,
+                0 0 12px rgba(255, 153, 204, 0.8),
+                0 0 26px rgba(255, 51, 119, 0.5);
+            animation: endingCreditsRise 1.4s 0.45s ease-out both;
+        }
+
+        .ending-thanks {
+            font-size: clamp(16px, 3.2vw, 34px);
+            line-height: 1.7;
+        }
+
+        .ending-author {
+            margin-top: 18px;
+            color: #fff06a;
+            font-size: clamp(10px, 1.45vw, 16px);
+            line-height: 1.8;
+        }
+
+        @keyframes endingImageReveal {
+            0% {
+                opacity: 0;
+                filter: brightness(0.7) contrast(1.12);
+            }
+            100% {
+                opacity: 1;
+                filter: brightness(1) contrast(1.02);
+            }
+        }
+
+        @keyframes endingCreditsRise {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 18px);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
         #cinematic-intro-overlay {
             position: fixed;
             inset: 0;
@@ -1323,8 +1719,8 @@
             align-items: center;
             justify-content: flex-start;
             gap: 18px;
-            padding: 45vh 24px 24px;
-            transform: translateX(0vw);
+            padding: var(--intro-y, 45vh) 24px 24px;
+            transform: translateX(var(--intro-x, 0vw));
             box-sizing: border-box;
         }
 
@@ -1357,7 +1753,7 @@
                 );
             -webkit-background-clip: text;
             background-clip: text;
-            opacity: 0.8;
+            opacity: var(--intro-stripe-opacity, 0.8);
             mix-blend-mode: screen;
             text-shadow: none;
             animation: introTextScanline 0.22s steps(2, end) infinite;
@@ -1374,7 +1770,7 @@
         .intro-line.start {
             color: #fff06a;
             margin: 0;
-            font-size: clamp(32px, 3vw, 152px);
+            font-size: clamp(32px, var(--intro-size, 3vw), 152px);
         }
 
         #intro-overlay.boss-intro .intro-line.start {
@@ -1463,6 +1859,29 @@
             justify-content: center;
             filter: drop-shadow(9px 9px 0 #000);
             transform: translateX(var(--seoa-x, 0px));
+            transform-origin: center bottom;
+            opacity: 1;
+            transition: opacity 0.12s ease, filter 0.12s ease, transform 0.16s ease;
+        }
+
+        .demon-dialogue-character {
+            position: absolute;
+            right: clamp(22px, 7vw, 116px);
+            bottom: 158px;
+            z-index: 3;
+            width: min(30vw, 360px);
+            height: min(70vh, 720px);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            filter: drop-shadow(-9px 9px 0 #000);
+            transform: translateX(var(--demon-x, 0px));
+            transform-origin: center bottom;
+            opacity: 0.96;
+            transition:
+                opacity 0.24s ease,
+                filter 0.24s ease,
+                transform 0.24s cubic-bezier(0.18, 0.9, 0.22, 1);
         }
 
         .seoa-dialogue-character::after {
@@ -1477,20 +1896,95 @@
             filter: blur(1px);
         }
 
+        .demon-dialogue-character::after {
+            content: "";
+            position: absolute;
+            left: 16%;
+            right: 16%;
+            bottom: 0;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.58);
+            transform: skewX(18deg);
+            filter: blur(2px);
+        }
+
         #seoa-dialogue-image {
             position: relative;
             z-index: 2;
+            --seoa-emotion-x: 0px;
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
             opacity: 1;
-            transform: translateY(var(--seoa-y, 0px)) scale(var(--seoa-scale, 1));
+            transform:
+                translate(var(--seoa-emotion-x, 0px), var(--seoa-y, 0px))
+                scale(var(--seoa-scale, 1));
             transform-origin: center bottom;
             transition: opacity 0.12s ease;
         }
 
+        #demon-dialogue-image {
+            position: relative;
+            z-index: 2;
+            width: 138%;
+            max-width: none;
+            max-height: 100%;
+            object-fit: contain;
+            object-position: center bottom;
+            opacity: 1;
+            filter: brightness(0.92) contrast(1.18) saturate(1.12) drop-shadow(0 0 18px rgba(255, 20, 35, 0.5));
+            transform: translateY(var(--demon-y, 0px)) scale(var(--demon-scale, 1));
+            transform-origin: center bottom;
+            transition: transform 0.18s cubic-bezier(0.18, 0.9, 0.22, 1);
+        }
+
+        .demon-dialogue-character.silhouette {
+            right: clamp(18px, 4vw, 72px);
+            width: min(22vw, 250px);
+            height: min(58vh, 610px);
+            filter: drop-shadow(-7px 7px 0 #000);
+            opacity: 0.82;
+        }
+
+        .demon-dialogue-character.silhouette::after {
+            left: 24%;
+            right: 24%;
+            opacity: 0.46;
+        }
+
+        #demon-dialogue-image.silhouette {
+            width: 100%;
+            max-width: 100%;
+            filter: brightness(0) contrast(1.2) drop-shadow(0 0 14px rgba(0, 0, 0, 0.65));
+        }
+
         #seoa-dialogue-image.fading {
             opacity: 0;
+        }
+
+        #seoa-dialogue-overlay.has-demon .demon-dialogue-character {
+            display: flex;
+        }
+
+        #seoa-dialogue-overlay.speaker-seoa.has-demon .demon-dialogue-character,
+        #seoa-dialogue-overlay.speaker-demon .seoa-dialogue-character {
+            opacity: 0.42;
+            filter: brightness(0.34) saturate(0.6) drop-shadow(-6px 6px 0 #000);
+        }
+
+        #seoa-dialogue-overlay.speaker-demon .demon-dialogue-character {
+            opacity: 1;
+            filter: drop-shadow(-9px 9px 0 #000) drop-shadow(0 0 24px rgba(255, 30, 30, 0.52));
+            transform: translateX(var(--demon-x, 0px)) scale(1.04);
+        }
+
+        #seoa-dialogue-overlay.speaker-demon .demon-dialogue-character.silhouette {
+            filter: drop-shadow(-7px 7px 0 #000) drop-shadow(0 0 18px rgba(255, 30, 30, 0.24));
+            transform: translateX(var(--demon-x, 0px)) scale(1);
+        }
+
+        #seoa-dialogue-overlay.speaker-seoa.has-demon .seoa-dialogue-character {
+            transform: translateX(var(--seoa-x, 0px)) scale(1.06);
         }
 
         .seoa-dialogue-box {
@@ -1499,7 +1993,7 @@
             left: var(--dialogue-left, 130px);
             right: var(--dialogue-right, 220px);
             bottom: var(--dialogue-bottom, 34px);
-            min-height: var(--dialogue-min-height, 228px);
+            height: var(--dialogue-min-height, 228px);
             padding: 22px 24px 20px;
             background: #161628;
             border: 4px solid #444;
@@ -1564,6 +2058,22 @@
             animation: seoaTextTremble 0.12s steps(2, end) infinite;
         }
 
+        #seoa-dialogue-text.text-strong-tremble {
+            animation: seoaTextTremble 0.07s steps(2, end) infinite;
+        }
+
+        #seoa-dialogue-text.text-bounce {
+            animation: seoaTextBounce 0.42s steps(2, end) infinite;
+        }
+
+        #seoa-dialogue-text.demon-line,
+        #seoa-dialogue-speaker.demon-line {
+            color: #ff3030;
+            text-shadow:
+                0 0 12px rgba(255, 30, 30, 0.68),
+                3px 3px 0 #000;
+        }
+
         .seoa-dialogue-hint {
             position: fixed;
             right: 28px;
@@ -1587,6 +2097,11 @@
             50% { transform: translate(1px, 1px); }
             75% { transform: translate(0, -1px); }
             100% { transform: translate(0, 0); }
+        }
+
+        @keyframes seoaTextBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
         }
 
         #tutorial-overlay {
@@ -1705,6 +2220,43 @@
             }
         }
 
+        @keyframes phase3AlertBurst {
+            0% {
+                transform: translate(var(--phase3-guide-x, 0vw), calc(-50% + 18px)) scale(0.82);
+                opacity: 1;
+            }
+            18% {
+                opacity: 1;
+            }
+            48% {
+                transform: translate(var(--phase3-guide-x, 0vw), calc(-50% - 2px)) scale(1.04);
+                opacity: 1;
+            }
+            74% {
+                transform: translate(var(--phase3-guide-x, 0vw), calc(-50% - 6px)) scale(1);
+                opacity: 0.72;
+            }
+            100% {
+                transform: translate(var(--phase3-guide-x, 0vw), calc(-50% - 12px)) scale(1.02);
+                opacity: 0;
+            }
+        }
+
+        @keyframes phase3AlertShimmer {
+            0% {
+                text-shadow:
+                    0 0 8px rgba(255, 48, 48, 0.92),
+                    0 0 18px rgba(255, 48, 48, 0.6),
+                    4px 4px 0 #000;
+            }
+            100% {
+                text-shadow:
+                    0 0 16px rgba(255, 48, 48, 1),
+                    0 0 30px rgba(170, 0, 18, 0.9),
+                    5px 5px 0 #000;
+            }
+        }
+
         @keyframes introShimmer {
             0% {
                 text-shadow:
@@ -1789,6 +2341,7 @@
         <!-- HOLD UI -->
         <div class="hold-panel" id="hold-panel" style="background: #000; border: 4px solid #444; padding: 4px; text-align: center; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-170px);">
             <canvas id="holdCanvas" width="90" height="90" style="display: block; background: #000; border: 2px solid #111;"></canvas>
+            <div id="phase3-hold-timer">1:00</div>
         </div>
 
         <div class="canvas-outer">
@@ -1809,6 +2362,26 @@
             </div>
             <div class="canvas-container" id="main-container">
                 <canvas id="tetris" width="300" height="690"></canvas>
+            </div>
+            <div id="phase3-psychic-ui" aria-hidden="true">
+                <div class="phase3-psychic-alert" id="phase3-psychic-alert">제한시간 01:30<br>방향키 &amp; c 활성화</div>
+                <div class="phase3-psychic-panel">
+                    <div class="phase3-psychic-row">
+                        <span>남은 시간</span>
+                        <span id="phase3-psychic-clear">1:30</span>
+                    </div>
+                    <div class="phase3-psychic-bar">
+                        <div id="phase3-psychic-time"></div>
+                    </div>
+                </div>
+                <div class="phase3-combo-panel" id="phase3-combo-panel">
+                    <div class="phase3-combo-label" id="phase3-combo-label">COMBO</div>
+                    <div id="phase3-combo-count">0</div>
+                    <div id="phase3-combo-multiplier">x1</div>
+                    <div class="phase3-combo-bar">
+                        <div id="phase3-combo-bar"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1852,9 +2425,17 @@
                 <div class="ui-screen" id="level-screen">
                     <div class="level-screen-head">
                         <h1>LEVEL</h1>
-                        <button class="level-back-icon" onclick="showMenuScreen()" aria-label="돌아가기" title="돌아가기"></button>
+                        <button class="level-back-icon" onclick="playMenuSfx(); showMenuScreen()" aria-label="돌아가기" title="돌아가기"></button>
                     </div>
                     <div class="level-grid" id="level-grid"></div>
+                </div>
+
+                <div class="ui-screen" id="boss-phase-screen">
+                    <div class="level-screen-head">
+                        <h1>BOSS PHASE</h1>
+                        <button class="level-back-icon" onclick="playMenuSfx(); openLevelSelectNow()" aria-label="돌아가기" title="돌아가기"></button>
+                    </div>
+                    <div class="level-grid" id="boss-phase-grid"></div>
                 </div>
 
                 <div class="ui-screen" id="clear-screen">
@@ -1864,7 +2445,7 @@
                     <div class="progress-bar"><div class="progress-fill" id="clear-progress"></div></div>
                     <div class="ui-actions">
                         <button class="btn btn-cta" id="next-level-btn" onclick="goToNextLevel()">NEXT LEVEL</button>
-                        <button class="btn" onclick="openLevelSelect()">LEVEL LIST</button>
+                        <button class="btn" onclick="playMenuSfx(); openLevelSelect()">LEVEL LIST</button>
                     </div>
                 </div>
 
@@ -1873,8 +2454,8 @@
                     <h1 id="crash-title" style="color: #fff;">CRUSHED!</h1>
                     <p id="crash-desc" style="display: none; color: #ff3333; margin-bottom: 10px; text-align: center;">YOUR SOUL HAS BEEN STOLEN.</p>
                     <div class="ui-actions">
-                        <button class="btn" id="restart-btn" onclick="retryCurrentLevel()">RETRY LEVEL</button>
-                        <button class="btn" onclick="openLevelSelect()">LEVEL LIST</button>
+                        <button class="btn" id="restart-btn" onclick="retryCurrentLevel()">RETRY</button>
+                        <button class="btn" onclick="playMenuSfx(); openLevelSelect()">LEVEL</button>
                     </div>
                 </div>
             </div>
@@ -1902,6 +2483,9 @@
         <div class="seoa-dialogue-character">
             <img id="seoa-dialogue-image" src="Resources/Seoa_basic.png" alt="Seoa">
         </div>
+        <div class="demon-dialogue-character">
+            <img id="demon-dialogue-image" src="Resources/Firefly.png" alt="Demon">
+        </div>
         <section class="seoa-dialogue-box" aria-live="polite">
             <div class="seoa-dialogue-head">
                 <div id="seoa-dialogue-speaker">SEOA</div>
@@ -1927,6 +2511,15 @@
         </div>
     </div>
     <div id="screen-fade" aria-hidden="true"></div>
+
+    <div id="ending-overlay" aria-hidden="true">
+        <img class="ending-image" src="Resources/ending.png" alt="Ending">
+        <div class="ending-dim"></div>
+        <div class="ending-credits">
+            <div class="ending-thanks">플레이해주셔서 감사합니다.</div>
+            <div class="ending-author">20221116 김영재</div>
+        </div>
+    </div>
     
     <script>
     const canvas = document.getElementById('tetris');
@@ -1934,12 +2527,23 @@
     const holdPanel = document.getElementById('hold-panel');
     const holdCanvas = document.getElementById('holdCanvas');
     const hCtx = holdCanvas.getContext('2d');
+    const phase3PsychicUi = document.getElementById('phase3-psychic-ui');
+    const phase3PsychicAlert = document.getElementById('phase3-psychic-alert');
+    const phase3PsychicTime = document.getElementById('phase3-psychic-time');
+    const phase3PsychicClear = document.getElementById('phase3-psychic-clear');
+    const phase3ComboLabel = document.getElementById('phase3-combo-label');
+    const phase3ComboCount = document.getElementById('phase3-combo-count');
+    const phase3ComboMultiplier = document.getElementById('phase3-combo-multiplier');
+    const phase3ComboBar = document.getElementById('phase3-combo-bar');
+    const phase3HoldTimer = document.getElementById('phase3-hold-timer');
     const overlay = document.getElementById('game-over-overlay');
     const menuScreen = document.getElementById('menu-screen');
     const levelScreen = document.getElementById('level-screen');
     const clearScreen = document.getElementById('clear-screen');
     const gameoverScreen = document.getElementById('gameover-screen');
     const levelGrid = document.getElementById('level-grid');
+    const bossPhaseScreen = document.getElementById('boss-phase-screen');
+    const bossPhaseGrid = document.getElementById('boss-phase-grid');
     const clearTitle = document.getElementById('clear-title');
     const clearDesc = document.getElementById('clear-desc');
     const clearProgress = document.getElementById('clear-progress');
@@ -1954,6 +2558,7 @@
     const cinematicInputHint = document.getElementById('cinematic-input-hint');
     const seoaDialogueOverlay = document.getElementById('seoa-dialogue-overlay');
     const seoaDialogueImage = document.getElementById('seoa-dialogue-image');
+    const demonDialogueImage = document.getElementById('demon-dialogue-image');
     const seoaDialogueSpeaker = document.getElementById('seoa-dialogue-speaker');
     const seoaDialogueCounter = document.getElementById('seoa-dialogue-counter');
     const seoaDialogueText = document.getElementById('seoa-dialogue-text');
@@ -1962,6 +2567,7 @@
     const tutorialText = document.getElementById('tutorial-text');
     const tutorialHint = document.getElementById('tutorial-hint');
     const screenFade = document.getElementById('screen-fade');
+    const endingOverlay = document.getElementById('ending-overlay');
     const levelClearOverlay = document.getElementById('level-clear-overlay');
     const levelClearStarLayer = document.getElementById('level-clear-star-layer');
     const levelClearSequenceTitle = document.getElementById('level-clear-title');
@@ -1993,13 +2599,84 @@
     };
     const GHOST_COLOR = 'rgba(139, 0, 0, 0.5)';
     const PLAYER_COLOR = '#A3E4D7';
-    const SEOA_EMOTION_ASSETS = {
-        basic: { src: 'Resources/Seoa_basic.png', scaleOffset: 0 },
-        excited: { src: 'Resources/Seoa_Exited.png', scaleOffset: 0 },
-        surprised: { src: 'Resources/Seoa_Suprized.png', scaleOffset: 0 },
-        angry: { src: 'Resources/Seoa_angry.png', scaleOffset: 0 },
-        sad: { src: 'Resources/Seoa_sad.png', scaleOffset: 0 }
+    const BGM_CONFIG = {
+        title: { src: 'sounds/bgm_title.mp3', volume: 0.38 },
+        ingame: { src: 'sounds/bgm_ingame.mp3', volume: 0.34 },
+        bossPhase1: { src: 'sounds/Error_Block_Boss.mp3', volume: 0.36 },
+        bossPhase2: { src: 'sounds/Phase2.mp3', volume: 0.36 },
+        bossPhase3: { src: 'sounds/Phase3.mp3', volume: 0.38 }
     };
+    const SFX_CONFIG = {
+        start: { src: 'sounds/Generated_PressStart.wav', volume: 0.44 },
+        menu: { src: 'sounds/Generated_PressMenu_Soft.wav', volume: 0.2 },
+        dialogue: { src: 'sounds/Generated_Dialogue_Next.wav', volume: 0.24 },
+        errorSelect: { src: 'sounds/Generated_ErrorBlock_Select.wav', volume: 0.34 },
+        blockPlace: { src: 'sounds/Generated_Block_Place.wav', volume: 0.34 },
+        blockRotate: { src: 'sounds/Generated_Block_Rotate.wav', volume: 0.2 },
+        holdStore: { src: 'sounds/Generated_Hold_Store.wav', volume: 0.3 },
+        holdRetrieve: { src: 'sounds/Generated_Hold_Retrieve.wav', volume: 0.3 },
+        lineClear: { src: 'sounds/Generated_Line_Clear.wav', volume: 0.38 },
+        combo: { src: 'sounds/Generated_Combo.wav', volume: 0.25 },
+        checkpoint: { src: 'sounds/Generated_Tutorial_Checkpoint.wav', volume: 0.32 },
+        jump: { src: 'sounds/Generated_Jump.wav', volume: 0.2 },
+        land: { src: 'sounds/Generated_Land.wav', volume: 0.16 },
+        wallKick: { src: 'sounds/Generated_Wall_Kick.wav', volume: 0.27 },
+        laserWarning: { src: 'sounds/Generated_Laser_Warning.wav', volume: 0.3 },
+        laserFire: { src: 'sounds/Generated_Laser_Fire.wav', volume: 0.32 },
+        bossVerticalLaserFire: { src: 'sounds/Boss_Phase1_Eye_Laser_Barrage.wav', volume: 0.36 },
+        damage: { src: 'sounds/Generated_Player_Damage.wav', volume: 0.38 },
+        deathHeartbeat: { src: 'sounds/Generated_Death_Heartbeat_Glitch.wav', volume: 0.38 },
+        gameOver: { src: 'sounds/Generated_Game_Over.wav', volume: 0.4 },
+        soulStolenTitle: { src: 'sounds/deadtitle.mp3', volume: 0.48 },
+        soulTextGlitch: { src: 'sounds/Generated_Soul_Text_Glitch.wav', volume: 0.16 },
+        levelClear: { src: 'sounds/Generated_Level_Clear.wav', volume: 0.38 },
+        bossReveal: { src: 'sounds/Generated_Boss_Reveal.wav', volume: 0.36 },
+        bossRoar: { src: 'sounds/Boss_Roar_Monster.mp3', volume: 0.113 },
+        bossCountdownTick: { src: 'sounds/Generated_Boss_Countdown_Tick.wav', volume: 0.4 },
+        bossCountdownStart: { src: 'sounds/Generated_Boss_Countdown_Start.wav', volume: 0.46 },
+        bossHandComboRoar: { src: 'sounds/Boss_HandCombo_Roar.wav', volume: 0.1 },
+        bossHandComboHit: { src: 'sounds/Generated_Boss_HandCombo_Hit.wav', volume: 0.48 },
+        bossHandSlamCrack: { src: 'sounds/Boss_Hand_Combo_Impact.wav', volume: 0.52 },
+        bossHandClapCrack: { src: 'sounds/Boss_Hand_Combo_Impact.wav', volume: 0.54 },
+        bossHurt: { src: 'sounds/Boss_Hurt.wav', volume: 0.14 },
+        bossPhase3Death: { src: 'sounds/Boss_Phase3_Death.mp3', volume: 0.167 },
+        bossPhase: { src: 'sounds/Generated_Boss_Phase.wav', volume: 0.38 },
+        bossWarning: { src: 'sounds/Generated_Boss_Warning.wav', volume: 0.32 },
+        seoaLanding: { src: 'sounds/Generated_Seoa_Landing.wav', volume: 0.34 }
+    };
+    const bgmTracks = {};
+    Object.keys(BGM_CONFIG).forEach(key => {
+        bgmTracks[key] = new Audio(BGM_CONFIG[key].src);
+    });
+    const sfxTracks = {};
+    Object.keys(SFX_CONFIG).forEach(key => {
+        sfxTracks[key] = new Audio(SFX_CONFIG[key].src);
+    });
+    Object.keys(bgmTracks).forEach(key => {
+        bgmTracks[key].loop = false;
+        bgmTracks[key].preload = 'auto';
+        bgmTracks[key].volume = BGM_CONFIG[key].volume;
+    });
+    Object.keys(sfxTracks).forEach(key => {
+        sfxTracks[key].preload = 'auto';
+        sfxTracks[key].volume = SFX_CONFIG[key].volume;
+    });
+    let audioUnlocked = false;
+    let currentBgmKey = null;
+    let pendingBgmKey = 'title';
+    let bgmLoopFrameId = null;
+    let bgmFadeInStart = 0;
+    const BGM_LOOP_FADE_MS = 2500;
+    const BGM_LOOP_RESET_GAP = 0.08;
+    const SEOA_EMOTION_ASSETS = {
+        basic: { src: 'Resources/Seoa_basic.png', xOffset: 0, yOffset: 0 },
+        excited: { src: 'Resources/Seoa_Exited.png', xOffset: -4, yOffset: -6 },
+        surprised: { src: 'Resources/Seoa_Suprized.png', xOffset: 6, yOffset: -18, scale: 0.74 },
+        angry: { src: 'Resources/Seoa_angry.png', xOffset: -16, yOffset: 0 },
+        sad: { src: 'Resources/Seoa_sad.png', xOffset: -13, yOffset: 0 }
+    };
+    const DEMON_DIALOGUE_IMAGE_SRC = 'Resources/Firefly.png';
+    const DEMON_SILHOUETTE_DIALOGUE_IMAGE_SRC = 'Resources/DevilDLImage_cutout.png';
     const TUTORIAL_INTRO_DIALOGUE = {
         id: 'tutorial_intro',
         title: '튜토리얼 시작 대화',
@@ -2015,6 +2692,50 @@
             { emotion: 'excited', speaker: 'SEOA', text: '테트리스면 자신있지!', note: '' }
         ]
     };
+    const LEVEL1_ENDING_DIALOGUE = {
+        id: 'level1ending',
+        title: '레벨1엔딩',
+        demonImageSrc: DEMON_SILHOUETTE_DIALOGUE_IMAGE_SRC,
+        demonStyle: 'silhouette',
+        speakerLabels: { DEMON: '???' },
+        ui: {
+            seoa: { scale: 1.62, xPx: 0, yPx: 52 },
+            demon: { scale: 0.58, xPx: 34, yPx: -72 },
+            dialogueBox: { leftPx: 165, rightPx: 115, bottomPx: 131, minHeightPx: 122 }
+        },
+        lines: [
+            { emotion: 'excited', speaker: 'SEOA', text: '좋아, 이대로 다 깨보자고!', note: '살짝씩 점프를 뛰는 텍스트연출' },
+            { emotion: 'basic', speaker: 'DEMON', text: '꽤 신나보이네.', note: '붉은 텍스트, 느리고 묵직한 느낌으로 떨리는 텍스트.' },
+            { emotion: 'surprised', speaker: 'SEOA', text: '누..누구세요?', note: '심하게 떨리는 텍스트 연출' },
+            { emotion: 'surprised', speaker: 'DEMON', text: '그건 중요하지 않고, 너가 하던 게임에서 죽으면 어떻게 됐었는지 기억해?', note: '붉은 텍스트, 느리고 묵직한 느낌으로 떨리는 텍스트.' },
+            { emotion: 'surprised', speaker: 'SEOA', text: '그거야.. 리스폰이 되죠..?', note: '살짝 떨리는 텍스트 연출' },
+            { emotion: 'surprised', speaker: 'DEMON', text: '여긴 달라. 너가 게임에서 죽으면 현실세계의 너도 죽게되거든.', note: '붉은 텍스트, 느리고 묵직한 느낌으로 떨리는 텍스트.' },
+            { emotion: 'sad', speaker: 'SEOA', text: '뭐라구요..?', note: '살짝 떨리는 느낌의 텍스트 연출' },
+            { emotion: 'basic', speaker: 'DEMON', text: '말 그대로 현실의 너의 육체가 내 것이 되는 것이지.', note: '붉은 텍스트, 느리고 묵직한 느낌으로 떨리는 텍스트.' },
+            { emotion: 'sad', speaker: 'SEOA', text: '이게 정말이라면, 목숨이 걸린 게임이란거잖아..?', note: '살짝 떨리는 느낌의 텍스트' },
+            { emotion: 'angry', speaker: 'SEOA', text: '이왕 이렇게된거 끝까지 살아남아주겠어!', note: '당찬게 뛰어오르는 느낌의 텍스트' }
+        ]
+    };
+    const BOSS_ENDING_DIALOGUE = {
+        id: 'bossend',
+        title: '보스 엔딩',
+        ui: {
+            seoa: { scale: 1.62, xPx: 0, yPx: 52 },
+            demon: { scale: 0.72, xPx: 0, yPx: -130 },
+            dialogueBox: { leftPx: 165, rightPx: 115, bottomPx: 131, minHeightPx: 122 }
+        },
+        lines: [
+            { emotion: 'basic', speaker: 'SEOA', text: '휴.. 드디어 끝난건가?', note: '떨리는 느낌의 텍스트' },
+            { emotion: 'angry', speaker: 'SEOA', text: '덕분에 죽을뻔했다? 이 못생긴 눈깔 괴물아.', note: '화내는 텍스트' },
+            { emotion: 'basic', speaker: 'DEMON', text: '...졌군', note: '떨리는 느낌의 텍스트' },
+            { emotion: 'basic', speaker: 'DEMON', text: '이렇게 끝인가..', note: '떨리는 느낌의 텍스트' },
+            { emotion: 'basic', speaker: 'SEOA', text: '왜 내 육체를 원했어?', note: '' },
+            { emotion: 'basic', speaker: 'DEMON', text: '그저 자유를 원했다.. 다시 세상 밖으로 나가고 싶었어..', note: '살짝 떨리는 느낌의 텍스트' },
+            { emotion: 'basic', speaker: 'SEOA', text: '그래도 사람의 육체를 빼앗으면 안되지.', note: '' },
+            { emotion: 'basic', speaker: 'SEOA', text: '덕분에 재밌었어 그래도.', note: '' },
+            { emotion: 'surprised', speaker: 'DEMON', text: '...!', note: '떨리는 느낌의 텍스트' }
+        ]
+    };
     const SEOA_DIALOGUE_WORD_MS = 145;
     const SEOA_DIALOGUE_FORCE_HOLD_MS = 1000;
     const SEOA_LANDING_CINEMATIC = {
@@ -2024,7 +2745,8 @@
         blinkMs: 160,
         standDuration: 640,
         zoom: 1.85,
-        proneHeight: 28
+        proneHeight: 28,
+        proneYOffsetPx: 9
     };
     const SEOA_PRONE_CLOSED_IMG = new Image();
     SEOA_PRONE_CLOSED_IMG.src = 'Resources/Sprite_seoa2.png';
@@ -2069,6 +2791,183 @@
         context.fillRect(x + size - 5, y + 3, 2, size - 6);
     }
 
+    function unlockAudio() {
+        if (audioUnlocked) return;
+        audioUnlocked = true;
+        Object.values(bgmTracks).forEach(track => {
+            try {
+                track.load();
+            } catch (error) {}
+        });
+        Object.values(sfxTracks).forEach(track => {
+            try {
+                track.load();
+            } catch (error) {}
+        });
+        if (pendingBgmKey) {
+            playBgm(pendingBgmKey);
+        }
+    }
+
+    function playSfx(key) {
+        let source = sfxTracks[key];
+        if (!source) return;
+        let effect = source.cloneNode();
+        effect.volume = SFX_CONFIG[key].volume;
+        effect.play().catch(() => {});
+    }
+
+    function playStartSfx() {
+        playSfx('start');
+    }
+
+    function isInputSfxSuppressed() {
+        return screenTransitioning || seoaLandingCinematic.active || gameState === 'intro' || gameState === 'tutorialLanding';
+    }
+
+    let lastInputAdvanceSfxAt = 0;
+
+    function playMenuSfx() {
+        if (isInputSfxSuppressed()) return;
+        playSfx('menu');
+    }
+
+    function playInputAdvanceSfx() {
+        let now = performance.now();
+        if (now - lastInputAdvanceSfxAt < 120) return;
+        lastInputAdvanceSfxAt = now;
+        playMenuSfx();
+    }
+
+    function playDialogueSfx() {
+        playSfx('dialogue');
+    }
+
+    function updateDeathHeartbeat(unscaledDt) {
+        if (!isDying || isGameOver) return;
+        deathHeartbeatTimer -= unscaledDt;
+        if (deathHeartbeatTimer > 0) return;
+
+        playSfx('deathHeartbeat');
+        let progress = Math.max(0, Math.min(deathTimer / DEATH_DURATION, 1));
+        let rush = progress * progress;
+        deathHeartbeatTimer = DEATH_HEARTBEAT_START_INTERVAL
+            + (DEATH_HEARTBEAT_END_INTERVAL - DEATH_HEARTBEAT_START_INTERVAL) * rush;
+    }
+
+    function setBgmVolume(key, ratio = 1) {
+        let track = bgmTracks[key];
+        if (!track) return;
+        track.volume = BGM_CONFIG[key].volume * Math.max(0, Math.min(ratio, 1));
+    }
+
+    function stopBgmLoopWatcher() {
+        if (bgmLoopFrameId !== null) {
+            cancelAnimationFrame(bgmLoopFrameId);
+            bgmLoopFrameId = null;
+        }
+    }
+
+    function startBgmLoopWatcher(key) {
+        stopBgmLoopWatcher();
+        bgmFadeInStart = performance.now();
+
+        let tick = () => {
+            let track = bgmTracks[key];
+            if (!track || currentBgmKey !== key) {
+                bgmLoopFrameId = null;
+                return;
+            }
+
+            let now = performance.now();
+            let fadeInRatio = Math.min((now - bgmFadeInStart) / BGM_LOOP_FADE_MS, 1);
+            let volumeRatio = fadeInRatio;
+
+            if (Number.isFinite(track.duration) && track.duration > BGM_LOOP_FADE_MS / 500) {
+                let remaining = track.duration - track.currentTime;
+                if (remaining <= BGM_LOOP_RESET_GAP) {
+                    track.currentTime = 0;
+                    bgmFadeInStart = now;
+                    volumeRatio = 0;
+                    track.play().catch(() => {});
+                } else if (remaining <= BGM_LOOP_FADE_MS / 1000) {
+                    volumeRatio = Math.min(volumeRatio, Math.max(remaining / (BGM_LOOP_FADE_MS / 1000), 0));
+                }
+            }
+
+            setBgmVolume(key, volumeRatio);
+            bgmLoopFrameId = requestAnimationFrame(tick);
+        };
+
+        bgmLoopFrameId = requestAnimationFrame(tick);
+    }
+
+    function playBgm(key) {
+        let nextTrack = bgmTracks[key];
+        if (!nextTrack) return;
+        pendingBgmKey = key;
+        if (!audioUnlocked) return;
+        if (currentBgmKey === key && !nextTrack.paused) {
+            startBgmLoopWatcher(key);
+            return;
+        }
+
+        Object.entries(bgmTracks).forEach(([trackKey, track]) => {
+            if (trackKey !== key) {
+                track.pause();
+                track.currentTime = 0;
+                setBgmVolume(trackKey, 1);
+            }
+        });
+
+        currentBgmKey = key;
+        nextTrack.currentTime = 0;
+        setBgmVolume(key, 0);
+        startBgmLoopWatcher(key);
+        nextTrack.play().catch(() => {});
+    }
+
+    function stopBgm() {
+        stopBgmLoopWatcher();
+        pendingBgmKey = null;
+        currentBgmKey = null;
+        Object.values(bgmTracks).forEach(track => {
+            track.pause();
+            track.currentTime = 0;
+        });
+        Object.keys(bgmTracks).forEach(key => setBgmVolume(key, 1));
+    }
+
+    function playBossPhaseBgm() {
+        if (!isBossLevel()) return false;
+        if (bossPhase === 0) {
+            playBgm('bossPhase1');
+            return true;
+        }
+        if (bossPhase === 1) {
+            playBgm('bossPhase2');
+            return true;
+        }
+        if (bossPhase >= 2) {
+            playBgm('bossPhase3');
+            return true;
+        }
+        playBgm('bossPhase1');
+        return true;
+    }
+
+    function playBgmForCurrentLevel() {
+        if (currentLevel && currentLevel.isBoss) {
+            playBossPhaseBgm();
+            return;
+        }
+        if (currentLevel && (currentLevel.id === 'tutorial' || currentLevel.id === 'level-01')) {
+            playBgm('ingame');
+            return;
+        }
+        stopBgm();
+    }
+
     // ==============================================
     // [점수 및 밸런스 설정] - 직접 수치를 조정할 수 있습니다
     // ==============================================
@@ -2089,10 +2988,11 @@
     const TUTORIAL_STEPS = [
         { key: 'move', title: '목표로 이동하세요!', text: '이동 : A / D' },
         { key: 'jump', title: '목표로 이동하세요!', text: '점프 : W / spacebar' },
+        { key: 'wall-kick', title: '목표로 이동하세요!', text: '벽차기 : 벽에 붙어서 Spacebar' },
         { key: 'hack-select', title: '블록을 클릭하세요!', text: '블록 선택 : 클릭' },
         { key: 'hack-place', title: '조작하여 설치하세요!', text: '블록 설치 : A D / W / S / Spacebar' },
-        { key: 'hold-store', title: '블록을 저장할 수 있습니다!', text: '블록 홀드 : F' },
-        { key: 'hold-place', title: '조작하여 설치하세요!', text: '홀드 꺼내기 : F' },
+        { key: 'hold-store', title: '블록을 저장할 수 있습니다!', text: '블록 홀드 : F / C' },
+        { key: 'hold-place', title: '조작하여 설치하세요!', text: '홀드 꺼내기 : F / C' },
         { key: 'laser', title: '레이저를 피하세요!', text: '약 2초뒤 레이저가 옵니다..' },
         { key: 'complete', title: '튜토리얼 완료!', text: '축하합니다.' }
     ];
@@ -2140,8 +3040,11 @@
     let gameState = 'menu';
     let currentLevelIndex = 0;
     let highestUnlockedLevel = 0;
+    let currentBossStartPhase = 0;
     let score = 0;
     let comboCount = 0;
+    let comboTimer = 0;
+    let comboMaxTimer = 0;
     let survivalTimer = 0;
     let currentLevel = LEVELS[0];
     let levelClearShown = false;
@@ -2174,6 +3077,7 @@
     let bossHudShakeTimer = 0;
     let bossHudShakeAmount = 0;
     let bossAttackStars = [];
+    let bossHandComboCooldown = 0;
     let bossParts = [
         { id: 'left', label: 'L-HAND', hp: 0, maxHp: 0, alive: true },
         { id: 'right', label: 'R-HAND', hp: 0, maxHp: 0, alive: true },
@@ -2193,8 +3097,37 @@
         laneCol: 4,
         laneX: 4 * BLOCK_SIZE,
         laneW: BLOCK_SIZE,
+        comboStep: 0,
+        hasImpacted: false,
         y: 210
     };
+    let bossPhaseRoarTimer = 0;
+    let bossHandComboRoarTimer = 0;
+    let bossPhase3RefillTimer = 0;
+    let bossPhase3TransformTimer = 0;
+    let bossPhase3Psychic = {
+        phase: 'idle',
+        timer: 0,
+        cooldown: 20,
+        clearedLines: 0,
+        targetClears: 2,
+        alertTimer: 0,
+        pullStartX: 0,
+        pullStartY: 0
+    };
+    let bossEyeGlitchTimer = 0;
+    const BOSS_PHASE3_REFILL_DURATION = 1.4;
+    const BOSS_PHASE3_TRANSFORM_DURATION = 2.6;
+    const BOSS_PHASE3_PULL_DURATION = 1.15;
+    const BOSS_PHASE3_PSYCHIC_COOLDOWN = 0;
+    const BOSS_PHASE3_PSYCHIC_DURATION = 90;
+    const BOSS_PHASE3_PSYCHIC_TARGET_CLEARS = Infinity;
+    const BOSS_PHASE3_PSYCHIC_ALERT_DURATION = 1.35;
+    const BOSS_PHASE3_SPAWN_INTERVAL = 1.2;
+    const BOSS_PHASE3_TARGET_HP = 6000;
+    const BOSS_PHASE3_MIN_DROP_INTERVAL = 0.26;
+    const BOSS_VERTICAL_LASER_TRACK_TIME = 1.5;
+    const BOSS_VERTICAL_LASER_LOCK_TIME = 0.5;
     let seoaDialogue = {
         active: false,
         config: null,
@@ -2204,6 +3137,7 @@
         completedAt: 0,
         onComplete: null,
         pendingImageSrc: null,
+        pendingImageTimer: null,
         closing: false
     };
     let seoaLandingCinematic = {
@@ -2259,6 +3193,13 @@
     function setHoldPanelHighlight(active) {
         if (!holdPanel) return;
         holdPanel.classList.toggle('hold-highlight', active);
+    }
+
+    function consumeHoldKeyPressed() {
+        let pressed = keysPressed['KeyF'] || keysPressed['KeyC'];
+        keysPressed['KeyF'] = false;
+        keysPressed['KeyC'] = false;
+        return pressed;
     }
 
     function spawnHeldPiece(type) {
@@ -2364,6 +3305,9 @@
     let deathCause = null;
     let deathTimer = 0;
     const DEATH_DURATION = 1.6; // 1.6초 카메라 연출 지속시간
+    let deathHeartbeatTimer = 0;
+    const DEATH_HEARTBEAT_START_INTERVAL = 0.42;
+    const DEATH_HEARTBEAT_END_INTERVAL = 0.12;
     
     let lastTime = 0;
     let enemySpawnTimer = 0;
@@ -2379,6 +3323,21 @@
     let introStartAt = 0;
     let introEndAt = 0;
     let introPhases = [];
+    const INTRO_UI_CONFIG = {
+        yVh: 45,
+        xVw: 0,
+        sizeVw: 3,
+        stripeOpacity: 0.8,
+        numberDurationMs: 550,
+        startDurationMs: 1050
+    };
+    const PHASE3_GUIDE_CONFIG = {
+        text: '제한시간 01:30\n방향키 & c 활성화',
+        xVw: 0,
+        yVh: 50,
+        sizeVw: 2.2,
+        durationMs: 1350
+    };
     let bossIntro = {
         active: false,
         timer: 0,
@@ -2448,16 +3407,23 @@
     }
 
     function startLaserTelegraph() {
+        playSfx('laserWarning');
         laserAttack.phase = 'telegraph';
         laserAttack.timer = 0;
+        laserAttack.owner = isBossLevel() && bossPhase === 0 ? 'boss' : 'level';
+        laserAttack.telegraphDuration = 1.5;
         laserAttack.row = getLaserTelegraphRow();
         laserAttack.y = laserAttack.row * BLOCK_SIZE + BLOCK_SIZE / 2;
     }
 
     function startLaserFire() {
+        playSfx('laserFire');
         laserAttack.phase = 'fire';
         laserAttack.timer = 0;
+        laserAttack.width = isBossLevel() && bossPhase === 0 ? 240 : 180;
+        laserAttack.speed = isBossLevel() && bossPhase === 0 ? 700 : 950;
         laserAttack.x = -laserAttack.width;
+        laserAttack.fireDuration = (canvas.width + laserAttack.width * 2) / laserAttack.speed;
     }
 
     function finishLaserAttack() {
@@ -2473,13 +3439,33 @@
         return currentLevel && currentLevel.isBoss;
     }
 
+    function isBossPhase3() {
+        return isBossLevel() && bossPhase >= 2 && bossHp > 0 && gameState === 'playing';
+    }
+
+    function isBossPhase3Transforming() {
+        return isBossPhase3() && bossPhase3TransformTimer > 0;
+    }
+
+    function isBossPhase3PsychicActive() {
+        return isBossPhase3() && bossPhase3Psychic.phase === 'active';
+    }
+
+    function isBossPhase3PsychicPulling() {
+        return isBossPhase3() && bossPhase3Psychic.phase === 'pull';
+    }
+
+    function isBossPhase3PlayerControlled() {
+        return isBossPhase3PsychicPulling() || isBossPhase3PsychicActive();
+    }
+
     function resetBossState() {
         bossMaxHp = isBossLevel() ? currentLevel.bossHp : 0;
         let partHp = Math.floor(bossMaxHp / 3);
         bossParts = [
+            { id: 'eye', label: 'EYE', hp: bossMaxHp - partHp * 2, maxHp: bossMaxHp - partHp * 2, alive: isBossLevel() },
             { id: 'left', label: 'L-HAND', hp: partHp, maxHp: partHp, alive: isBossLevel() },
-            { id: 'right', label: 'R-HAND', hp: partHp, maxHp: partHp, alive: isBossLevel() },
-            { id: 'eye', label: 'EYE', hp: bossMaxHp - partHp * 2, maxHp: bossMaxHp - partHp * 2, alive: isBossLevel() }
+            { id: 'right', label: 'R-HAND', hp: partHp, maxHp: partHp, alive: isBossLevel() }
         ];
         bossHp = bossParts.reduce((sum, part) => sum + part.hp, 0);
         bossPhase = 0;
@@ -2490,6 +3476,24 @@
         bossHudShakeTimer = 0;
         bossHudShakeAmount = 0;
         bossAttackStars = [];
+        comboTimer = 0;
+        comboMaxTimer = 0;
+        bossHandComboCooldown = 0;
+        bossPhaseRoarTimer = 0;
+        bossHandComboRoarTimer = 0;
+        bossPhase3RefillTimer = 0;
+        bossPhase3TransformTimer = 0;
+        bossPhase3Psychic = {
+            phase: 'idle',
+            timer: 0,
+            cooldown: BOSS_PHASE3_PSYCHIC_COOLDOWN,
+            clearedLines: 0,
+            targetClears: BOSS_PHASE3_PSYCHIC_TARGET_CLEARS,
+            alertTimer: 0,
+            pullStartX: 0,
+            pullStartY: 0
+        };
+        bossEyeGlitchTimer = 0;
         bossEye.x = canvas.width / 2;
         bossEye.y = isBossLevel() ? -84 : 138;
         bossEye.targetX = bossEye.x;
@@ -2510,6 +3514,10 @@
             laneCol: 4,
             laneX: 4 * BLOCK_SIZE,
             laneW: BLOCK_SIZE,
+            comboStep: 0,
+            hasImpacted: false,
+            targetCol: 4,
+            targetRow: ROWS - 1,
             y: 210
         };
         bossHands[0].attackX = bossHands[0].x;
@@ -2524,13 +3532,78 @@
         let nextPhase = Math.min(defeatedParts, 2);
         if (nextPhase > bossPhase) {
             bossPhase = nextPhase;
-            bossStunTimer = Math.max(bossStunTimer, 0.55);
-            shakeAmount = Math.max(shakeAmount, 22 + bossPhase * 8);
+            currentBossStartPhase = bossPhase;
+            playSfx('bossPhase');
+            playSfx('bossRoar');
+            playBossPhaseBgm();
+            clearBossBattleBlocksWithParticles();
+            board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+            enemies = [];
+            selectedBlock = null;
+            controlMode = 'CHARACTER';
+            enemySpawnTimer = 0.25;
+            bossAttack.phase = 'idle';
+            bossAttack.type = 'idle';
+            bossAttack.timer = 0;
+            bossAttack.comboStep = 0;
+            bossHandComboCooldown = 0;
+            laserAttack.phase = 'idle';
+            laserAttack.timer = 0;
+            laserAttack.cooldown = 999;
+            bossPhaseRoarTimer = bossPhase === 1 ? 1.35 : 1.7;
+            bossStunTimer = Math.max(bossStunTimer, bossPhaseRoarTimer);
+            bossAttackTimer = bossPhase === 1 ? 1.1 : 0.35;
+            shakeAmount = Math.max(shakeAmount, bossPhase === 1 ? 54 : 72);
+            if (bossPhase === 1) {
+                bossEyeGlitchTimer = 1.25;
+                emitBossEyeGlitchParticles(42);
+            }
+            if (bossPhase >= 1) {
+                document.body.classList.add('critical-zone');
+            }
+            if (bossPhase === 2) {
+                bossPhase3TransformTimer = BOSS_PHASE3_TRANSFORM_DURATION;
+                bossPhase3Psychic.phase = 'idle';
+                bossPhase3Psychic.timer = 0;
+                bossPhase3Psychic.clearedLines = 0;
+                bossPhase3Psychic.targetClears = BOSS_PHASE3_PSYCHIC_TARGET_CLEARS;
+                bossPhase3Psychic.alertTimer = 0;
+                bossPhase3Psychic.cooldown = BOSS_PHASE3_PSYCHIC_COOLDOWN;
+                bossPhase3Psychic.pullStartX = 0;
+                bossPhase3Psychic.pullStartY = 0;
+                bossAttackStars = [];
+                comboCount = 0;
+                comboTimer = 0;
+                comboMaxTimer = 0;
+                bossPhaseRoarTimer = BOSS_PHASE3_TRANSFORM_DURATION;
+                bossStunTimer = Math.max(bossStunTimer, BOSS_PHASE3_TRANSFORM_DURATION);
+                let finalPart = getActiveBossPart();
+                if (finalPart) {
+                    finalPart.maxHp = getBossPhase3TargetHp();
+                    finalPart.hp = finalPart.maxHp;
+                    bossHp = bossParts.reduce((sum, item) => sum + item.hp, 0);
+                    bossMaxHp = bossParts.reduce((sum, item) => sum + item.maxHp, 0);
+                    bossPhase3RefillTimer = BOSS_PHASE3_REFILL_DURATION;
+                }
+                enemySpawnTimer = 0.05;
+            }
         }
     }
 
     function getActiveBossPart() {
         return bossParts.find(part => part.alive) || null;
+    }
+
+    function getBossPhase3TargetHp() {
+        return BOSS_PHASE3_TARGET_HP;
+    }
+
+    function getBossPhase3DropInterval() {
+        let finalPart = getActiveBossPart();
+        let baseInterval = currentLevel?.dropInterval || 0.66;
+        if (!finalPart || finalPart.maxHp <= 0) return baseInterval;
+        let damageRatio = 1 - Math.max(0, Math.min(finalPart.hp / finalPart.maxHp, 1));
+        return baseInterval - (baseInterval - BOSS_PHASE3_MIN_DROP_INTERVAL) * damageRatio;
     }
 
     function getBossPartTarget(partId) {
@@ -2539,13 +3612,33 @@
         return { x: bossEye.x, y: bossEye.y };
     }
 
-    function damageBoss(clearedLines, origin) {
+    function emitBossEyeGlitchParticles(count = 24) {
+        for (let i = 0; i < count; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let dist = bossEye.radius * (0.35 + Math.random() * 1.15);
+            let particle = new Particle(
+                bossEye.x + Math.cos(angle) * dist,
+                bossEye.y + Math.sin(angle) * dist,
+                i % 3 === 0 ? '#ffffff' : (i % 3 === 1 ? '#ff3030' : '#ff99cc')
+            );
+            particle.speedX = (Math.random() - 0.5) * 9;
+            particle.speedY = (Math.random() - 0.5) * 7;
+            particle.size = Math.random() * 3 + 1;
+            particle.decay = 0.018 + Math.random() * 0.018;
+            particles.push(particle);
+        }
+    }
+
+    function damageBoss(clearedLines, origin, scoreDamage = null, comboMultiplier = 1) {
         if (!isBossLevel() || bossHp <= 0 || levelClearShown) return;
         let targetPart = getActiveBossPart();
         if (!targetPart) return;
         const damageByLines = [0, 90, 210, 380, 640];
         let damage = damageByLines[Math.min(clearedLines, 4)] || clearedLines * 170;
-        damage += comboCount * 20;
+        damage = Math.floor((damage + comboCount * 20) * comboMultiplier);
+        if (isBossPhase3()) {
+            damage = Math.max(0, Math.floor(scoreDamage ?? damage));
+        }
         let start = origin || { x: canvas.width / 2, y: canvas.height - 120 };
         bossAttackStars.push({
             x: start.x,
@@ -2554,10 +3647,11 @@
             startY: start.y,
             targetId: targetPart.id,
             damage,
+            comboMultiplier,
             clearedLines,
             timer: 0,
             duration: 0.72,
-            size: 5 + clearedLines * 2,
+            size: 5 + clearedLines * 2 + (comboMultiplier - 1) * 3,
             hit: false
         });
         bossDamageTextTimer = 1.05;
@@ -2580,28 +3674,205 @@
             part.alive = false;
         }
         bossHp = bossParts.reduce((sum, item) => sum + item.hp, 0);
+        if (bossHp > 0) playSfx('bossHurt');
         bossLastDamage = star.damage;
         bossDamageTextTimer = 1.05;
+        let comboMultiplier = star.comboMultiplier || 1;
         bossStunTimer = Math.max(bossStunTimer, star.clearedLines >= 3 ? 1.15 : 0.38);
         bossHudShakeTimer = 0.42;
-        bossHudShakeAmount = 9 + star.clearedLines * 4;
-        shakeAmount = Math.max(shakeAmount, 18 + star.clearedLines * 12);
+        bossHudShakeAmount = 9 + star.clearedLines * 4 + (comboMultiplier - 1) * 5;
+        shakeAmount = Math.max(shakeAmount, 18 + star.clearedLines * 12 + (comboMultiplier - 1) * 9);
 
         let target = getBossPartTarget(star.targetId);
-        for (let i = 0; i < 34 + star.clearedLines * 18; i++) {
-            particles.push(new Particle(target.x + (Math.random() - 0.5) * 54, target.y + (Math.random() - 0.5) * 36, i % 3 === 0 ? '#fff06a' : '#ff3333'));
+        for (let i = 0; i < 34 + star.clearedLines * 18 + (comboMultiplier - 1) * 20; i++) {
+            let particle = new Particle(
+                target.x + (Math.random() - 0.5) * (54 + comboMultiplier * 8),
+                target.y + (Math.random() - 0.5) * (36 + comboMultiplier * 6),
+                i % 4 === 0 ? '#ffffff' : (i % 3 === 0 ? '#fff06a' : '#ff3333')
+            );
+            particle.size *= 1 + (comboMultiplier - 1) * 0.18;
+            particle.decay *= 0.86;
+            particles.push(particle);
         }
 
         updateBossPhase();
         if (bossHp <= 0) {
-            bossAttack.phase = 'idle';
-            bossStunTimer = 1.8;
-            showLevelClear();
+            finishBossDefeat();
         }
     }
 
+    function damageBossDirect(amount, origin) {
+        if (!isBossLevel() || bossHp <= 0 || levelClearShown) return;
+        let part = getActiveBossPart();
+        if (!part) return;
+
+        part.hp = Math.max(0, part.hp - amount);
+        bossHp = bossParts.reduce((sum, item) => sum + item.hp, 0);
+        if (bossHp > 0) playSfx('bossHurt');
+        bossLastDamage = amount;
+        bossDamageTextTimer = 0.8;
+        bossHudShakeTimer = 0.32;
+        bossHudShakeAmount = 8;
+        shakeAmount = Math.max(shakeAmount, 12);
+
+        let target = getBossPartTarget(part.id);
+        for (let i = 0; i < 18; i++) {
+            particles.push(new Particle(
+                target.x + (Math.random() - 0.5) * 46,
+                target.y + (Math.random() - 0.5) * 32,
+                i % 2 ? '#fff06a' : '#ff3333'
+            ));
+        }
+        if (origin) showFloatingScore(amount, origin.x, origin.y);
+
+        if (part.hp <= 0) {
+            part.alive = false;
+            bossHp = bossParts.reduce((sum, item) => sum + item.hp, 0);
+            updateBossPhase();
+            if (bossHp <= 0) {
+                finishBossDefeat();
+            }
+        }
+    }
+
+    function finishBossDefeat() {
+        if (bossPhase >= 2) {
+            playSfx('bossPhase3Death');
+        }
+        bossPhase3Psychic.phase = 'idle';
+        bossPhase3Psychic.timer = 0;
+        bossPhase3Psychic.alertTimer = 0;
+        updateBossPhase3PsychicUi(0);
+        bossAttack.phase = 'idle';
+        bossAttack.type = 'idle';
+        bossStunTimer = 1.8;
+        startSeoaDialogue(BOSS_ENDING_DIALOGUE, () => {
+            showEndingScreen();
+        });
+    }
+
+    function getBossStackedBlockCells() {
+        let cells = [];
+        for (let r = HIDDEN_ROWS; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (board[r][c]) cells.push({ row: r, col: c, color: board[r][c] });
+            }
+        }
+        return cells;
+    }
+
+    function getBossTopStackedBlockRow() {
+        let cells = getBossStackedBlockCells();
+        if (cells.length === 0) return null;
+        return Math.min(...cells.map(cell => cell.row));
+    }
+
+    function chooseBossBlockSmashTarget() {
+        let cells = getBossStackedBlockCells();
+        if (cells.length === 0) return null;
+        cells.sort((a, b) => b.row - a.row);
+        let lowestRow = cells[0].row;
+        let lowerBand = cells.filter(cell => cell.row >= Math.max(HIDDEN_ROWS, lowestRow - 4));
+        return lowerBand[Math.floor(Math.random() * lowerBand.length)];
+    }
+
+    function emitBossBlockBreakParticles(row, col, color = ENEMY_COLOR) {
+        let px = col * BLOCK_SIZE + BLOCK_SIZE / 2;
+        let py = row * BLOCK_SIZE + BLOCK_SIZE / 2;
+        for (let i = 0; i < 14; i++) {
+            particles.push(new Particle(px, py, i % 3 === 0 ? '#ffffff' : color));
+        }
+    }
+
+    function removeBossBoardCell(row, col) {
+        if (row < 0 || row >= ROWS || col < 0 || col >= COLS || !board[row][col]) return false;
+        let color = board[row][col];
+        emitBossBlockBreakParticles(row, col, color);
+        board[row][col] = 0;
+        return true;
+    }
+
+    function clearBossBattleBlocksWithParticles() {
+        for (let r = HIDDEN_ROWS; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                removeBossBoardCell(r, c);
+            }
+        }
+        for (let enemy of enemies) {
+            if (enemy.deleted) continue;
+            for (let rect of enemy.getRects()) {
+                for (let i = 0; i < 5; i++) {
+                    particles.push(new Particle(
+                        rect.x + Math.random() * rect.w,
+                        rect.y + Math.random() * rect.h,
+                        i % 2 ? getEnemyColor(enemy.type) : '#ffffff'
+                    ));
+                }
+            }
+            enemy.deleted = true;
+        }
+    }
+
+    function clearBossBlockSmashTarget(targetRow, targetCol, count = 4) {
+        let cells = getBossStackedBlockCells();
+        if (cells.length === 0) return 0;
+        cells.sort((a, b) => {
+            let da = Math.abs(a.row - targetRow) + Math.abs(a.col - targetCol);
+            let db = Math.abs(b.row - targetRow) + Math.abs(b.col - targetCol);
+            if (da !== db) return da - db;
+            return b.row - a.row;
+        });
+        let removed = 0;
+        for (let cell of cells) {
+            if (removed >= count) break;
+            if (removeBossBoardCell(cell.row, cell.col)) removed++;
+        }
+        if (removed > 0) {
+            applyBossBoardGravity();
+            shakeAmount = Math.max(shakeAmount, 20);
+        }
+        return removed;
+    }
+
     function startBossAttack() {
+        if (bossPhase === 0 && laserAttack.phase !== 'idle') {
+            bossAttack.phase = 'idle';
+            bossAttack.type = 'idle';
+            bossAttack.timer = 0;
+            bossAttackTimer = 0.35;
+            return;
+        }
+
+        if (bossPhase >= 2) {
+            bossAttack.phase = 'idle';
+            bossAttack.type = 'idle';
+            bossAttack.timer = 0;
+            bossAttackTimer = 0.8;
+            return;
+        }
+
+        if (bossPhase === 1) {
+            if (bossHandComboCooldown <= 0) {
+                playSfx('bossHandComboRoar');
+                bossHandComboRoarTimer = 0.75;
+                shakeAmount = Math.max(shakeAmount, 18);
+                bossAttack.type = 'hand-combo';
+                bossAttack.phase = 'telegraph';
+                bossAttack.timer = 0;
+                bossAttack.comboStep = 0;
+                bossAttack.duration = 0.42;
+                return;
+            }
+
+            bossAttack.phase = 'idle';
+            bossAttack.type = 'idle';
+            bossAttack.timer = 0;
+            bossAttackTimer = 0.8;
+            return;
+        }
+
         bossAttack.type = 'laser';
+        playSfx('bossWarning');
         bossAttack.phase = 'telegraph';
         bossAttack.timer = 0;
         bossAttack.side = Math.random() < 0.5 ? -1 : 1;
@@ -2611,18 +3882,302 @@
         if (verticalLaser) {
             bossAttack.type = 'vertical-laser';
             bossAttack.phase = 'telegraph';
-            bossAttack.duration = 0.72;
+            bossAttack.duration = 0.5;
             bossAttack.laneCol = Math.max(0, Math.min(COLS - 1, Math.floor(bossEye.x / BLOCK_SIZE)));
-            bossAttack.laneX = bossEye.x - BLOCK_SIZE / 2;
+            bossAttack.laneX = Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
             bossAttack.laneW = BLOCK_SIZE;
+            bossAttack.lockedEyeX = bossEye.x;
+            bossAttack.lockedEyeY = bossEye.y;
+            bossAttack.locked = false;
             return;
         }
         let baseInterval = currentLevel.bossAttackInterval || 4.5;
         bossAttack.phase = 'idle';
         bossAttack.type = 'idle';
         bossAttack.timer = 0;
-        bossAttackTimer = baseInterval;
+        bossAttackTimer = baseInterval + 1.5;
         startLaserTelegraph();
+    }
+
+    function getBossPhase3CoreRect() {
+        let pulse = Math.sin(performance.now() / 180) * 4;
+        return {
+            x: canvas.width / 2 - BLOCK_SIZE * 2.25,
+            y: -8 + pulse,
+            w: BLOCK_SIZE * 4.5,
+            h: BLOCK_SIZE * 2.7
+        };
+    }
+
+    function getBossPhase3PlayerTrapPosition() {
+        return {
+            x: canvas.width / 2 - (player ? player.w / 2 : 9),
+            y: Math.max(24, HIDDEN_ROWS * BLOCK_SIZE - (player ? player.h : 26) - 4)
+        };
+    }
+
+    function emitBossPhase3TransformParticles(count = 8) {
+        let core = getBossPhase3CoreRect();
+        let cx = core.x + core.w / 2;
+        let cy = core.y + core.h / 2;
+        for (let i = 0; i < count; i++) {
+            let sourceIndex = i % 3;
+            let sourceX = sourceIndex === 0 ? bossEye.x : bossHands[sourceIndex - 1].x + bossHands[sourceIndex - 1].w / 2;
+            let sourceY = sourceIndex === 0 ? bossEye.y : bossHands[sourceIndex - 1].y + bossHands[sourceIndex - 1].h / 2;
+            let p = new Particle(
+                lerp(sourceX, cx, Math.random() * 0.65),
+                lerp(sourceY, cy, Math.random() * 0.65),
+                i % 3 === 0 ? '#ffffff' : (i % 3 === 1 ? '#ff3030' : '#ff99cc')
+            );
+            p.speedX = (cx - p.x) * 0.015 + (Math.random() - 0.5) * 5;
+            p.speedY = (cy - p.y) * 0.015 + (Math.random() - 0.5) * 4;
+            p.size = Math.random() * 4 + 2;
+            p.decay = 0.014 + Math.random() * 0.012;
+            particles.push(p);
+        }
+    }
+
+    function getBossPhase3LowestFloatingEnemy() {
+        let candidates = enemies.filter(enemy => enemy && !enemy.deleted && !enemy.locked);
+        if (candidates.length === 0) return null;
+        candidates.sort((a, b) => {
+            let aBottom = Math.max(...a.getRects().map(rect => rect.y + rect.h));
+            let bBottom = Math.max(...b.getRects().map(rect => rect.y + rect.h));
+            return bBottom - aBottom;
+        });
+        return candidates[0];
+    }
+
+    function positionBossPhase3EnemyAtSpawn(enemy) {
+        let maxR = 0;
+        for (let r = 0; r < enemy.matrix.length; r++) {
+            for (let c = 0; c < enemy.matrix[r].length; c++) {
+                if (enemy.matrix[r][c]) maxR = Math.max(maxR, r);
+            }
+        }
+        enemy.y = 30 - (maxR + 1) * BLOCK_SIZE;
+    }
+
+    function spawnBossPhase3TelekinesisEnemy() {
+        let enemy = new EnemyPiece();
+        positionBossPhase3EnemyAtSpawn(enemy);
+        enemies.push(enemy);
+        enemySpawnTimer = getCurrentSpawnInterval();
+        return enemy;
+    }
+
+    function forceBossPhase3HackingTarget() {
+        if (!isBossPhase3PsychicActive()) return;
+        if (selectedBlock && !selectedBlock.deleted && !selectedBlock.locked) {
+            selectedBlock.isGhost = true;
+            selectedBlock.dropInterval = getBossPhase3DropInterval();
+            controlMode = 'BLOCK';
+            return;
+        }
+        let target = getBossPhase3LowestFloatingEnemy();
+        if (!target) target = spawnBossPhase3TelekinesisEnemy();
+        if (!target) return;
+
+        if (selectedBlock && selectedBlock !== target && !selectedBlock.locked && !selectedBlock.deleted) {
+            selectedBlock.isGhost = false;
+        }
+        selectedBlock = target;
+        selectedBlock.isGhost = true;
+        selectedBlock.dropInterval = getBossPhase3DropInterval();
+        selectedBlock.dropTimer = 0;
+        controlMode = 'BLOCK';
+    }
+
+    function startBossPhase3PsychicPattern() {
+        if (levelClearShown || isDying || isGameOver) return;
+        bossPhase3Psychic.phase = 'active';
+        bossPhase3Psychic.timer = 0;
+        bossPhase3Psychic.clearedLines = 0;
+        bossPhase3Psychic.targetClears = BOSS_PHASE3_PSYCHIC_TARGET_CLEARS;
+        bossPhase3Psychic.alertTimer = BOSS_PHASE3_PSYCHIC_ALERT_DURATION;
+        forceBossPhase3HackingTarget();
+        updateBossPhase3PsychicUi(0);
+        playSfx('bossWarning');
+        shakeAmount = Math.max(shakeAmount, 34);
+    }
+
+    function startBossPhase3PsychicPull() {
+        if (levelClearShown || isDying || isGameOver || !player) return;
+        if (selectedBlock && selectedBlock.isGhost && !selectedBlock.locked && !selectedBlock.deleted) {
+            selectedBlock.isGhost = false;
+        }
+        selectedBlock = null;
+        controlMode = 'CHARACTER';
+        bossPhase3Psychic.phase = 'pull';
+        bossPhase3Psychic.timer = 0;
+        bossPhase3Psychic.clearedLines = 0;
+        bossPhase3Psychic.targetClears = BOSS_PHASE3_PSYCHIC_TARGET_CLEARS;
+        bossPhase3Psychic.alertTimer = 0;
+        bossPhase3Psychic.pullStartX = player.x;
+        bossPhase3Psychic.pullStartY = player.y;
+        player.vx = 0;
+        player.vy = 0;
+        playSfx('bossRoar');
+        playSfx('bossWarning');
+        shakeAmount = Math.max(shakeAmount, 78);
+        bossPhaseRoarTimer = Math.max(bossPhaseRoarTimer, BOSS_PHASE3_PULL_DURATION);
+    }
+
+    function updateBossPhase3PsychicPull(dt) {
+        if (!player) return;
+        bossPhase3Psychic.timer += dt;
+        let target = getBossPhase3PlayerTrapPosition();
+        let progress = Math.max(0, Math.min(bossPhase3Psychic.timer / BOSS_PHASE3_PULL_DURATION, 1));
+        let eased = 1 - Math.pow(1 - progress, 3);
+        player.x = lerp(bossPhase3Psychic.pullStartX, target.x, eased);
+        player.y = lerp(bossPhase3Psychic.pullStartY, target.y, eased);
+        player.vx = 0;
+        player.vy = 0;
+        player.isGrounded = false;
+        keys = {};
+        keysPressed = {};
+        shakeAmount = Math.max(shakeAmount, 18 + (1 - progress) * 26);
+        if (progress >= 1) {
+            player.x = target.x;
+            player.y = target.y;
+            startBossPhase3PsychicPattern();
+        }
+    }
+
+    function finishBossPhase3PsychicPattern(success) {
+        if (selectedBlock && selectedBlock.isGhost && !selectedBlock.locked && !selectedBlock.deleted) {
+            selectedBlock.isGhost = false;
+        }
+        selectedBlock = null;
+        controlMode = 'CHARACTER';
+        bossPhase3Psychic.phase = 'idle';
+        bossPhase3Psychic.timer = 0;
+        bossPhase3Psychic.clearedLines = 0;
+        bossPhase3Psychic.cooldown = BOSS_PHASE3_PSYCHIC_COOLDOWN;
+        bossPhase3Psychic.alertTimer = 0;
+        bossPhase3Psychic.pullStartX = 0;
+        bossPhase3Psychic.pullStartY = 0;
+        keysPressed = {};
+        if (success) {
+            playSfx('combo');
+            shakeAmount = Math.max(shakeAmount, 24);
+        }
+        updateBossPhase3PsychicUi(0);
+    }
+
+    function failBossPhase3PsychicPattern() {
+        if (isGameOver || isSoulStolen) return;
+        if (selectedBlock && selectedBlock.isGhost && !selectedBlock.locked && !selectedBlock.deleted) {
+            selectedBlock.isGhost = false;
+        }
+        selectedBlock = null;
+        controlMode = 'CHARACTER';
+        bossPhase3Psychic.phase = 'failed';
+        bossPhase3Psychic.timer = BOSS_PHASE3_PSYCHIC_DURATION;
+        bossPhase3Psychic.alertTimer = 0;
+        keys = {};
+        keysPressed = {};
+        deathCause = 'boss';
+        playSfx('damage');
+        shakeAmount = Math.max(shakeAmount, 70);
+        updateBossPhase3PsychicUi(0);
+        triggerFinalDeath();
+    }
+
+    function addBossPhase3PsychicClears(lines) {
+        if (!isBossPhase3PsychicActive() || lines <= 0) return;
+        bossPhase3Psychic.clearedLines += lines;
+    }
+
+    function formatBossPhase3Time(seconds) {
+        let safeSeconds = Math.max(0, Math.ceil(seconds));
+        let minutes = Math.floor(safeSeconds / 60);
+        let remain = safeSeconds % 60;
+        return `${minutes}:${String(remain).padStart(2, '0')}`;
+    }
+
+    function updateBossPhase3PsychicUi(dt = 0) {
+        let active = isBossPhase3PsychicActive();
+        if (phase3PsychicUi) {
+            phase3PsychicUi.classList.toggle('active', active);
+            phase3PsychicUi.setAttribute('aria-hidden', active ? 'false' : 'true');
+        }
+        if (phase3HoldTimer) {
+            phase3HoldTimer.classList.remove('active');
+        }
+        if (!active) {
+            if (phase3PsychicAlert) phase3PsychicAlert.classList.remove('show', 'shrink');
+            updatePhase3ComboUi();
+            return;
+        }
+
+        bossPhase3Psychic.alertTimer = Math.max(0, bossPhase3Psychic.alertTimer - dt);
+        let timeRatio = Math.max(0, 1 - bossPhase3Psychic.timer / BOSS_PHASE3_PSYCHIC_DURATION);
+        let timeText = formatBossPhase3Time(BOSS_PHASE3_PSYCHIC_DURATION - bossPhase3Psychic.timer);
+        if (phase3PsychicTime) {
+            phase3PsychicTime.style.height = `${timeRatio * 100}%`;
+        }
+        if (phase3PsychicClear) {
+            phase3PsychicClear.textContent = timeText;
+        }
+        if (phase3HoldTimer) {
+            phase3HoldTimer.textContent = timeText;
+        }
+        if (phase3PsychicAlert) {
+            phase3PsychicAlert.textContent = PHASE3_GUIDE_CONFIG.text;
+            phase3PsychicAlert.style.setProperty('--phase3-guide-x', `${PHASE3_GUIDE_CONFIG.xVw}vw`);
+            phase3PsychicAlert.style.setProperty('--phase3-guide-y', `${PHASE3_GUIDE_CONFIG.yVh}vh`);
+            phase3PsychicAlert.style.setProperty('--phase3-guide-size', `${PHASE3_GUIDE_CONFIG.sizeVw}vw`);
+            phase3PsychicAlert.style.setProperty('--phase3-alert-duration', `${PHASE3_GUIDE_CONFIG.durationMs}ms`);
+            let showAlert = bossPhase3Psychic.alertTimer > 0;
+            phase3PsychicAlert.classList.toggle('show', showAlert);
+            phase3PsychicAlert.classList.toggle('shrink', showAlert && bossPhase3Psychic.alertTimer < 0.48);
+        }
+        updatePhase3ComboUi();
+    }
+
+    function updateBossPhase3Fight(dt) {
+        bossAttack.phase = 'idle';
+        bossAttack.type = 'idle';
+        bossAttack.timer = 0;
+        laserAttack.phase = 'idle';
+        laserAttack.cooldown = 999;
+
+        if (bossStunTimer > 0) bossStunTimer = Math.max(0, bossStunTimer - dt);
+
+        if (bossPhase3TransformTimer > 0) {
+            bossPhase3TransformTimer = Math.max(0, bossPhase3TransformTimer - dt);
+            bossPhase3Psychic.phase = 'idle';
+            bossPhase3Psychic.cooldown = BOSS_PHASE3_PSYCHIC_COOLDOWN;
+            shakeAmount = Math.max(shakeAmount, 36);
+            emitBossPhase3TransformParticles(7);
+            if (bossPhase3TransformTimer === 0) {
+                startBossPhase3PsychicPull();
+            }
+            return;
+        }
+
+        if (bossPhase3Psychic.phase === 'pull') {
+            updateBossPhase3PsychicPull(dt);
+            return;
+        }
+
+        if (bossPhase3Psychic.phase === 'idle') {
+            bossPhase3Psychic.cooldown = Math.max(0, bossPhase3Psychic.cooldown - dt);
+            if (bossPhase3Psychic.cooldown <= 0) startBossPhase3PsychicPull();
+            return;
+        }
+
+        if (bossPhase3Psychic.phase === 'active') {
+            bossPhase3Psychic.timer += dt;
+            forceBossPhase3HackingTarget();
+            updateBossPhase3PsychicUi(dt);
+            shakeAmount = Math.max(shakeAmount, 9);
+            if (bossPhase3Psychic.timer >= BOSS_PHASE3_PSYCHIC_DURATION && !levelClearShown) {
+                failBossPhase3PsychicPattern();
+            }
+            return;
+        }
     }
 
     function updateBossFight(dt) {
@@ -2635,9 +4190,41 @@
         }
         updateBossEye(dt);
         updateBossAttackStars(dt);
+        if (bossHandComboCooldown > 0) {
+            bossHandComboCooldown = Math.max(0, bossHandComboCooldown - dt);
+        }
+        if (bossHandComboRoarTimer > 0) {
+            bossHandComboRoarTimer = Math.max(0, bossHandComboRoarTimer - dt);
+            shakeAmount = Math.max(shakeAmount, 10 + bossHandComboRoarTimer * 12);
+        }
+
+        if (bossPhaseRoarTimer > 0) {
+            bossPhaseRoarTimer -= dt;
+            shakeAmount = Math.max(shakeAmount, bossPhase >= 2 ? 32 : 24);
+            if (bossPhaseRoarTimer <= 0) bossPhaseRoarTimer = 0;
+        }
+
+        if (bossEyeGlitchTimer > 0) {
+            bossEyeGlitchTimer = Math.max(0, bossEyeGlitchTimer - dt);
+            if (Math.random() < 0.55) emitBossEyeGlitchParticles(2);
+        }
+
+        if (bossPhase3RefillTimer > 0) {
+            bossPhase3RefillTimer = Math.max(0, bossPhase3RefillTimer - dt);
+        }
+
+        if (bossPhase >= 2) {
+            updateBossPhase3Fight(dt);
+            return;
+        }
 
         if (bossStunTimer > 0) {
             bossStunTimer -= dt;
+            return;
+        }
+
+        if (bossPhase === 0 && laserAttack.phase !== 'idle') {
+            bossAttackTimer = Math.max(bossAttackTimer, 0.35);
             return;
         }
 
@@ -2650,25 +4237,64 @@
         }
 
         bossAttack.timer += dt;
+        if (bossAttack.type === 'vertical-laser' && bossAttack.phase === 'telegraph') {
+            if (bossAttack.timer < BOSS_VERTICAL_LASER_TRACK_TIME) {
+                bossAttack.laneX = Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
+                bossAttack.lockedEyeX = bossEye.x;
+                bossAttack.lockedEyeY = bossEye.y;
+                bossAttack.locked = false;
+            } else if (!bossAttack.locked) {
+                bossAttack.laneX = Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
+                bossAttack.lockedEyeX = bossEye.x;
+                bossAttack.lockedEyeY = bossEye.y;
+                bossAttack.locked = true;
+            }
+        }
 
-        let telegraphDuration = bossAttack.type === 'vertical-laser' ? 2.0 : 0.8;
+        let telegraphDuration = bossAttack.type === 'hand-combo'
+            ? 2.0
+            : bossAttack.type === 'vertical-laser'
+            ? BOSS_VERTICAL_LASER_TRACK_TIME + BOSS_VERTICAL_LASER_LOCK_TIME
+            : bossAttack.type === 'block-smash'
+            ? 1.45
+            : 0.8;
         if (bossAttack.phase === 'telegraph' && bossAttack.timer >= telegraphDuration) {
             bossAttack.phase = 'fire';
             bossAttack.timer = 0;
+            bossAttack.duration = getBossHandAttackDuration();
+            bossAttack.hasImpacted = false;
+            if (bossAttack.type === 'vertical-laser') {
+                playSfx('bossVerticalLaserFire');
+                shakeAmount = Math.max(shakeAmount, 30);
+            }
             return;
         }
 
         if (bossAttack.phase === 'fire') {
+            if (bossAttack.type === 'vertical-laser') {
+                shakeAmount = Math.max(shakeAmount, 18);
+            }
+            applyBossAttackImpactIfReady();
             let hitRect = getBossAttackHitRect();
             if (hitRect && player && rectIntersect({ x: player.x, y: player.y, w: player.w, h: player.h }, hitRect)) {
-                startDeathSequence('boss');
+                startDeathSequence(bossAttack.type === 'hand-combo' ? 'bossHandCombo' : 'boss');
             }
 
             if (bossAttack.timer >= bossAttack.duration) {
+                if (bossAttack.type === 'hand-combo' && bossAttack.comboStep < 2) {
+                    bossAttack.comboStep++;
+                    bossAttack.phase = 'telegraph';
+                    bossAttack.timer = 0;
+                    return;
+                }
+                let finishedHandCombo = bossAttack.type === 'hand-combo';
                 bossAttack.phase = 'idle';
                 bossAttack.type = 'idle';
                 bossAttack.timer = 0;
-                let baseInterval = currentLevel.bossAttackInterval || 4.5;
+                let baseInterval = bossPhase === 1 ? 1.8 : (currentLevel.bossAttackInterval || 4.5);
+                if (bossPhase === 1 && finishedHandCombo) {
+                    bossHandComboCooldown = 20;
+                }
                 bossAttackTimer = baseInterval;
             }
         }
@@ -2676,28 +4302,156 @@
 
     function getBossAttackHitRect() {
         if (!isBossLevel() || bossAttack.phase !== 'fire') return null;
+        if (!isBossImpactWindow(bossAttack.timer, bossAttack.duration || getBossHandAttackDuration())) return null;
+        if (bossAttack.type === 'hand-combo') {
+            return getBossHandWarningArea(bossAttack.comboStep);
+        }
         if (bossAttack.type === 'vertical-laser') {
-            let laserX = Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
+            if (bossPhase !== 0) return null;
+            let laserX = Number.isFinite(bossAttack.laneX)
+                ? Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossAttack.laneX))
+                : Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
             return { x: laserX + 8, y: bossEye.y, w: BLOCK_SIZE - 16, h: canvas.height - bossEye.y };
         }
+        if (bossAttack.type === 'block-smash') {
+            return getBossBlockSmashWarningArea();
+        }
         return null;
+    }
+
+    function getBossHandAttackDuration() {
+        if (bossAttack.type === 'block-smash') return bossAttack.duration || 0.78;
+        if (bossAttack.type !== 'hand-combo') return bossAttack.duration || 1;
+        return bossAttack.comboStep === 2 ? 0.68 : 0.82;
+    }
+
+    function getBossImpactTime(duration) {
+        return Math.min(0.16, duration * 0.28);
+    }
+
+    function getBossImpactHoldEnd(duration) {
+        return getBossImpactTime(duration) + Math.min(0.18, duration * 0.28);
+    }
+
+    function isBossImpactWindow(timer, duration) {
+        if (bossAttack.type !== 'hand-combo' && bossAttack.type !== 'block-smash') return true;
+        return timer >= getBossImpactTime(duration) && timer <= getBossImpactHoldEnd(duration);
+    }
+
+    function applyBossAttackImpactIfReady() {
+        if (bossAttack.hasImpacted) return;
+        if (bossAttack.type !== 'hand-combo' && bossAttack.type !== 'block-smash') return;
+        let duration = bossAttack.duration || getBossHandAttackDuration();
+        if (bossAttack.timer < getBossImpactTime(duration)) return;
+
+        if (bossAttack.type === 'hand-combo') {
+            let hitArea = getBossHandWarningArea(bossAttack.comboStep);
+            if (bossAttack.comboStep === 2) {
+                playSfx('bossHandClapCrack');
+                emitBossClapImpactParticles(hitArea);
+            } else {
+                playSfx('bossHandSlamCrack');
+            }
+            clearBossHandAttackArea(hitArea, bossAttack.comboStep);
+        }
+        bossAttack.hasImpacted = true;
+    }
+
+    function clearBossHandAttackArea(area, comboStep = 0) {
+        if (!area) return;
+        let removedAny = false;
+        let minCol = Math.max(0, Math.floor(area.x / BLOCK_SIZE));
+        let maxCol = Math.min(COLS - 1, Math.floor((area.x + area.w - 1) / BLOCK_SIZE));
+        let minRow = Math.max(HIDDEN_ROWS, Math.floor(area.y / BLOCK_SIZE));
+        let maxRow = Math.min(ROWS - 1, Math.floor((area.y + area.h - 1) / BLOCK_SIZE));
+        let topOccupiedRow = null;
+
+        for (let r = minRow; r <= maxRow; r++) {
+            for (let c = minCol; c <= maxCol; c++) {
+                if (board[r][c]) {
+                    topOccupiedRow = r;
+                    break;
+                }
+            }
+            if (topOccupiedRow !== null) break;
+        }
+
+        if (topOccupiedRow !== null) {
+            for (let c = minCol; c <= maxCol; c++) {
+                if (!board[topOccupiedRow][c]) continue;
+                if (removeBossBoardCell(topOccupiedRow, c)) removedAny = true;
+            }
+        }
+
+        if (removedAny) applyBossBoardGravity();
+        shakeAmount = Math.max(shakeAmount, 34);
+    }
+
+    function emitBossClapImpactParticles(area) {
+        if (!area) return;
+        let centerX = area.x + area.w / 2;
+        let centerY = area.y + area.h / 2;
+        for (let i = 0; i < 42; i++) {
+            let side = i % 2 === 0 ? -1 : 1;
+            let particle = new Particle(
+                centerX + (Math.random() - 0.5) * 34,
+                centerY + (Math.random() - 0.5) * area.h * 0.7,
+                i % 4 === 0 ? '#ffffff' : (i % 3 === 0 ? '#ff99cc' : '#ff3030')
+            );
+            particle.speedX = side * (3.5 + Math.random() * 7);
+            particle.speedY = (Math.random() - 0.5) * 6;
+            particle.size = Math.random() * 4 + 2;
+            particle.decay = 0.016 + Math.random() * 0.02;
+            particles.push(particle);
+        }
+        shakeAmount = Math.max(shakeAmount, 46);
+    }
+
+    function applyBossBoardGravity() {
+        if (!isBossLevel()) return;
+        for (let c = 0; c < COLS; c++) {
+            let fallingCells = [];
+            for (let r = ROWS - 1; r >= HIDDEN_ROWS; r--) {
+                if (!board[r][c]) continue;
+                fallingCells.push(board[r][c]);
+                board[r][c] = 0;
+            }
+            let writeRow = ROWS - 1;
+            for (let color of fallingCells) {
+                board[writeRow][c] = color;
+                writeRow--;
+            }
+        }
     }
 
     function updateBossEye(dt) {
         if (!player) return;
         let px = player.x + player.w / 2;
         let py = player.y + player.h / 2;
-        bossEye.targetX = Math.max(92, Math.min(canvas.width - 92, px));
-        let introOffsetY = bossIntro.active ? -190 * (1 - bossIntro.progress) : 0;
-        bossEye.targetY = 138 + introOffsetY + Math.sin(performance.now() / 360) * 10;
-        bossEye.x += (bossEye.targetX - bossEye.x) * Math.min(dt * 2.7, 1);
-        bossEye.y += (bossEye.targetY - bossEye.y) * Math.min(dt * 2.2, 1);
+        let verticalLaserLocked = bossPhase === 0
+            && bossAttack.type === 'vertical-laser'
+            && (bossAttack.phase === 'fire'
+                || (bossAttack.phase === 'telegraph' && bossAttack.timer >= BOSS_VERTICAL_LASER_TRACK_TIME));
+        if (verticalLaserLocked) {
+            bossEye.targetX = Number.isFinite(bossAttack.lockedEyeX) ? bossAttack.lockedEyeX : bossEye.x;
+            bossEye.targetY = Number.isFinite(bossAttack.lockedEyeY) ? bossAttack.lockedEyeY : bossEye.y;
+            bossEye.x = bossEye.targetX;
+            bossEye.y = bossEye.targetY;
+        } else {
+            bossEye.targetX = bossPhase >= 1
+            ? canvas.width / 2 + Math.sin(performance.now() / 520) * 14
+            : Math.max(92, Math.min(canvas.width - 92, px));
+            let introOffsetY = bossIntro.active ? -190 * (1 - bossIntro.progress) : 0;
+            bossEye.targetY = 138 + introOffsetY + Math.sin(performance.now() / 360) * 10;
+            bossEye.x += (bossEye.targetX - bossEye.x) * Math.min(dt * 2.7, 1);
+            bossEye.y += (bossEye.targetY - bossEye.y) * Math.min(dt * 2.2, 1);
+        }
 
         let dx = px - bossEye.x;
         let dy = py - bossEye.y;
         let dist = Math.max(Math.hypot(dx, dy), 1);
-        bossEye.pupilX = (dx / dist) * 9;
-        bossEye.pupilY = (dy / dist) * 9;
+        bossEye.pupilX = bossPhase >= 1 ? 0 : (dx / dist) * 9;
+        bossEye.pupilY = bossPhase >= 1 ? 0 : (dy / dist) * 9;
     }
 
     function updateBossAttackStars(dt) {
@@ -2903,12 +4657,16 @@
 
     function updateTutorialExplanationMode() {
         if (!isTutorialLevel() || !tutorial.explaining) return;
+        if (tutorial.dismissing) {
+            tutorial.explainReady = false;
+            return;
+        }
         tutorial.explainReady = performance.now() - tutorial.explainStartAt >= tutorial.explainMinMs;
         updateTutorialOverlay();
     }
 
     function dismissTutorialExplanation() {
-        if (!isTutorialLevel() || !tutorial.explaining || !tutorial.explainReady) return false;
+        if (!isTutorialLevel() || !tutorial.explaining || tutorial.dismissing || !tutorial.explainReady) return false;
         tutorial.dismissing = true;
         tutorial.explainReady = false;
         keys = {};
@@ -2928,6 +4686,12 @@
             }
             keys = {};
             keysPressed = {};
+            if (getTutorialStepKey() === 'laser' && !tutorial.laserStarted) {
+                startLaserTelegraph();
+                laserAttack.row = ROWS - 1;
+                laserAttack.y = laserAttack.row * BLOCK_SIZE + BLOCK_SIZE / 2;
+                tutorial.laserStarted = true;
+            }
             if (tutorialOverlay) {
                 tutorialOverlay.classList.remove('dismiss', 'ready');
                 tutorialOverlay.classList.add('active', 'compact');
@@ -2955,6 +4719,18 @@
             { r: 22, c: 5 }
         ].forEach(cell => {
             board[cell.r][cell.c] = getEnemyColor('L');
+        });
+    }
+
+    function placeTutorialWallKickBlocks() {
+        resetTutorialBoard();
+        [
+            { r: 15, c: 3 }, { r: 16, c: 3 }, { r: 17, c: 3 }, { r: 18, c: 3 },
+            { r: 19, c: 3 }, { r: 20, c: 3 }, { r: 21, c: 3 },
+            { r: 12, c: 6 }, { r: 13, c: 6 }, { r: 14, c: 6 }, { r: 15, c: 6 },
+            { r: 16, c: 6 }, { r: 17, c: 6 }, { r: 18, c: 6 }
+        ].forEach(cell => {
+            board[cell.r][cell.c] = getEnemyColor(cell.c === 3 ? 'J' : 'L');
         });
     }
 
@@ -3049,6 +4825,10 @@
             placeTutorialJumpBlocks();
             setPlayerPosition(canvas.width - 55);
             setTutorialCheckpoint(40, canvas.height - 42, '02');
+        } else if (key === 'wall-kick') {
+            placeTutorialWallKickBlocks();
+            setPlayerPosition(44);
+            setTutorialCheckpoint(canvas.width / 2, canvas.height - 330, '03');
         } else if (key === 'hack-select') {
             setPlayerPosition(25);
             spawnTutorialBlock(TUTORIAL_TARGET.type, 4, TUTORIAL_BLOCK_START_Y, false);
@@ -3076,11 +4856,8 @@
             drawHoldUI();
         } else if (key === 'laser') {
             setPlayerPosition(canvas.width / 2 - 9);
-            laserAttack.phase = 'telegraph';
-            laserAttack.timer = 0;
             laserAttack.row = ROWS - 1;
             laserAttack.y = laserAttack.row * BLOCK_SIZE + BLOCK_SIZE / 2;
-            tutorial.laserStarted = true;
         } else if (key === 'complete') {
             score = currentLevel.targetScore;
             showLevelClear();
@@ -3178,6 +4955,7 @@
         let pieceCells = getPieceGridCells(piece);
         let targetCells = getTargetGridCells(tutorial.target);
         if (cellsMatch(pieceCells, targetCells)) {
+            playSfx('checkpoint');
             tutorial.placementFeedbackTimer = 0.75;
             selectedBlock = null;
             controlMode = 'CHARACTER';
@@ -3224,9 +5002,10 @@
             return;
         }
 
-        if ((key === 'move' || key === 'jump') && tutorial.checkpoint && player) {
+        if ((key === 'move' || key === 'jump' || key === 'wall-kick') && tutorial.checkpoint && player) {
             let pRect = { x: player.x, y: player.y, w: player.w, h: player.h };
             if (rectIntersectsCircle(pRect, tutorial.checkpoint)) {
+                playSfx('checkpoint');
                 emitTutorialCheckpointParticles(tutorial.checkpoint);
                 if (key === 'move' && tutorial.moveCheckpointIndex === 0) {
                     tutorial.moveCheckpointIndex = 1;
@@ -3335,7 +5114,7 @@
     }
 
     function setOverlayScreen(screen) {
-        [menuScreen, levelScreen, clearScreen, gameoverScreen].forEach(element => {
+        [menuScreen, levelScreen, bossPhaseScreen, clearScreen, gameoverScreen].forEach(element => {
             if (element) element.classList.remove('active');
         });
         if (screen) screen.classList.add('active');
@@ -3373,12 +5152,60 @@
 
     function getCurrentSpawnInterval() {
         if (!currentLevel) return 4;
+        if (isBossPhase3()) {
+            return BOSS_PHASE3_SPAWN_INTERVAL;
+        }
         let startInterval = currentLevel.spawnInterval;
         let minInterval = currentLevel.minSpawnInterval || startInterval;
         if (minInterval >= startInterval || !currentLevel.targetScore) return startInterval;
 
         let progress = Math.max(0, Math.min(score / currentLevel.targetScore, 1));
         return startInterval - (startInterval - minInterval) * progress;
+    }
+
+    function getComboDuration(count) {
+        let referenceSeconds = count > 5 ? 1.5 : Math.max(1.5, 5 - count * 0.5);
+        return referenceSeconds + 1;
+    }
+
+    function getComboMultiplier(count = comboCount) {
+        if (count <= 1) return 1;
+        return Math.max(2, Math.min(count, 5));
+    }
+
+    function registerLineClearCombo() {
+        comboCount = comboTimer > 0 ? comboCount + 1 : 1;
+        comboMaxTimer = getComboDuration(comboCount);
+        comboTimer = comboMaxTimer;
+        return getComboMultiplier(comboCount);
+    }
+
+    function updateComboTimer(dt) {
+        if (comboTimer <= 0) return;
+        comboTimer = Math.max(0, comboTimer - dt);
+        if (comboTimer <= 0) {
+            comboCount = 0;
+            comboMaxTimer = 0;
+        }
+    }
+
+    function updatePhase3ComboUi() {
+        let active = isBossPhase3PsychicActive();
+        let multiplier = getComboMultiplier();
+        if (phase3ComboLabel) {
+            phase3ComboLabel.textContent = comboCount > 1 ? 'COMBO!' : 'COMBO';
+        }
+        if (phase3ComboCount) {
+            phase3ComboCount.textContent = active ? comboCount : 0;
+            phase3ComboCount.style.transform = comboCount > 1 ? 'scale(1.18)' : 'scale(1)';
+        }
+        if (phase3ComboMultiplier) {
+            phase3ComboMultiplier.textContent = `x${active ? multiplier : 1}`;
+        }
+        if (phase3ComboBar) {
+            let ratio = comboMaxTimer > 0 ? Math.max(0, Math.min(comboTimer / comboMaxTimer, 1)) : 0;
+            phase3ComboBar.style.width = `${Math.round(ratio * 100)}%`;
+        }
     }
 
     function clearIntroSequence() {
@@ -3409,17 +5236,17 @@
     function buildIntroSequence() {
         if (isBossLevel()) {
             return [
-                { body: '3', duration: 1500, color: '#ff3030' },
-                { body: '2', duration: 1500, color: '#ff3030' },
-                { body: '1', duration: 1500, color: '#ff3030' },
-                { body: 'START', duration: 1900, color: '#ff3030' }
+                { body: '3', duration: 500, color: '#ff3030', sfx: 'bossCountdownTick' },
+                { body: '2', duration: 500, color: '#ff3030', sfx: 'bossCountdownTick' },
+                { body: '1', duration: 500, color: '#ff3030', sfx: 'bossCountdownTick' },
+                { body: 'START', duration: 633, color: '#ff3030', sfx: 'bossCountdownStart' }
             ];
         }
         return [
-            { body: '3', duration: 550, color: '#fff06a' },
-            { body: '2', duration: 550, color: '#fff06a' },
-            { body: '1', duration: 550, color: '#fff06a' },
-            { body: 'START!!', duration: 1050, color: '#fff06a' }
+            { body: '3', duration: INTRO_UI_CONFIG.numberDurationMs, color: '#fff06a' },
+            { body: '2', duration: INTRO_UI_CONFIG.numberDurationMs, color: '#fff06a' },
+            { body: '1', duration: INTRO_UI_CONFIG.numberDurationMs, color: '#fff06a' },
+            { body: 'START!!', duration: INTRO_UI_CONFIG.startDurationMs, color: '#fff06a' }
         ];
     }
 
@@ -3441,9 +5268,15 @@
         if (!seoaDialogueOverlay || !seoaDialogue.config) return;
         let ui = seoaDialogue.config.ui;
         let character = seoaDialogueOverlay.querySelector('.seoa-dialogue-character');
+        let demonCharacter = seoaDialogueOverlay.querySelector('.demon-dialogue-character');
         let box = seoaDialogueOverlay.querySelector('.seoa-dialogue-box');
         if (character && ui?.seoa) {
             character.style.setProperty('--seoa-x', `${ui.seoa.xPx}px`);
+        }
+        if (demonCharacter && ui?.demon) {
+            demonCharacter.style.setProperty('--demon-x', `${ui.demon.xPx}px`);
+            demonCharacter.style.setProperty('--demon-y', `${ui.demon.yPx}px`);
+            demonCharacter.style.setProperty('--demon-scale', Math.max(0.2, Number(ui.demon.scale || 1)));
         }
         if (box && ui?.dialogueBox) {
             box.style.setProperty('--dialogue-left', `${ui.dialogueBox.leftPx}px`);
@@ -3453,20 +5286,49 @@
         }
     }
 
+    function isDemonLine(line) {
+        return String(line?.speaker || '').toUpperCase() === 'DEMON';
+    }
+
+    function getSeoaDialogueSpeakerLabel(line) {
+        let speaker = line?.speaker || 'SEOA';
+        let key = String(speaker).toUpperCase();
+        return line?.displaySpeaker || seoaDialogue.config?.speakerLabels?.[key] || speaker;
+    }
+
+    function getSeoaDialogueWordMs(line = getCurrentDialogueLine()) {
+        if (isDemonLine(line)) return 230;
+        return SEOA_DIALOGUE_WORD_MS;
+    }
+
     function setSeoaDialogueImage(emotion) {
         if (!seoaDialogueImage || !seoaDialogue.config) return;
         let asset = SEOA_EMOTION_ASSETS[emotion] || SEOA_EMOTION_ASSETS.basic;
         let ui = seoaDialogue.config.ui?.seoa || { scale: 1, yPx: 0 };
-        let scale = Math.max(0.2, Number(ui.scale || 1));
-        seoaDialogueImage.style.setProperty('--seoa-scale', scale);
-        seoaDialogueImage.style.setProperty('--seoa-y', `${ui.yPx || 0}px`);
+        let scale = Math.max(0.2, Number(ui.scale || 1) * Number(asset.scale || 1));
+        let yPx = Number(ui.yPx || 0) + (asset.yOffset || 0);
+        let applyImageStyle = () => {
+            seoaDialogueImage.style.setProperty('--seoa-scale', scale);
+            seoaDialogueImage.style.setProperty('--seoa-emotion-x', `${asset.xOffset || 0}px`);
+            seoaDialogueImage.style.setProperty('--seoa-y', `${yPx}px`);
+        };
 
-        if (seoaDialogueImage.getAttribute('src') === asset.src || seoaDialogue.pendingImageSrc === asset.src) return;
+        if (seoaDialogueImage.getAttribute('src') === asset.src) {
+            applyImageStyle();
+            return;
+        }
+        if (seoaDialogue.pendingImageSrc === asset.src) return;
+        if (seoaDialogue.pendingImageTimer) {
+            clearTimeout(seoaDialogue.pendingImageTimer);
+            seoaDialogue.pendingImageTimer = null;
+        }
         seoaDialogue.pendingImageSrc = asset.src;
         seoaDialogueImage.classList.add('fading');
-        setTimeout(() => {
+        seoaDialogue.pendingImageTimer = setTimeout(() => {
+            applyImageStyle();
             seoaDialogueImage.src = asset.src;
             seoaDialogue.pendingImageSrc = null;
+            seoaDialogue.pendingImageTimer = null;
             requestAnimationFrame(() => {
                 seoaDialogueImage.classList.remove('fading');
             });
@@ -3479,16 +5341,37 @@
 
         let tokens = getCurrentDialogueTokens();
         let visibleText = tokens.slice(0, seoaDialogue.visibleTokens).join('');
-        setSeoaDialogueImage(line.emotion);
-        if (seoaDialogueSpeaker) seoaDialogueSpeaker.textContent = line.speaker || 'SEOA';
+        let demonLine = isDemonLine(line);
+        if (!demonLine) setSeoaDialogueImage(line.emotion);
+        if (demonDialogueImage && seoaDialogue.config.ui?.demon) {
+            demonDialogueImage.src = seoaDialogue.config.demonImageSrc || DEMON_DIALOGUE_IMAGE_SRC;
+            demonDialogueImage.classList.toggle('silhouette', seoaDialogue.config.demonStyle === 'silhouette');
+        }
+        if (seoaDialogueOverlay) {
+            let demonCharacter = seoaDialogueOverlay.querySelector('.demon-dialogue-character');
+            if (demonCharacter) {
+                demonCharacter.classList.toggle('silhouette', seoaDialogue.config.demonStyle === 'silhouette');
+            }
+            seoaDialogueOverlay.classList.toggle('has-demon', Boolean(seoaDialogue.config.ui?.demon));
+            seoaDialogueOverlay.classList.toggle('speaker-demon', demonLine);
+            seoaDialogueOverlay.classList.toggle('speaker-seoa', !demonLine);
+        }
+        if (seoaDialogueSpeaker) seoaDialogueSpeaker.textContent = getSeoaDialogueSpeakerLabel(line);
         if (seoaDialogueCounter) {
             let current = String(seoaDialogue.lineIndex + 1).padStart(2, '0');
             let total = String(seoaDialogue.config.lines.length).padStart(2, '0');
             seoaDialogueCounter.textContent = `${current} / ${total}`;
         }
         if (seoaDialogueText) {
+            let note = String(line.note || '');
             seoaDialogueText.textContent = visibleText;
-            seoaDialogueText.classList.toggle('text-tremble', String(line.note || '').includes('떨'));
+            seoaDialogueText.classList.toggle('demon-line', demonLine);
+            seoaDialogueText.classList.toggle('text-tremble', !demonLine && note.includes('떨') && !note.includes('심하게'));
+            seoaDialogueText.classList.toggle('text-strong-tremble', demonLine || note.includes('심하게'));
+            seoaDialogueText.classList.toggle('text-bounce', note.includes('점프') || note.includes('뛰') || note.includes('당찬'));
+        }
+        if (seoaDialogueSpeaker) {
+            seoaDialogueSpeaker.classList.toggle('demon-line', demonLine);
         }
     }
 
@@ -3510,6 +5393,10 @@
         if (seoaDialogue.closing) return;
         let onComplete = seoaDialogue.onComplete;
         seoaDialogue.closing = true;
+        if (seoaDialogue.pendingImageTimer) {
+            clearTimeout(seoaDialogue.pendingImageTimer);
+            seoaDialogue.pendingImageTimer = null;
+        }
         if (seoaDialogueOverlay) {
             seoaDialogueOverlay.classList.add('closing');
         }
@@ -3519,9 +5406,10 @@
             seoaDialogue.onComplete = null;
             seoaDialogue.completedAt = 0;
             seoaDialogue.pendingImageSrc = null;
+            seoaDialogue.pendingImageTimer = null;
             seoaDialogue.closing = false;
             if (seoaDialogueOverlay) {
-                seoaDialogueOverlay.classList.remove('active', 'closing');
+                seoaDialogueOverlay.classList.remove('active', 'closing', 'has-demon', 'speaker-demon', 'speaker-seoa');
                 seoaDialogueOverlay.setAttribute('aria-hidden', 'true');
             }
             if (typeof onComplete === 'function') onComplete();
@@ -3533,6 +5421,7 @@
         seoaDialogue.config = config;
         seoaDialogue.onComplete = onComplete;
         seoaDialogue.pendingImageSrc = null;
+        seoaDialogue.pendingImageTimer = null;
         seoaDialogue.closing = false;
         gameState = 'seoaDialogue';
         keys = {};
@@ -3552,7 +5441,7 @@
         if (seoaDialogue.visibleTokens >= tokens.length) return;
 
         seoaDialogue.tokenTimer += dt * 1000;
-        if (seoaDialogue.visibleTokens === 0 || seoaDialogue.tokenTimer >= SEOA_DIALOGUE_WORD_MS) {
+        if (seoaDialogue.visibleTokens === 0 || seoaDialogue.tokenTimer >= getSeoaDialogueWordMs()) {
             seoaDialogue.tokenTimer = 0;
             seoaDialogue.visibleTokens = Math.min(seoaDialogue.visibleTokens + 1, tokens.length);
             if (seoaDialogue.visibleTokens >= tokens.length) {
@@ -3569,6 +5458,7 @@
             event.stopPropagation();
         }
         if (seoaDialogue.closing) return true;
+        playDialogueSfx();
 
         let tokens = getCurrentDialogueTokens();
         if (seoaDialogue.visibleTokens < tokens.length) {
@@ -3599,6 +5489,7 @@
     }
 
     function startSeoaLandingCinematic(onComplete) {
+        playSfx('seoaLanding');
         seoaLandingCinematic.active = true;
         seoaLandingCinematic.phase = 'fall';
         seoaLandingCinematic.timer = 0;
@@ -3684,7 +5575,7 @@
         let drawH = SEOA_LANDING_CINEMATIC.proneHeight;
         let drawW = drawH * (bounds.w / bounds.h);
         let x = seoaLandingCinematic.proneX - drawW / 2;
-        let y = canvas.height - drawH - 1;
+        let y = canvas.height - drawH - 1 + SEOA_LANDING_CINEMATIC.proneYOffsetPx;
         ctx.save();
         ctx.imageSmoothingEnabled = false;
         ctx.shadowColor = openEyes ? '#ff99cc' : '#000';
@@ -4012,6 +5903,7 @@
         if (!dialogue) return true;
         let fullLength = Array.from(dialogue.text).length;
         if (cinematicIntro.typedCount < fullLength) {
+            playInputAdvanceSfx();
             completeCurrentCinematicDialogue();
             return true;
         }
@@ -4019,6 +5911,7 @@
             return true;
         }
 
+        playInputAdvanceSfx();
         goToNextCinematicDialogue(true);
         return true;
     }
@@ -4074,6 +5967,7 @@
             openLevelSelect();
             return;
         }
+        playBgm('title');
         clearCinematicTimers();
         gameState = 'cinematicIntro';
         cinematicIntro.active = true;
@@ -4128,6 +6022,13 @@
     function showIntroPhase(phase, isFinalPhase) {
         if (!introOverlay || !introLevelLine || !introStartLine) return;
 
+        let stage = introOverlay.querySelector('.intro-stage');
+        if (stage) {
+            stage.style.setProperty('--intro-y', `${INTRO_UI_CONFIG.yVh}vh`);
+            stage.style.setProperty('--intro-x', `${INTRO_UI_CONFIG.xVw}vw`);
+        }
+        introStartLine.style.setProperty('--intro-size', `${INTRO_UI_CONFIG.sizeVw}vw`);
+        introStartLine.style.setProperty('--intro-stripe-opacity', INTRO_UI_CONFIG.stripeOpacity);
         introLevelLine.textContent = '';
         introStartLine.textContent = phase.body || '';
         introStartLine.dataset.text = phase.body || '';
@@ -4143,6 +6044,7 @@
         introOverlay.setAttribute('aria-hidden', 'false');
 
         restartElementAnimation(introStartLine);
+        if (phase.sfx) playSfx(phase.sfx);
 
         if (introStarLayer) {
             introStarLayer.innerHTML = '';
@@ -4196,6 +6098,7 @@
     }
 
     function startBossRevealIntro() {
+        playSfx('bossReveal');
         bossIntro.active = true;
         bossIntro.timer = 0;
         bossIntro.progress = 0;
@@ -4232,6 +6135,7 @@
 
         if (!bossIntro.roaring) {
             bossIntro.roaring = true;
+            playSfx('bossRoar');
             shakeAmount = Math.max(shakeAmount, 86);
         }
 
@@ -4277,7 +6181,9 @@
             `;
 
             if (unlocked) {
-                card.addEventListener('click', () => startLevel(index));
+                card.addEventListener('click', () => {
+                    startLevel(index);
+                });
             }
 
             levelGrid.appendChild(card);
@@ -4292,12 +6198,49 @@
         });
     }
 
+    function renderBossPhaseList(levelIndex) {
+        if (!bossPhaseGrid) return;
+        bossPhaseGrid.innerHTML = '';
+
+        [
+            { phase: 0, title: 'PHASE 1', icon: 'level-icon-boss' },
+            { phase: 1, title: 'PHASE 2', icon: 'level-icon-boss' },
+            { phase: 2, title: 'PHASE 3', icon: 'level-icon-boss' },
+            { phase: 'ending', title: 'ENDING', icon: 'level-icon-boss', ending: true }
+        ].forEach(item => {
+            let card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'level-card boss-level';
+            card.innerHTML = `
+                <span class="level-title">${item.title}</span>
+                <span class="level-card-icon ${item.icon}" aria-hidden="true"></span>
+            `;
+            card.addEventListener('click', () => {
+                if (item.ending) {
+                    startBossEndingPreview(levelIndex);
+                    return;
+                }
+                startBossLevelPhase(levelIndex, item.phase);
+            });
+            bossPhaseGrid.appendChild(card);
+        });
+    }
+
+    function openBossPhaseSelect(levelIndex) {
+        playMenuSfx();
+        currentLevelIndex = levelIndex;
+        currentLevel = LEVELS[currentLevelIndex];
+        renderBossPhaseList(levelIndex);
+        setOverlayScreen(bossPhaseScreen);
+    }
+
     function showMenuScreenNow() {
         clearLevelClearSequence();
         stopTutorialLevel();
+        playBgm('title');
         gameState = 'menu';
         overlay.style.background = 'rgba(5, 5, 12, 0.92)';
-        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing');
+        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing', 'warning-zone', 'critical-zone');
         setOverlayScreen(menuScreen);
         updateLevelHeader();
     }
@@ -4309,9 +6252,10 @@
     function openLevelSelectNow() {
         clearLevelClearSequence();
         stopTutorialLevel();
+        playBgm('title');
         gameState = 'levelSelect';
         overlay.style.background = 'rgba(5, 5, 12, 0.92)';
-        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing');
+        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing', 'warning-zone', 'critical-zone');
         renderLevelList();
         updateLevelHeader();
         setOverlayScreen(levelScreen);
@@ -4381,6 +6325,8 @@
     function startLevelClearSequence() {
         if (levelClearSequence.active) return;
         let wasTutorial = currentLevel && currentLevel.id === 'tutorial';
+        playBgm('title');
+        playSfx('levelClear');
         gameState = 'levelClearSequence';
         levelClearShown = true;
         if (wasTutorial) {
@@ -4417,7 +6363,14 @@
 
     function finishLevelClearSequence() {
         if (!levelClearSequence.awaitingInput) return;
+        let shouldPlayLevel1Ending = currentLevel && currentLevel.id === 'level-01';
         clearLevelClearSequence();
+        if (shouldPlayLevel1Ending) {
+            startSeoaDialogue(LEVEL1_ENDING_DIALOGUE, () => {
+                openLevelSelect();
+            });
+            return;
+        }
         openLevelSelect();
     }
 
@@ -4440,6 +6393,8 @@
             startLevelClearSequence();
             return;
         }
+        playBgm('title');
+        playSfx('levelClear');
         gameState = 'levelClear';
         levelClearShown = true;
         stopTutorialLevel();
@@ -4447,17 +6402,37 @@
             highestUnlockedLevel = currentLevelIndex + 1;
         }
         overlay.style.background = 'rgba(5, 5, 12, 0.94)';
-        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing');
+        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing', 'warning-zone', 'critical-zone');
         updateClearPanel();
         updateLevelHeader();
         setOverlayScreen(clearScreen);
     }
 
+    function showEndingScreen() {
+        clearLevelClearSequence();
+        stopTutorialLevel();
+        stopBgm();
+        playSfx('levelClear');
+        gameState = 'ending';
+        levelClearShown = true;
+        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing', 'warning-zone', 'critical-zone');
+        overlay.style.display = 'none';
+        if (endingOverlay) {
+            endingOverlay.classList.add('active');
+            endingOverlay.setAttribute('aria-hidden', 'false');
+        }
+        keys = {};
+        keysPressed = {};
+    }
+
     function showGameOverScreen() {
         stopTutorialLevel();
+        stopBgm();
+        playSfx('gameOver');
+        playSfx('soulStolenTitle');
         gameState = 'gameOver';
         overlay.style.background = '#000';
-        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing');
+        document.body.classList.remove('playing', 'boss-fight', 'boss-revealing', 'warning-zone', 'critical-zone');
         setOverlayScreen(gameoverScreen);
         let title = document.getElementById('crash-title');
         let desc = document.getElementById('crash-desc');
@@ -4469,17 +6444,17 @@
         if (desc) {
             desc.innerText = 'YOUR SOUL HAS BEEN STOLEN.';
             desc.style.display = 'block';
-            desc.style.fontSize = '26px';
+            desc.style.fontSize = '';
             desc.style.fontWeight = 'bold';
-            desc.style.letterSpacing = '2px';
+            desc.style.letterSpacing = '1px';
             desc.style.transform = 'none';
             desc.style.textShadow = 'none';
             desc.style.opacity = 1;
         }
         if (btn) {
-            btn.style.borderColor = '#ff3333';
-            btn.style.color = '#ff3333';
-            btn.style.background = 'transparent';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+            btn.style.background = '';
         }
     }
 
@@ -4487,6 +6462,10 @@
         stopTutorialLevel();
         clearIntroSequence();
         clearLevelClearSequence();
+        if (endingOverlay) {
+            endingOverlay.classList.remove('active');
+            endingOverlay.setAttribute('aria-hidden', 'true');
+        }
         board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
         enemies = [];
         particles = [];
@@ -4502,6 +6481,8 @@
         heldPieceType = null;
         score = 0;
         comboCount = 0;
+        comboTimer = 0;
+        comboMaxTimer = 0;
         survivalTimer = 0;
         levelClearShown = false;
         isGameOver = false;
@@ -4509,6 +6490,8 @@
         isSoulStolen = false;
         deathCause = null;
         deathTimer = 0;
+        deathHeartbeatTimer = 0;
+        soulTextGlitchCooldown = 0;
         canHold = true;
         laserAttack.phase = 'idle';
         laserAttack.cooldown = getRandomLaserCooldown();
@@ -4528,13 +6511,97 @@
         drawHoldUI();
     }
 
-    function startLevelNow(levelIndex) {
+    function applyBossStartPhase(phaseIndex) {
+        if (!isBossLevel() || phaseIndex <= 0) {
+            currentBossStartPhase = 0;
+            return;
+        }
+
+        currentBossStartPhase = Math.min(Math.max(phaseIndex, 0), 2);
+        bossPhase = currentBossStartPhase;
+        bossIntro.active = false;
+        bossIntro.progress = 1;
+        bossIntro.roaring = false;
+        bossIntro.finished = true;
+        bossEye.y = 138;
+        bossEye.targetY = 138;
+        bossAttack.phase = 'idle';
+        bossAttack.type = 'idle';
+        bossAttack.timer = 0;
+        bossAttack.comboStep = 0;
+        laserAttack.phase = 'idle';
+        laserAttack.cooldown = 999;
+        document.body.classList.add('boss-fight', 'critical-zone');
+
+        let eyePart = bossParts.find(part => part.id === 'eye');
+        let leftPart = bossParts.find(part => part.id === 'left');
+        let rightPart = bossParts.find(part => part.id === 'right');
+
+        if (eyePart) {
+            eyePart.hp = 0;
+            eyePart.alive = false;
+        }
+
+        if (currentBossStartPhase === 1) {
+            if (leftPart) {
+                leftPart.hp = leftPart.maxHp;
+                leftPart.alive = true;
+            }
+            if (rightPart) {
+                rightPart.hp = rightPart.maxHp;
+                rightPart.alive = true;
+            }
+            bossPhaseRoarTimer = 1.35;
+            bossEyeGlitchTimer = 1.25;
+            emitBossEyeGlitchParticles(42);
+            bossAttackTimer = 1.1;
+        } else {
+            if (leftPart) {
+                leftPart.hp = 0;
+                leftPart.alive = false;
+            }
+            if (rightPart) {
+                rightPart.maxHp = getBossPhase3TargetHp();
+                rightPart.hp = rightPart.maxHp;
+                rightPart.alive = true;
+            }
+            bossPhaseRoarTimer = 1.7;
+            bossAttackTimer = 0.55;
+            bossPhase3TransformTimer = BOSS_PHASE3_TRANSFORM_DURATION;
+            bossPhase3Psychic.phase = 'idle';
+            bossPhase3Psychic.timer = 0;
+            bossPhase3Psychic.clearedLines = 0;
+            bossPhase3Psychic.targetClears = BOSS_PHASE3_PSYCHIC_TARGET_CLEARS;
+            bossPhase3Psychic.alertTimer = 0;
+            bossPhase3Psychic.cooldown = BOSS_PHASE3_PSYCHIC_COOLDOWN;
+            bossPhase3Psychic.pullStartX = 0;
+            bossPhase3Psychic.pullStartY = 0;
+            bossAttackStars = [];
+            comboCount = 0;
+            comboTimer = 0;
+            comboMaxTimer = 0;
+            bossPhase3RefillTimer = BOSS_PHASE3_REFILL_DURATION;
+            enemySpawnTimer = 0.05;
+        }
+
+        bossHp = bossParts.reduce((sum, part) => sum + part.hp, 0);
+        bossMaxHp = bossParts.reduce((sum, part) => sum + part.maxHp, 0);
+        bossStunTimer = Math.max(bossStunTimer, bossPhaseRoarTimer);
+        shakeAmount = Math.max(shakeAmount, currentBossStartPhase === 1 ? 54 : 72);
+        playBossPhaseBgm();
+        playSfx('bossRoar');
+    }
+
+    function startLevelNow(levelIndex, options = {}) {
         currentLevelIndex = levelIndex;
         currentLevel = LEVELS[currentLevelIndex];
         if (currentLevelIndex > highestUnlockedLevel && !currentLevel.isBoss) {
             highestUnlockedLevel = currentLevelIndex;
         }
         resetRunState();
+        let bossStartPhase = currentLevel.isBoss ? (options.bossPhase ?? 0) : 0;
+        applyBossStartPhase(bossStartPhase);
+        playBgmForCurrentLevel();
         introEndAt = performance.now() + 4300;
         overlay.style.display = 'none';
         document.body.classList.add('playing');
@@ -4545,6 +6612,8 @@
                     startTutorialLevel();
                 });
             });
+        } else if (currentLevel.isBoss && bossStartPhase > 0) {
+            gameState = 'playing';
         } else {
             gameState = 'intro';
             playStartIntro();
@@ -4552,12 +6621,41 @@
         updateLevelHeader();
     }
 
-    function startLevel(levelIndex) {
-        transitionScreen(() => startLevelNow(levelIndex));
+    function startLevel(levelIndex, options = {}) {
+        playStartSfx();
+        transitionScreen(() => startLevelNow(levelIndex, options));
+    }
+
+    function startBossLevelPhase(levelIndex, phaseIndex) {
+        currentBossStartPhase = phaseIndex;
+        startLevel(levelIndex, { bossPhase: phaseIndex });
+    }
+
+    function startBossEndingPreviewNow(levelIndex) {
+        currentLevelIndex = levelIndex;
+        currentLevel = LEVELS[currentLevelIndex];
+        currentBossStartPhase = 2;
+        resetRunState();
+        bossPhase = 2;
+        bossIntro.active = false;
+        bossIntro.progress = 1;
+        bossIntro.finished = true;
+        overlay.style.display = 'none';
+        document.body.classList.add('playing', 'boss-fight', 'critical-zone');
+        updateLevelHeader();
+        playBgm('bossPhase3');
+        startSeoaDialogue(BOSS_ENDING_DIALOGUE, () => {
+            showEndingScreen();
+        });
+    }
+
+    function startBossEndingPreview(levelIndex) {
+        playStartSfx();
+        transitionScreen(() => startBossEndingPreviewNow(levelIndex));
     }
 
     function retryCurrentLevel() {
-        startLevel(currentLevelIndex);
+        startLevel(currentLevelIndex, { bossPhase: currentLevel && currentLevel.isBoss ? currentBossStartPhase : 0 });
     }
 
     function goToNextLevel() {
@@ -4572,6 +6670,10 @@
         if (isGameOver || isDying) return;
 
         if (laserAttack.phase === 'idle') {
+            if (isBossLevel() && bossPhase === 0 && bossAttack.phase !== 'idle') {
+                laserAttack.cooldown = Math.max(laserAttack.cooldown, 0.45);
+                return;
+            }
             laserAttack.cooldown -= dt;
             if (laserAttack.cooldown <= 0) {
                 startLaserTelegraph();
@@ -4581,7 +6683,7 @@
 
         if (laserAttack.phase === 'telegraph') {
             laserAttack.timer += dt;
-            if (laserAttack.timer >= 1.5) {
+            if (laserAttack.timer >= (laserAttack.telegraphDuration || 1.5)) {
                 startLaserFire();
             }
             return;
@@ -4604,7 +6706,7 @@
                 }
             }
 
-            if (laserAttack.x > canvas.width + laserAttack.width) {
+            if (laserAttack.x > canvas.width + laserAttack.width || laserAttack.timer >= (laserAttack.fireDuration || 1.2) + 0.1) {
                 finishLaserAttack();
             }
         }
@@ -4621,6 +6723,10 @@
 
     function updateDangerZoneState() {
         document.body.classList.remove('warning-zone', 'critical-zone');
+        if (isBossLevel() && bossPhase >= 1 && gameState === 'playing') {
+            document.body.classList.add('critical-zone');
+            return;
+        }
         let highestRow = getHighestOccupiedRow();
         if (highestRow < HIDDEN_ROWS + 3) {
             document.body.classList.add('critical-zone');
@@ -4637,6 +6743,7 @@
     }
     
     let glitchIntensity = 0;
+    let soulTextGlitchCooldown = 0;
     
     function updateGlitchLoop() {
         let desc = document.getElementById('crash-desc');
@@ -4648,6 +6755,8 @@
             }
             return; // 게임 재시작 시 글리치 루프 즉시 정지
         }
+
+        soulTextGlitchCooldown = Math.max(0, soulTextGlitchCooldown - 1);
         
         if (desc) {
             if (glitchIntensity > 0) {
@@ -4658,6 +6767,10 @@
                 if (Math.random() < 0.015) {
                     // 강도가 약한 랜덤 지지직
                     glitchIntensity = Math.random() * 6 + 2; 
+                    if (soulTextGlitchCooldown <= 0) {
+                        playSfx('soulTextGlitch');
+                        soulTextGlitchCooldown = 18 + Math.floor(Math.random() * 16);
+                    }
                 }
             }
             
@@ -4684,18 +6797,30 @@
     }
     
     function startDeathSequence(cause = 'crush') {
+        if (isBossPhase3Transforming()) {
+            shakeAmount = Math.max(shakeAmount, 18);
+            return;
+        }
+        if (isBossPhase3PlayerControlled() && cause !== 'boss' && cause !== 'deadzone') {
+            shakeAmount = Math.max(shakeAmount, 14);
+            return;
+        }
+
         if (isTutorialLevel()) {
             if (cause === 'laser' && getTutorialStepKey() === 'laser') {
                 tutorial.laserDeathCount++;
             }
+            playSfx('damage');
             failTutorialStep();
             return;
         }
 
         if (!isDying && !isGameOver) {
+            playSfx(cause === 'bossHandCombo' ? 'bossHandComboHit' : 'damage');
             deathCause = cause;
             isDying = true;
             deathTimer = 0;
+            deathHeartbeatTimer = 0;
             shakeAmount = Math.max(shakeAmount, 30); // 충격적인 카메라 흔들림 
         }
     }
@@ -4705,9 +6830,12 @@
             isSoulStolen = true;
             isGameOver = true;
             isDying = false;
+            deathHeartbeatTimer = 0;
             showGameOverScreen();
             
             glitchIntensity = 20; // 찢어지는 듯한 최고 강도에서 시작
+            soulTextGlitchCooldown = 0;
+            playSfx('soulTextGlitch');
             requestAnimationFrame(updateGlitchLoop);
         }
     }
@@ -4716,6 +6844,8 @@
     let keysPressed = {};
 
     function handleAnyInputAdvance(event) {
+        unlockAudio();
+
         if (seoaLandingCinematic.active) {
             if (event) {
                 event.preventDefault();
@@ -4741,6 +6871,7 @@
                 event.preventDefault();
                 event.stopPropagation();
             }
+            playStartSfx();
             startCinematicIntro();
             return true;
         }
@@ -4750,6 +6881,7 @@
                 event.preventDefault();
                 event.stopPropagation();
             }
+            playMenuSfx();
             finishLevelClearSequence();
             return true;
         }
@@ -4760,7 +6892,9 @@
                 event.stopPropagation();
             }
             updateTutorialExplanationMode();
-            dismissTutorialExplanation();
+            if (dismissTutorialExplanation()) {
+                playInputAdvanceSfx();
+            }
             return true;
         }
 
@@ -4769,6 +6903,9 @@
 
     window.addEventListener('keydown', e => {
         if (handleAnyInputAdvance(e)) return;
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) {
+            e.preventDefault();
+        }
 
         keys[e.code] = true; 
         keysPressed[e.code] = true; 
@@ -4803,8 +6940,11 @@
             }
             if (hitPattern) break;
         }
+
+        if (isBossPhase3Transforming() || isBossPhase3PlayerControlled()) return;
         
         if (hitPattern) {
+            playSfx('errorSelect');
             if (selectedBlock) selectedBlock.isGhost = false;
             selectedBlock = hitPattern;
             selectedBlock.isGhost = true;
@@ -4835,6 +6975,13 @@
             this.gravity = 1400;
             this.fastFallGravity = 3000;
             this.isGrounded = false;
+            this.wallDir = 0;
+            this.wallContactTimer = 0;
+            this.wallJumpLockTimer = 0;
+            this.wallJumpVx = 0;
+            this.wallJumpPush = 310;
+            this.wallJumpForce = -430;
+            this.wallSlideMaxFall = 175;
             
             // 애니메이션/스프라이트 상태
             this.lastDir = 1;
@@ -4996,17 +7143,18 @@
                 this.vy = 0;
                 return; 
             }
+
+            this.wallContactTimer = Math.max(0, this.wallContactTimer - dt);
+            this.wallJumpLockTimer = Math.max(0, this.wallJumpLockTimer - dt);
             
             // 조작 모드에 따른 분기
             if (controlMode === 'CHARACTER') {
-                if (keys['KeyA']) this.vx = -this.speed;
-                else if (keys['KeyD']) this.vx = this.speed;
-                else this.vx = 0;
-                
-                // 점프 
-                if ((keys['KeyW'] || keys['Space']) && this.isGrounded) {
-                    this.vy = this.jumpForce;
-                    this.isGrounded = false;
+                if (this.wallJumpLockTimer > 0) {
+                    this.vx = this.wallJumpVx;
+                } else {
+                    if (keys['KeyA']) this.vx = -this.speed;
+                    else if (keys['KeyD']) this.vx = this.speed;
+                    else this.vx = 0;
                 }
                 
                 // 급강하
@@ -5051,10 +7199,56 @@
             }
             
             this.bumpDir = bumped;
+
+            if (controlMode === 'CHARACTER' && bumped !== 0 && !this.isGrounded) {
+                this.wallDir = bumped;
+                this.wallContactTimer = 0.14;
+                if (this.vy > this.wallSlideMaxFall && ((bumped < 0 && keys['KeyA']) || (bumped > 0 && keys['KeyD']))) {
+                    this.vy = this.wallSlideMaxFall;
+                }
+            }
+
+            let jumpPressed = keysPressed['KeyW'] || keysPressed['Space'];
+            if (controlMode === 'CHARACTER' && jumpPressed) {
+                if (this.isGrounded) {
+                    playSfx('jump');
+                    this.vy = this.jumpForce;
+                    this.isGrounded = false;
+                    this.wallContactTimer = 0;
+                    this.wallDir = 0;
+                } else if (this.wallContactTimer > 0 && this.wallDir !== 0) {
+                    playSfx('wallKick');
+                    this.vy = this.wallJumpForce;
+                    this.wallJumpVx = -this.wallDir * this.wallJumpPush;
+                    this.vx = this.wallJumpVx;
+                    this.wallJumpLockTimer = 0.16;
+                    this.wallContactTimer = 0;
+                    this.x += -this.wallDir * 2;
+                    this.lastDir = -this.wallDir;
+                    for (let i = 0; i < 8; i++) {
+                        let spark = new Particle(this.wallDir < 0 ? this.x : this.x + this.w, this.y + this.h * (0.25 + Math.random() * 0.55), i % 2 ? '#fff06a' : '#ffffff');
+                        spark.speedX = this.wallDir * (Math.random() * 3 + 1.5);
+                        spark.speedY = -Math.random() * 4 - 1;
+                        spark.size = Math.random() * 2 + 1.5;
+                        particles.push(spark);
+                    }
+                }
+                keysPressed['KeyW'] = false;
+                keysPressed['Space'] = false;
+            }
             
             // ---- Y축(상하) 물리 이동 및 충돌 체크 ----
+            let wasGrounded = this.isGrounded;
+            let wasFalling = this.vy > 120;
             this.y += this.vy * dt;
             this.isGrounded = false;
+
+            if (this.y < 0) {
+                this.y = 0;
+                if (this.vy < 0) this.vy = 0;
+                this.wallContactTimer = 0;
+                this.wallDir = 0;
+            }
             
             for (let o of obstacles) {
                 if (rectIntersect(this, o)) {
@@ -5062,6 +7256,8 @@
                         this.y = o.y - this.h;
                         this.vy = 0;
                         this.isGrounded = true;
+                        this.wallContactTimer = 0;
+                        this.wallDir = 0;
                     } else if (this.vy < 0) { // 천장에 박음
                         this.y = o.y + o.h;
                         this.vy = 0;
@@ -5074,6 +7270,11 @@
                 this.y = canvas.height - this.h;
                 this.vy = 0;
                 this.isGrounded = true;
+                this.wallContactTimer = 0;
+                this.wallDir = 0;
+            }
+            if (!wasGrounded && this.isGrounded && wasFalling) {
+                playSfx('land');
             }
             
             // 스프라이트 애니메이션 상태 업데이트 부분
@@ -5128,6 +7329,25 @@
             }
 
             ctx.shadowBlur = 0;
+
+            if (isBossPhase3PlayerControlled()) {
+                let pulse = 0.45 + Math.sin(performance.now() / 42) * 0.35;
+                let cx = drawX + drawW / 2;
+                let cy = drawY + drawH / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.globalAlpha = 0.45 + pulse * 0.35;
+                ctx.shadowColor = '#ff3030';
+                ctx.shadowBlur = 22 + pulse * 22;
+                ctx.strokeStyle = '#ff3030';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(drawX - 5, drawY - 6, drawW + 10, drawH + 12);
+                ctx.fillStyle = 'rgba(255, 30, 30, 0.18)';
+                ctx.beginPath();
+                ctx.arc(cx, cy, 22 + pulse * 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
             
             if (this.frames && this.frames.length > 0) {
                 let fIdx = this.currentFrame % this.frames.length;
@@ -5156,6 +7376,19 @@
             }
 
             ctx.shadowBlur = 0;
+        }
+
+        drawAt(ctx, x, y) {
+            let oldX = this.x;
+            let oldY = this.y;
+            let oldBump = this.bumpDir;
+            this.x = x;
+            this.y = y;
+            this.bumpDir = 0;
+            this.draw(ctx);
+            this.x = oldX;
+            this.y = oldY;
+            this.bumpDir = oldBump;
         }
     }
     
@@ -5219,6 +7452,27 @@
             }
             return false;
         }
+
+        checkBoardOverlapAtGrid(gx, gy, mat = this.matrix) {
+            for (let r = 0; r < mat.length; r++) {
+                for (let c = 0; c < mat[r].length; c++) {
+                    if (!mat[r][c]) continue;
+                    let ny = gy + r;
+                    let nx = gx + c;
+                    if (ny >= ROWS || nx < 0 || nx >= COLS) return true;
+                    if (ny >= 0 && board[ny][nx]) return true;
+                }
+            }
+            return false;
+        }
+
+        resolveLockGridY() {
+            let gy = Math.round(this.y / BLOCK_SIZE);
+            while (this.checkBoardOverlapAtGrid(this.gridX, gy) && gy > -this.matrix.length) {
+                gy--;
+            }
+            return gy;
+        }
         
         update(dt) {
             if (this.locked) return;
@@ -5228,9 +7482,11 @@
                 
                 // 좌우 이동 (DAS & ARR)
                 let moved = false;
-                if (keys['KeyA'] || keys['KeyD']) {
-                    let dir = keys['KeyA'] ? 'A' : 'D';
-                    let dx = dir === 'A' ? -1 : 1;
+                let moveLeftPressed = keys['KeyA'] || keys['ArrowLeft'];
+                let moveRightPressed = keys['KeyD'] || keys['ArrowRight'];
+                if (moveLeftPressed || moveRightPressed) {
+                    let dir = moveLeftPressed ? 'L' : 'R';
+                    let dx = dir === 'L' ? -1 : 1;
                     
                     if (this.currentDir !== dir) {
                         this.currentDir = dir;
@@ -5253,8 +7509,9 @@
                 }
                 
                 // 회전 (W) - SRS Wall Kick (충돌 시 보정 오프셋 적용)
-                if (keysPressed['KeyW']) {
+                if (keysPressed['KeyW'] || keysPressed['ArrowUp']) {
                     keysPressed['KeyW'] = false; // 1프레임 1회전 보장용 소모
+                    keysPressed['ArrowUp'] = false;
                     let newMat = rotateMatrix(this.matrix);
                     const kicks = [[0,0], [-1,0], [1,0], [0,-1], [-1,-1], [1,-1], [0,-2]];
                     
@@ -5266,6 +7523,7 @@
                             this.y = ky;
                             this.matrix = newMat;
                             moved = true;
+                            playSfx('blockRotate');
                             break;
                         }
                     }
@@ -5277,12 +7535,11 @@
                     this.lockResets++;
                 }
                 
-                // 홀드 보관 기능 (F)
-                if (keysPressed['KeyF']) {
-                    keysPressed['KeyF'] = false; // 중복 프레임 입력 소모
-                    
+                // 홀드 보관 기능 (F / C)
+                if (consumeHoldKeyPressed()) {
                     if (canHold) {
                         let swappedType = heldPieceType;
+                        playSfx(swappedType ? 'holdRetrieve' : 'holdStore');
                         heldPieceType = this.type;
                         this.deleted = true;
 
@@ -5317,7 +7574,8 @@
                         this.y += BLOCK_SIZE;
                         dropDistance++;
                     }
-                    score += Math.floor(dropDistance * SCORE_CONFIG.hardDropPerCell * currentLevel.scoreMultiplier);
+                    let hardDropScore = Math.floor(dropDistance * SCORE_CONFIG.hardDropPerCell * currentLevel.scoreMultiplier);
+                    score += hardDropScore;
                     addHardDropTrail(this, startY, this.y);
                     this.lock();
                     return;
@@ -5325,7 +7583,8 @@
                 
                 // 빠른 소프트 드롭 (SDF) 및 자연 낙하 (tetr.io 부드러운 주루루룩 연출)
                 // S키를 누르면 시간이 20배 빨리 흘러가도록 배율을 적용 (누적 타이머 폭발 버그 방지)
-                let speedMultiplier = keys['KeyS'] ? 20 : 1; 
+                let softDropPressed = keys['KeyS'] || keys['ArrowDown'];
+                let speedMultiplier = softDropPressed ? 20 : 1;
                 
                 this.dropTimer += dt * speedMultiplier;
                 let softDropCells = 0;
@@ -5335,14 +7594,15 @@
                     if (!this.checkOverlap(this.gridX, newY)) {
                         this.y = newY;
                         this.isLockDelaying = false;
-                        if (keys['KeyS']) softDropCells++;
+                        if (softDropPressed) softDropCells++;
                     } else {
                         this.dropTimer = 0; // 바닥에 닿으면 낙하 타이머 비우기
                         break;
                     }
                 }
                 if (softDropCells > 0) {
-                    score += Math.floor(softDropCells * SCORE_CONFIG.softDropPerCell * currentLevel.scoreMultiplier);
+                    let softDropScore = Math.floor(softDropCells * SCORE_CONFIG.softDropPerCell * currentLevel.scoreMultiplier);
+                    score += softDropScore;
                 }
                 
                 // 바닥 착지 체크 및 락 딜레이 (2.0초 유예 작동)
@@ -5373,7 +7633,7 @@
                         this.y = newY; // 30px 이동(낙하)
                         
                         // 플레이어 압사 체크 (낙하하면서 캐릭터를 강제로 내리누름)
-                        if (player) {
+                        if (player && !isBossPhase3PlayerControlled()) {
                             let pRect = {x: player.x, y: player.y, w: player.w, h: player.h};
                             for(let r of this.getRects()) {
                                 if (rectIntersect(pRect, r)) {
@@ -5388,6 +7648,7 @@
         }
         
         lock() {
+            playSfx('blockPlace');
             this.locked = true;
             if (this.isGhost) {
                 this.isGhost = false;
@@ -5396,6 +7657,7 @@
                 // 하드드롭(스페이스바) 잔여 입력으로 인해 캐릭터 모드로 전환되자마자 점프하는 현상 방지
                 keys['Space'] = false;
                 keys['KeyW'] = false;
+                keys['ArrowUp'] = false;
             }
             canHold = true; // 블록을 보드에 놓았으므로 다시 홀드 가능
             
@@ -5403,7 +7665,8 @@
             shakeAmount = Math.max(shakeAmount, 12); 
             
             // 보드에 그리드 데이터 병합
-            let gy = Math.round(this.y / BLOCK_SIZE);
+            let gy = this.resolveLockGridY();
+            this.y = gy * BLOCK_SIZE;
             let lockedRows = [];
             let lockedCells = [];
             for (let r = 0; r < this.matrix.length; r++) {
@@ -5468,15 +7731,16 @@
                 }
             }
             if (clearedLines > 0) {
-                let comboBonus = SCORE_CONFIG.comboBonus * comboCount;
-                let scoreGain = Math.floor((SCORE_CONFIG.lineClear[clearedLines] + comboBonus) * currentLevel.scoreMultiplier);
+                playSfx('lineClear');
+                if (comboCount > 0) playSfx('combo');
+                let comboMultiplier = registerLineClearCombo();
+                let baseScore = SCORE_CONFIG.lineClear[clearedLines] || clearedLines * 250;
+                let scoreGain = Math.floor(baseScore * currentLevel.scoreMultiplier * comboMultiplier);
                 score += scoreGain;
+                addBossPhase3PsychicClears(clearedLines);
                 if (attackOrigin) showFloatingScore(scoreGain, attackOrigin.x, attackOrigin.y);
-                damageBoss(clearedLines, attackOrigin);
-                comboCount++;
-                shakeAmount = Math.min(clearedLines * 25, 50); // 흔들림 강도를 이전보다 약 1.5배 상향
-            } else {
-                comboCount = 0;
+                damageBoss(clearedLines, attackOrigin, scoreGain, comboMultiplier);
+                shakeAmount = Math.min(clearedLines * 25 + (comboMultiplier - 1) * 10, 78);
             }
 
             updateDangerZoneState();
@@ -5652,25 +7916,96 @@
         ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
     }
 
-    function drawBossHand(hand, activeRect = null) {
+    function drawBossFistHand(x, y, w, h, side) {
+        let palmX = x + w * 0.14;
+        let palmY = y + h * 0.18;
+        let palmW = w * 0.72;
+        let palmH = h * 0.58;
+        let wristW = w * 0.2;
+        let wristX = side < 0 ? x + w * 0.05 : x + w * 0.75;
+
+        drawBossPixelRect(wristX, y + h * 0.04, wristW, h * 0.24, '#210004');
+        drawBossPixelRect(wristX + wristW * 0.18, y + h * 0.1, wristW * 0.58, h * 0.12, '#b9141c');
+        drawBossPixelRect(palmX, palmY + h * 0.1, palmW, palmH, '#4a0106');
+        drawBossPixelRect(palmX + w * 0.04, palmY, palmW - w * 0.08, palmH * 0.92, '#8a0710');
+        drawBossPixelRect(palmX + w * 0.14, palmY + h * 0.16, palmW - w * 0.28, palmH * 0.42, '#d6262e');
+
+        for (let i = 0; i < 4; i++) {
+            let knuckleX = x + w * (0.17 + i * 0.165);
+            let knuckleY = y + h * (0.58 + (i % 2) * 0.04);
+            drawBossPixelRect(knuckleX, knuckleY, w * 0.14, h * 0.2, '#210004');
+            drawBossPixelRect(knuckleX + w * 0.025, knuckleY + h * 0.035, w * 0.08, h * 0.07, '#ff3d3d');
+        }
+        drawBossPixelRect(x + w * 0.18, y + h * 0.76, w * 0.64, h * 0.1, '#210004');
+    }
+
+    function drawBossClapHand(x, y, w, h, side) {
+        let centerSide = side < 0 ? 1 : -1;
+        let palmX = side < 0 ? x + w * 0.32 : x + w * 0.04;
+        let palmY = y + h * 0.12;
+        let palmW = w * 0.48;
+        let palmH = h * 0.76;
+        let wristX = side < 0 ? x + w * 0.06 : x + w * 0.74;
+        let fingerX = side < 0 ? palmX + palmW * 0.76 : palmX - w * 0.11;
+
+        drawBossPixelRect(wristX, y + h * 0.36, w * 0.2, h * 0.24, '#210004');
+        drawBossPixelRect(wristX + w * 0.04, y + h * 0.42, w * 0.11, h * 0.1, '#bf151e');
+        drawBossPixelRect(palmX, palmY + h * 0.08, palmW, palmH * 0.84, '#4a0106');
+        drawBossPixelRect(palmX + w * 0.04, palmY, palmW - w * 0.08, palmH, '#9b0710');
+        drawBossPixelRect(palmX + w * 0.11, palmY + h * 0.2, palmW - w * 0.22, palmH * 0.45, '#d6262e');
+
+        for (let i = 0; i < 4; i++) {
+            let fingerY = y + h * (0.12 + i * 0.18);
+            let curl = i * w * 0.012 * centerSide;
+            drawBossPixelRect(fingerX + curl, fingerY, w * 0.18, h * 0.11, '#210004');
+            drawBossPixelRect(fingerX + curl + (side < 0 ? w * 0.11 : -w * 0.02), fingerY + h * 0.02, w * 0.055, h * 0.05, '#ff3d3d');
+        }
+    }
+
+    function drawBossIdleHand(x, y, w, h, side) {
+        let palmX = x + w * 0.18;
+        let palmY = y + h * 0.12;
+        let palmW = w * 0.64;
+        let palmH = h * 0.68;
+        let fingerW = Math.max(6, w * 0.18);
+        let fingerH = Math.max(4, h * 0.13);
+        let fingerGap = h * 0.125;
+        let fingerStartY = y + h * 0.12;
+        let fingerRootX = side < 0 ? x + w * 0.68 : x + w * 0.14;
+        let fingerDir = side < 0 ? 1 : -1;
+        let wristW = w * 0.18;
+        let wristH = h * 0.26;
+        let wristX = side < 0 ? x + w * 0.05 : x + w * 0.77;
+
+        drawBossPixelRect(palmX, palmY + h * 0.14, palmW, palmH * 0.76, '#5c0208');
+        drawBossPixelRect(palmX + w * 0.05, palmY, palmW - w * 0.1, palmH, '#9b0710');
+        drawBossPixelRect(palmX + w * 0.14, palmY + h * 0.19, palmW - w * 0.28, palmH * 0.5, '#d81f2a');
+        for (let i = 0; i < 4; i++) {
+            let curl = i * w * 0.025;
+            let fingerX = fingerRootX + fingerDir * curl;
+            let fingerY = fingerStartY + i * fingerGap;
+            let tipX = fingerX + (side < 0 ? fingerW * 0.58 : -fingerW * 0.3);
+            drawBossPixelRect(fingerX, fingerY, fingerW, fingerH, '#210004');
+            drawBossPixelRect(tipX, fingerY + fingerH * 0.2, fingerW * 0.45, fingerH * 0.58, '#f03535');
+        }
+        drawBossPixelRect(wristX, y + h * 0.43, wristW, wristH, '#210004');
+        drawBossPixelRect(wristX + wristW * 0.18, y + h * 0.48, wristW * 0.58, wristH * 0.42, '#f03535');
+    }
+
+    function drawBossHand(hand, activeRect = null, pose = 'idle') {
         let pulse = Math.sin(performance.now() / 120) * 3;
         let x = activeRect ? activeRect.x : hand.attackX + pulse * hand.side;
         let y = activeRect ? activeRect.y : hand.attackY + Math.sin(performance.now() / 180 + hand.side) * 4;
         let w = activeRect ? activeRect.w : hand.w;
         let h = activeRect ? activeRect.h : hand.h;
+        let side = hand.side < 0 ? -1 : 1;
 
         ctx.save();
         ctx.shadowColor = '#ff2222';
-        ctx.shadowBlur = activeRect ? 18 : 8;
-        drawBossPixelRect(x + 10, y + 8, w - 20, h - 14, '#5c0208');
-        drawBossPixelRect(x + 16, y + 3, w - 32, h - 6, '#9b0710');
-        drawBossPixelRect(x + 22, y + 10, w - 44, h - 16, '#d81f2a');
-        for (let i = 0; i < 4; i++) {
-            let fingerX = hand.side < 0 ? x + w - 14 - i * 2 : x + 2 + i * 2;
-            drawBossPixelRect(fingerX, y + 3 + i * 7, 16, 5, '#210004');
-            drawBossPixelRect(fingerX + (hand.side < 0 ? 9 : -3), y + 4 + i * 7, 7, 3, '#f03535');
-        }
-        drawBossPixelRect(x + (hand.side < 0 ? 4 : w - 12), y + 14, 10, 10, '#210004');
+        ctx.shadowBlur = pose === 'clap' ? 20 : (activeRect ? 18 : 8);
+        if (pose === 'fist') drawBossFistHand(x, y, w, h, side);
+        else if (pose === 'clap') drawBossClapHand(x, y, w, h, side);
+        else drawBossIdleHand(x, y, w, h, side);
         ctx.restore();
     }
 
@@ -5697,26 +8032,569 @@
         ctx.restore();
     }
 
+    function easeOutCubic(value) {
+        value = Math.max(0, Math.min(value, 1));
+        return 1 - Math.pow(1 - value, 3);
+    }
+
+    function lerp(a, b, t) {
+        return a + (b - a) * t;
+    }
+
+    function getBossPhase2FistSizeForArea(area) {
+        let w = Math.max(BLOCK_SIZE * 3.25, area.w - 12);
+        return { w, h: w * 0.58 };
+    }
+
+    function getBossPhase2ClapSize() {
+        let w = Math.max(BLOCK_SIZE * 3.25, canvas.width / 2 + 6);
+        return { w, h: w * 0.58 };
+    }
+
+    function getBossPhase2BlockSmashSize() {
+        let area = getBossBlockSmashWarningArea();
+        let w = Math.max(BLOCK_SIZE * 3.1, area.w + 12);
+        return { w, h: w * 0.58 };
+    }
+
+    function getBossImpactReturnRect(base, ready, impact, timer, duration) {
+        let impactTime = getBossImpactTime(duration);
+        let holdEnd = getBossImpactHoldEnd(duration);
+        if (timer <= impactTime) {
+            let t = easeOutCubic(timer / Math.max(impactTime, 0.01));
+            return {
+                x: lerp(ready.x, impact.x, t),
+                y: lerp(ready.y, impact.y, t),
+                w: lerp(ready.w, impact.w, t),
+                h: lerp(ready.h, impact.h, t)
+            };
+        }
+        if (timer <= holdEnd) {
+            let slamShake = Math.sin(timer * 95) * 2;
+            return {
+                x: impact.x + slamShake,
+                y: impact.y + Math.abs(slamShake) * 0.45,
+                w: impact.w,
+                h: impact.h
+            };
+        }
+        let t = easeOutCubic((timer - holdEnd) / Math.max(duration - holdEnd, 0.01));
+        return {
+            x: lerp(impact.x, base.x, t),
+            y: lerp(impact.y, base.y, t),
+            w: lerp(impact.w, base.w, t),
+            h: lerp(impact.h, base.h, t)
+        };
+    }
+
+    function drawBossHandRect(base, target, side, progress) {
+        let t = easeOutCubic(progress);
+        drawBossHand(
+            { side, attackX: 0, attackY: 0, w: target.w, h: target.h },
+            {
+                x: lerp(base.x, target.x, t),
+                y: lerp(base.y, target.y, t),
+                w: lerp(base.w, target.w, t),
+                h: lerp(base.h, target.h, t)
+            }
+        );
+    }
+
+    function getBossHandComboRect(step, phase = bossAttack.phase, timer = bossAttack.timer, duration = getBossHandAttackDuration()) {
+        let warningArea = getBossHandWarningArea(step);
+        let attackSize = getBossPhase2FistSizeForArea(warningArea);
+        let leftBase = { x: bossHands[0].x, y: bossHands[0].y, w: bossHands[0].w, h: bossHands[0].h };
+        let rightBase = { x: bossHands[1].x, y: bossHands[1].y, w: bossHands[1].w, h: bossHands[1].h };
+        let readyY = Math.max(82, warningArea.y - attackSize.h * 0.35);
+        let leftReady = {
+            x: warningArea.x + (warningArea.w - attackSize.w) / 2,
+            y: readyY,
+            w: attackSize.w,
+            h: attackSize.h
+        };
+        let rightReady = {
+            x: warningArea.x + (warningArea.w - attackSize.w) / 2,
+            y: readyY,
+            w: attackSize.w,
+            h: attackSize.h
+        };
+        let impact = {
+            x: warningArea.x + (warningArea.w - attackSize.w) / 2,
+            y: canvas.height - attackSize.h - 2,
+            w: attackSize.w,
+            h: attackSize.h
+        };
+
+        if (phase === 'telegraph') {
+            let t = easeOutCubic(Math.min(timer / 2, 1));
+            let base = step === 0 ? leftBase : rightBase;
+            let ready = step === 0 ? leftReady : rightReady;
+            return {
+                x: lerp(base.x, ready.x, t),
+                y: lerp(base.y, ready.y, t),
+                w: lerp(base.w, ready.w, t),
+                h: lerp(base.h, ready.h, t)
+            };
+        }
+
+        let base = step === 0 ? leftBase : rightBase;
+        let ready = step === 0 ? leftReady : rightReady;
+        return getBossImpactReturnRect(base, ready, impact, timer, duration);
+    }
+
+    function getBossHandClapRects(phase = bossAttack.phase, timer = bossAttack.timer, duration = getBossHandAttackDuration()) {
+        let attackSize = getBossPhase2ClapSize();
+        let warningArea = getBossHandWarningArea(2);
+        let leftBase = { x: bossHands[0].x, y: bossHands[0].y, w: bossHands[0].w, h: bossHands[0].h };
+        let rightBase = { x: bossHands[1].x, y: bossHands[1].y, w: bossHands[1].w, h: bossHands[1].h };
+        let readyY = warningArea.y + (warningArea.h - attackSize.h) / 2;
+        let leftReady = { x: -attackSize.w * 0.55, y: readyY, w: attackSize.w, h: attackSize.h };
+        let rightReady = { x: canvas.width - attackSize.w * 0.45, y: readyY, w: attackSize.w, h: attackSize.h };
+        let leftImpact = { x: warningArea.x, y: readyY, w: attackSize.w, h: attackSize.h };
+        let rightImpact = { x: warningArea.x + warningArea.w - attackSize.w, y: readyY, w: attackSize.w, h: attackSize.h };
+        let t = phase === 'telegraph'
+            ? easeOutCubic(Math.min(timer / 2, 1))
+            : easeOutCubic(Math.min(timer / Math.max(duration, 0.01), 1));
+        if (phase === 'telegraph') {
+            return {
+                left: {
+                    x: lerp(leftBase.x, leftReady.x, t),
+                    y: lerp(leftBase.y, leftReady.y, t),
+                    w: lerp(leftBase.w, leftReady.w, t),
+                    h: lerp(leftBase.h, leftReady.h, t)
+                },
+                right: {
+                    x: lerp(rightBase.x, rightReady.x, t),
+                    y: lerp(rightBase.y, rightReady.y, t),
+                    w: lerp(rightBase.w, rightReady.w, t),
+                    h: lerp(rightBase.h, rightReady.h, t)
+                }
+            };
+        }
+        return {
+            left: getBossImpactReturnRect(leftBase, leftReady, leftImpact, timer, duration),
+            right: getBossImpactReturnRect(rightBase, rightReady, rightImpact, timer, duration)
+        };
+    }
+
+    function getBossHandWarningArea(step) {
+        if (step === 0) return { x: 0, y: 138, w: canvas.width / 2, h: canvas.height - 138 };
+        if (step === 1) return { x: canvas.width / 2, y: 138, w: canvas.width / 2, h: canvas.height - 138 };
+        let topRow = getBossTopStackedBlockRow();
+        let sweepStartRow = topRow === null
+            ? ROWS - 3
+            : Math.max(HIDDEN_ROWS, topRow - 2);
+        return { x: 0, y: sweepStartRow * BLOCK_SIZE, w: canvas.width, h: BLOCK_SIZE * 3 };
+    }
+
+    function drawBossHandWarning(rect, progress, direction = 'down') {
+        let time = performance.now() / 720;
+        let wave = time % 1;
+        let intensity = 0.2 + progress * 0.38;
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+
+        let baseGradient;
+        if (direction === 'clap') {
+            baseGradient = ctx.createLinearGradient(rect.x, 0, rect.x + rect.w, 0);
+            baseGradient.addColorStop(0, 'rgba(255, 153, 204, 0.42)');
+            baseGradient.addColorStop(0.38, `rgba(255, 18, 18, ${intensity})`);
+            baseGradient.addColorStop(0.5, 'rgba(255, 240, 106, 0.3)');
+            baseGradient.addColorStop(0.62, `rgba(255, 18, 18, ${intensity})`);
+            baseGradient.addColorStop(1, 'rgba(255, 153, 204, 0.42)');
+        } else {
+            baseGradient = ctx.createLinearGradient(0, rect.y, 0, rect.y + rect.h);
+            baseGradient.addColorStop(0, 'rgba(255, 18, 18, 0.04)');
+            baseGradient.addColorStop(0.58, `rgba(255, 18, 18, ${intensity})`);
+            baseGradient.addColorStop(1, 'rgba(255, 153, 204, 0.42)');
+        }
+        ctx.fillStyle = baseGradient;
+        ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+
+        for (let i = 0; i < 5; i++) {
+            let p = (wave + i / 5) % 1;
+            let bandAlpha = 0.07 + progress * 0.16;
+            if (direction === 'clap') {
+                let leftX = rect.x + p * rect.w * 0.5;
+                let rightX = rect.x + rect.w - p * rect.w * 0.5;
+                ctx.fillStyle = `rgba(255, 240, 106, ${bandAlpha})`;
+                ctx.fillRect(leftX - 9, rect.y, 18, rect.h);
+                ctx.fillRect(rightX - 9, rect.y, 18, rect.h);
+            } else {
+                let y = rect.y + p * rect.h;
+                ctx.fillStyle = `rgba(255, 240, 106, ${bandAlpha})`;
+                ctx.fillRect(rect.x, y - 15, rect.w, 30);
+            }
+        }
+
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 0.22 + progress * 0.22;
+        ctx.strokeStyle = '#ff99cc';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rect.x + 2, rect.y + 2, rect.w - 4, rect.h - 4);
+        ctx.restore();
+    }
+
+    function drawBossHandTrail(rect, side, direction = 'down', strength = 1, pose = 'idle') {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 1; i <= 3; i++) {
+            let offset = i * 10;
+            let ghost = { x: rect.x, y: rect.y, w: rect.w, h: rect.h };
+            if (direction === 'left') ghost.x += offset;
+            else if (direction === 'right') ghost.x -= offset;
+            else ghost.y -= offset;
+            ctx.globalAlpha = (0.18 / i) * strength;
+            drawBossHand({ side, attackX: 0, attackY: 0, w: rect.w, h: rect.h }, ghost, pose);
+        }
+        ctx.restore();
+    }
+
+    function getBossBlockSmashHandRect(phase = bossAttack.phase, timer = bossAttack.timer) {
+        let attackSize = getBossPhase2BlockSmashSize();
+        let warningArea = getBossBlockSmashWarningArea();
+        let hand = bossAttack.side < 0 ? bossHands[0] : bossHands[1];
+        let base = { x: hand.x, y: hand.y, w: hand.w, h: hand.h };
+        let targetX = warningArea.x + warningArea.w / 2 - attackSize.w / 2;
+        targetX = Math.max(4, Math.min(canvas.width - attackSize.w - 4, targetX));
+        let ready = {
+            x: targetX,
+            y: Math.max(82, warningArea.y - attackSize.h * 0.65),
+            w: attackSize.w,
+            h: attackSize.h
+        };
+        let impact = {
+            x: targetX,
+            y: warningArea.y + warningArea.h - attackSize.h + 2,
+            w: attackSize.w,
+            h: attackSize.h
+        };
+        if (phase === 'telegraph') {
+            let t = easeOutCubic(Math.min(timer / 1.45, 1));
+            return {
+                x: lerp(base.x, ready.x, t),
+                y: lerp(base.y, ready.y, t),
+                w: lerp(base.w, ready.w, t),
+                h: lerp(base.h, ready.h, t)
+            };
+        }
+        return getBossImpactReturnRect(base, ready, impact, timer, bossAttack.duration || 0.78);
+    }
+
+    function getBossBlockSmashWarningArea() {
+        let centerCol = Number.isFinite(bossAttack.targetCol) ? bossAttack.targetCol : Math.floor(COLS / 2);
+        let centerRow = Number.isFinite(bossAttack.targetRow) ? bossAttack.targetRow : ROWS - 4;
+        let minCol = Math.max(0, centerCol - 1);
+        let maxCol = Math.min(COLS - 1, centerCol + 1);
+        let minRow = Math.max(HIDDEN_ROWS, centerRow - 3);
+        let maxRow = Math.min(ROWS - 1, centerRow + 1);
+        return {
+            x: minCol * BLOCK_SIZE,
+            y: minRow * BLOCK_SIZE,
+            w: (maxCol - minCol + 1) * BLOCK_SIZE,
+            h: (maxRow - minRow + 1) * BLOCK_SIZE
+        };
+    }
+
+    function drawBossBlockSmashWarning(progress) {
+        let area = getBossBlockSmashWarningArea();
+        drawBossHandWarning(area, progress, 'down');
+
+        let targetX = bossAttack.targetCol * BLOCK_SIZE;
+        let targetY = bossAttack.targetRow * BLOCK_SIZE;
+        let pulse = 0.45 + Math.sin(performance.now() / 80) * 0.22;
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = 0.38 + progress * 0.28 + pulse * 0.18;
+        ctx.strokeStyle = '#fff06a';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(targetX + 3, targetY + 3, BLOCK_SIZE - 6, BLOCK_SIZE - 6);
+        ctx.globalAlpha = 0.2 + progress * 0.28;
+        ctx.fillStyle = '#ff3030';
+        ctx.fillRect(targetX, targetY, BLOCK_SIZE, BLOCK_SIZE);
+        ctx.restore();
+    }
+
+    function drawBossBlockSmashAttack() {
+        if (bossAttack.type !== 'block-smash') return;
+        let activeRect = getBossBlockSmashHandRect();
+        let activeSide = bossAttack.side < 0 ? -1 : 1;
+        let inactiveHand = activeSide < 0 ? bossHands[1] : bossHands[0];
+        if (inactiveHand) drawBossHand(inactiveHand);
+        if (!activeRect) return;
+        let strength = bossAttack.phase === 'telegraph'
+            ? 0.45 + Math.min(bossAttack.timer / 1.45, 1) * 0.45
+            : 1;
+        if (bossAttack.phase === 'telegraph') {
+            drawBossBlockSmashWarning(Math.min(bossAttack.timer / 1.45, 1));
+        }
+        drawBossHandTrail(activeRect, activeSide, 'down', strength, 'fist');
+        drawBossHand({ side: activeSide, attackX: 0, attackY: 0, w: activeRect.w, h: activeRect.h }, activeRect, 'fist');
+    }
+
+    function drawBossPhase2HandAttack() {
+        if (bossAttack.type !== 'hand-combo') return;
+        let activeSide = bossAttack.comboStep === 0 ? -1 : 1;
+        let warningArea = getBossHandWarningArea(bossAttack.comboStep);
+        let progress = bossAttack.phase === 'telegraph'
+            ? Math.min(bossAttack.timer / 2, 1)
+            : Math.min(bossAttack.timer / Math.max(getBossHandAttackDuration(), 0.01), 1);
+
+        if (bossAttack.comboStep === 2) {
+            let clapRects = getBossHandClapRects();
+            if (bossAttack.phase === 'telegraph') {
+                drawBossHandWarning(warningArea, progress, 'clap');
+                drawBossHandTrail(clapRects.left, -1, 'right', 0.45 + progress * 0.55, 'clap');
+                drawBossHandTrail(clapRects.right, 1, 'left', 0.45 + progress * 0.55, 'clap');
+            } else {
+                drawBossHandTrail(clapRects.left, -1, 'right', 1, 'clap');
+                drawBossHandTrail(clapRects.right, 1, 'left', 1, 'clap');
+            }
+            drawBossHand({ side: -1, attackX: 0, attackY: 0, w: clapRects.left.w, h: clapRects.left.h }, clapRects.left, 'clap');
+            drawBossHand({ side: 1, attackX: 0, attackY: 0, w: clapRects.right.w, h: clapRects.right.h }, clapRects.right, 'clap');
+            return;
+        }
+
+        let activeRect = getBossHandComboRect(bossAttack.comboStep);
+        let inactiveHand = bossAttack.comboStep === 0 ? bossHands[1] : bossHands[0];
+        if (inactiveHand) drawBossHand(inactiveHand);
+        if (!activeRect) return;
+
+        if (bossAttack.phase === 'telegraph') {
+            drawBossHandWarning(warningArea, progress, 'down');
+            drawBossHandTrail(activeRect, activeSide, 'down', 0.45 + progress * 0.55, 'fist');
+            drawBossHand({ side: activeSide, attackX: 0, attackY: 0, w: activeRect.w, h: activeRect.h }, activeRect, 'fist');
+            return;
+        }
+
+        drawBossHandTrail(activeRect, activeSide, 'down', 1, 'fist');
+        drawBossHand({ side: activeSide, attackX: 0, attackY: 0, w: activeRect.w, h: activeRect.h }, activeRect, 'fist');
+    }
+
+    function drawBossPhase3Flood() {
+        return;
+    }
+
+    function drawBossPhase3HandEye(rect, openAmount = 1) {
+        let cx = rect.x + rect.w / 2;
+        let cy = rect.y + rect.h / 2;
+        let radius = Math.min(rect.w, rect.h) * 0.34;
+        let armCount = 10;
+        let spin = performance.now() / 900;
+
+        ctx.save();
+        ctx.shadowColor = '#ff3030';
+        ctx.shadowBlur = 24;
+
+        for (let i = 0; i < armCount; i++) {
+            let angle = -Math.PI / 2 + i * Math.PI * 2 / armCount + Math.sin(spin + i) * 0.04;
+            let armW = rect.w * 0.42;
+            let armH = armW * 0.58;
+            let distance = radius * (0.9 + (i % 2) * 0.14);
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+            ctx.globalAlpha = 0.58 + openAmount * 0.36;
+            drawBossHand(
+                { side: i % 2 === 0 ? 1 : -1, attackX: 0, attackY: 0, w: armW, h: armH },
+                { x: distance, y: -armH / 2, w: armW, h: armH },
+                'idle'
+            );
+            ctx.restore();
+        }
+
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = `rgba(255, 48, 48, ${0.2 + openAmount * 0.32})`;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+
+        ctx.fillStyle = '#210004';
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 0.95, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#7f0610';
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 0.76, 0, Math.PI * 2);
+        ctx.fill();
+
+        let eyeW = radius * 0.75;
+        let eyeH = radius * 0.34 * Math.max(0.08, openAmount);
+        ctx.fillStyle = '#ffe1dc';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, eyeW, eyeH, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ff3030';
+        ctx.beginPath();
+        ctx.arc(cx, cy, Math.max(2, eyeH * 0.72), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#210004';
+        ctx.fillRect(cx - eyeW * 1.15, cy - 1, eyeW * 2.3, 2);
+        if (openAmount > 0.55) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(cx - eyeW * 0.22, cy - eyeH * 0.5, 4, 4);
+        }
+        ctx.restore();
+    }
+
+    function drawBossPhase3TransformFragments(progress, coreRect) {
+        if (progress >= 1) return;
+        let alpha = 1 - progress;
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.7;
+        let leftStart = { x: bossHands[0].x, y: bossHands[0].y, w: bossHands[0].w, h: bossHands[0].h };
+        let leftTarget = { x: coreRect.x + coreRect.w * 0.18, y: coreRect.y + coreRect.h * 0.2, w: coreRect.w * 0.45, h: coreRect.h * 0.45 };
+        drawBossHand(
+            { side: -1, attackX: 0, attackY: 0, w: leftTarget.w, h: leftTarget.h },
+            {
+                x: lerp(leftStart.x, leftTarget.x, progress),
+                y: lerp(leftStart.y, leftTarget.y, progress),
+                w: lerp(leftStart.w, leftTarget.w, progress),
+                h: lerp(leftStart.h, leftTarget.h, progress)
+            },
+            'idle'
+        );
+
+        let eyeX = lerp(bossEye.x, coreRect.x + coreRect.w * 0.48, progress);
+        let eyeY = lerp(bossEye.y, coreRect.y + coreRect.h * 0.45, progress);
+        let radius = lerp(bossEye.radius, coreRect.w * 0.1, progress);
+        ctx.shadowColor = '#ff3030';
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = '#3b2526';
+        ctx.beginPath();
+        ctx.arc(eyeX, eyeY, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ff3030';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(eyeX - radius * 0.5, eyeY - radius * 0.5);
+        ctx.lineTo(eyeX + radius * 0.5, eyeY + radius * 0.5);
+        ctx.moveTo(eyeX + radius * 0.5, eyeY - radius * 0.5);
+        ctx.lineTo(eyeX - radius * 0.5, eyeY + radius * 0.5);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function drawBossPhase3Core() {
+        if (!isBossPhase3()) return;
+        let transformProgress = bossPhase3TransformTimer > 0
+            ? 1 - bossPhase3TransformTimer / BOSS_PHASE3_TRANSFORM_DURATION
+            : 1;
+        transformProgress = Math.max(0, Math.min(transformProgress, 1));
+        let target = getBossPhase3CoreRect();
+        let start = { x: bossHands[1].x, y: bossHands[1].y, w: bossHands[1].w, h: bossHands[1].h };
+        let coreRect = bossPhase3TransformTimer > 0
+            ? {
+                x: lerp(start.x, target.x, easeOutCubic(transformProgress)),
+                y: lerp(start.y, target.y, easeOutCubic(transformProgress)),
+                w: lerp(start.w, target.w, easeOutCubic(transformProgress)),
+                h: lerp(start.h, target.h, easeOutCubic(transformProgress))
+            }
+            : target;
+
+        drawBossPhase3TransformFragments(transformProgress, coreRect);
+        let eyeOpen = bossPhase3TransformTimer > 0
+            ? Math.max(0.08, (transformProgress - 0.68) / 0.32)
+            : 1;
+        drawBossPhase3HandEye(coreRect, eyeOpen);
+    }
+
+    function drawBossPhase3PsychicGauge() {
+        if (!isBossPhase3PsychicActive()) return;
+        let timeRatio = Math.max(0, 1 - bossPhase3Psychic.timer / BOSS_PHASE3_PSYCHIC_DURATION);
+        let x = canvas.width * 0.14;
+        let y = 178;
+        let w = canvas.width * 0.72;
+        let h = 11;
+        let pulse = 0.65 + Math.sin(performance.now() / 70) * 0.25;
+        ctx.save();
+        ctx.fillStyle = 'rgba(12, 0, 4, 0.72)';
+        ctx.fillRect(x - 3, y - 3, w + 6, h + 6);
+        ctx.fillStyle = 'rgba(255, 48, 48, 0.18)';
+        ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = `rgba(255, 48, 48, ${0.72 + pulse * 0.22})`;
+        ctx.fillRect(x, y, w * timeRatio, h);
+        ctx.strokeStyle = '#ff99cc';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - 3, y - 3, w + 6, h + 6);
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffccd8';
+        ctx.fillText(formatBossPhase3Time(BOSS_PHASE3_PSYCHIC_DURATION - bossPhase3Psychic.timer), x + w / 2, y - 8);
+        ctx.restore();
+    }
+
+    function drawBossPhase3TelekinesisGrip() {
+        if (!isBossPhase3PlayerControlled() || !player) return;
+        let core = getBossPhase3CoreRect();
+        let fromX = core.x + core.w / 2;
+        let fromY = core.y + core.h * 0.62;
+        let toX = player.x + player.w / 2;
+        let toY = player.y + player.h / 2;
+        let pulse = 0.5 + Math.sin(performance.now() / 48) * 0.35;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = `rgba(255, 48, 48, ${0.28 + pulse * 0.34})`;
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 4; i++) {
+            let wave = Math.sin(performance.now() / 120 + i * 1.8) * 16;
+            ctx.beginPath();
+            ctx.moveTo(fromX + (i - 1.5) * 7, fromY);
+            ctx.quadraticCurveTo((fromX + toX) / 2 + wave, (fromY + toY) / 2 - 34, toX, toY);
+            ctx.stroke();
+        }
+        ctx.strokeStyle = `rgba(255, 220, 220, ${0.38 + pulse * 0.38})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(toX, toY, 22 + pulse * 9, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    }
+
     function drawBossTelegraphs() {
         if (!isBossLevel()) return;
 
-        if (bossAttack.phase === 'telegraph' && bossAttack.type === 'vertical-laser') {
-            let blink = Math.floor(performance.now() / 80) % 2 === 0;
+        if (bossAttack.type === 'hand-combo') {
+            drawBossPhase2HandAttack();
+            return;
+        }
+
+        if (bossAttack.type === 'block-smash') {
+            drawBossBlockSmashAttack();
+            return;
+        }
+
+        if (bossPhase === 0 && bossAttack.phase === 'telegraph' && bossAttack.type === 'vertical-laser') {
+            let chargeLocked = bossAttack.timer >= BOSS_VERTICAL_LASER_TRACK_TIME;
+            let blink = !chargeLocked || Math.floor(performance.now() / 80) % 2 === 0;
             if (blink) {
-                let laserX = Math.max(BLOCK_SIZE / 2, Math.min(canvas.width - BLOCK_SIZE / 2, bossEye.x));
-                ctx.strokeStyle = 'rgba(255, 60, 60, 0.95)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([8, 6]);
+                let laserX = Number.isFinite(bossAttack.laneX)
+                    ? bossAttack.laneX + BLOCK_SIZE / 2
+                    : Math.max(BLOCK_SIZE / 2, Math.min(canvas.width - BLOCK_SIZE / 2, bossEye.x));
+                ctx.strokeStyle = chargeLocked ? 'rgba(255, 30, 30, 1)' : 'rgba(255, 60, 60, 0.95)';
+                ctx.lineWidth = chargeLocked ? 3 : 2;
+                ctx.setLineDash(chargeLocked ? [4, 4] : [8, 6]);
                 ctx.beginPath();
                 ctx.moveTo(laserX, bossEye.y + bossEye.radius * 0.45);
                 ctx.lineTo(laserX, canvas.height);
                 ctx.stroke();
                 ctx.setLineDash([]);
+                if (chargeLocked) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.fillStyle = 'rgba(255, 30, 30, 0.14)';
+                    ctx.fillRect(laserX - BLOCK_SIZE / 2, bossEye.y + bossEye.radius * 0.45, BLOCK_SIZE, canvas.height);
+                    ctx.restore();
+                }
             }
         }
 
-        if (bossAttack.phase === 'fire' && bossAttack.type === 'vertical-laser') {
-            let laserX = Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
+        if (bossPhase === 0 && bossAttack.phase === 'fire' && bossAttack.type === 'vertical-laser') {
+            let laserX = Number.isFinite(bossAttack.laneX)
+                ? Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossAttack.laneX))
+                : Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
             let laserY = bossEye.y + bossEye.radius * 0.45;
             ctx.fillStyle = 'rgba(255, 20, 20, 0.9)';
             ctx.fillRect(laserX + 8, laserY, BLOCK_SIZE - 16, canvas.height - laserY);
@@ -5729,38 +8607,125 @@
 
     function drawBossEye() {
         let eyePart = bossParts.find(part => part.id === 'eye');
-        if (!eyePart || !eyePart.alive) return;
+        if (!eyePart || (!eyePart.alive && bossPhase < 1)) return;
         let t = performance.now();
         let stunJitter = bossStunTimer > 0 ? 5 : 1;
-        let jx = (Math.random() - 0.5) * stunJitter;
-        let jy = (Math.random() - 0.5) * stunJitter;
+        let verticalLaserCharging = bossPhase === 0
+            && bossAttack.type === 'vertical-laser'
+            && bossAttack.phase === 'telegraph'
+            && bossAttack.timer >= BOSS_VERTICAL_LASER_TRACK_TIME;
+        let chargePulse = verticalLaserCharging ? 0.5 + Math.sin(t / 42) * 0.5 : 0;
+        let chargeJitter = verticalLaserCharging ? 4 + chargePulse * 4 : 0;
+        let jx = (Math.random() - 0.5) * (stunJitter + chargeJitter);
+        let jy = (Math.random() - 0.5) * (stunJitter + chargeJitter);
         let cx = bossEye.x + jx;
         let cy = bossEye.y + jy;
-        let radius = bossEye.radius + Math.sin(t / 170) * 2;
+        let radius = bossEye.radius + Math.sin(t / 170) * 2 + (verticalLaserCharging ? chargePulse * 3 : 0);
+        let damagedEye = bossPhase >= 1 || !eyePart.alive;
         let eyeGlow = bossStunTimer > 0 ? '#fff06a' : '#ff3030';
 
         ctx.save();
-        ctx.shadowColor = bossStunTimer > 0 ? '#fff06a' : '#a00010';
-        ctx.shadowBlur = bossStunTimer > 0 ? 30 : 18;
-        ctx.fillStyle = '#f5ead0';
+        ctx.shadowColor = verticalLaserCharging ? '#ff3030' : (damagedEye ? '#240006' : (bossStunTimer > 0 ? '#fff06a' : '#a00010'));
+        ctx.shadowBlur = verticalLaserCharging ? 24 + chargePulse * 18 : (damagedEye ? 7 : (bossStunTimer > 0 ? 30 : 18));
+        ctx.fillStyle = damagedEye ? '#3b2526' : '#f5ead0';
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#d8b78f';
+        ctx.fillStyle = damagedEye ? '#16080b' : '#d8b78f';
         ctx.beginPath();
         ctx.arc(cx, cy, radius * 0.72, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = eyeGlow;
-        ctx.beginPath();
-        ctx.arc(cx + bossEye.pupilX, cy + bossEye.pupilY, radius * 0.38, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#080006';
-        ctx.beginPath();
-        ctx.arc(cx + bossEye.pupilX, cy + bossEye.pupilY, radius * 0.2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(cx + bossEye.pupilX - 6, cy + bossEye.pupilY - 8, 5, 5);
-        ctx.strokeStyle = '#7e050c';
+        if (verticalLaserCharging && !damagedEye) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = 0.34 + chargePulse * 0.34;
+            ctx.fillStyle = '#ff3030';
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * (1.05 + chargePulse * 0.28), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ff3030';
+            ctx.lineWidth = 2 + chargePulse * 3;
+            for (let i = 0; i < 3; i++) {
+                ctx.globalAlpha = 0.42 - i * 0.1 + chargePulse * 0.18;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius * (1.25 + i * 0.28 + chargePulse * 0.16), 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 0.28 + chargePulse * 0.28;
+            ctx.lineWidth = 3;
+            for (let i = 0; i < 8; i++) {
+                let angle = i * Math.PI * 2 / 8 + t / 95;
+                let inner = radius * 0.65;
+                let outer = radius * (1.75 + chargePulse * 0.55);
+                ctx.beginPath();
+                ctx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner);
+                ctx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+        if (damagedEye) {
+            ctx.save();
+            ctx.globalAlpha = 0.48;
+            ctx.fillStyle = '#050003';
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 0.58, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.lineCap = 'square';
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = bossEyeGlitchTimer > 0 && Math.floor(t / 60) % 2 === 0 ? '#ffffff' : '#7f141a';
+            ctx.shadowColor = bossEyeGlitchTimer > 0 ? '#ff3030' : '#2a0004';
+            ctx.shadowBlur = bossEyeGlitchTimer > 0 ? 16 : 5;
+            ctx.beginPath();
+            ctx.moveTo(cx - radius * 0.44, cy - radius * 0.44);
+            ctx.lineTo(cx + radius * 0.44, cy + radius * 0.44);
+            ctx.moveTo(cx + radius * 0.44, cy - radius * 0.44);
+            ctx.lineTo(cx - radius * 0.44, cy + radius * 0.44);
+            ctx.stroke();
+
+            if (bossEyeGlitchTimer > 0) {
+                ctx.globalCompositeOperation = 'lighter';
+                for (let i = 0; i < 7; i++) {
+                    let y = cy - radius + Math.random() * radius * 2;
+                    let w = radius * (0.4 + Math.random() * 1.25);
+                    let x = cx - w / 2 + (Math.random() - 0.5) * 18;
+                    ctx.globalAlpha = 0.16 + Math.random() * 0.32;
+                    ctx.fillStyle = i % 2 ? '#ff3030' : '#ffffff';
+                    ctx.fillRect(x, y, w, 2 + Math.random() * 3);
+                }
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.globalAlpha = 1;
+            }
+        } else {
+            ctx.fillStyle = verticalLaserCharging ? `rgba(255, 20, 20, ${0.78 + chargePulse * 0.22})` : eyeGlow;
+            ctx.beginPath();
+            ctx.arc(cx + bossEye.pupilX, cy + bossEye.pupilY, radius * 0.38, 0, Math.PI * 2);
+            ctx.fill();
+            if (verticalLaserCharging) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.globalAlpha = 0.42 + chargePulse * 0.42;
+                ctx.strokeStyle = '#ff3030';
+                ctx.lineWidth = 4 + chargePulse * 3;
+                ctx.beginPath();
+                ctx.arc(cx + bossEye.pupilX, cy + bossEye.pupilY, radius * (0.62 + chargePulse * 0.28), 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.fillStyle = `rgba(255, 245, 220, ${0.18 + chargePulse * 0.32})`;
+                ctx.beginPath();
+                ctx.arc(cx + bossEye.pupilX, cy + bossEye.pupilY, radius * (0.24 + chargePulse * 0.16), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            ctx.fillStyle = '#080006';
+            ctx.beginPath();
+            ctx.arc(cx + bossEye.pupilX, cy + bossEye.pupilY, radius * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(cx + bossEye.pupilX - 6, cy + bossEye.pupilY - 8, 5, 5);
+        }
+        ctx.strokeStyle = damagedEye ? '#260006' : '#7e050c';
         ctx.lineWidth = 3;
         ctx.beginPath();
         for (let i = 0; i < 16; i++) {
@@ -5786,10 +8751,19 @@
         if (!isBossLevel()) return;
         if (gameState === 'intro' && !bossIntro.active) return;
         ctx.save();
-        if (bossIntro.roaring) {
-            let roarElapsed = Math.max(bossIntro.timer - bossIntro.revealDuration, 0);
-            let pulse = Math.sin(Math.min(roarElapsed / bossIntro.roarDuration, 1) * Math.PI);
-            let scale = 1 + pulse * 0.22;
+        if (bossIntro.roaring || bossPhaseRoarTimer > 0 || bossHandComboRoarTimer > 0) {
+            let pulse;
+            if (bossHandComboRoarTimer > 0) {
+                let progress = 1 - bossHandComboRoarTimer / 0.75;
+                pulse = Math.sin(Math.min(progress, 1) * Math.PI);
+            } else if (bossPhaseRoarTimer > 0) {
+                let total = bossPhase >= 2 ? 1.7 : 1.35;
+                pulse = Math.sin((1 - bossPhaseRoarTimer / total) * Math.PI);
+            } else {
+                let roarElapsed = Math.max(bossIntro.timer - bossIntro.revealDuration, 0);
+                pulse = Math.sin(Math.min(roarElapsed / bossIntro.roarDuration, 1) * Math.PI);
+            }
+            let scale = 1 + pulse * (bossHandComboRoarTimer > 0 ? 0.11 : 0.22);
             ctx.translate(canvas.width / 2, 128);
             ctx.scale(scale, scale);
             ctx.translate(-canvas.width / 2, -128);
@@ -5801,11 +8775,32 @@
             let x = (i * 47 + Math.floor(performance.now() / 40)) % canvas.width;
             ctx.fillRect(x, 0, 2, 138);
         }
+        if (bossHandComboRoarTimer > 0) {
+            let progress = 1 - bossHandComboRoarTimer / 0.75;
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = Math.max(0, 0.38 * (1 - progress));
+            ctx.strokeStyle = '#ff3030';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 3; i++) {
+                let radius = 28 + progress * 42 + i * 13;
+                ctx.beginPath();
+                ctx.arc(bossEye.x, bossEye.y, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
 
-        if (bossParts[0]?.alive) drawBossHand(bossHands[0]);
-        if (bossParts[1]?.alive) drawBossHand(bossHands[1]);
-        drawBossEye();
+        drawBossPhase3Flood();
+        if (isBossPhase3()) {
+            drawBossPhase3Core();
+        } else if (bossAttack.type !== 'hand-combo' && bossAttack.type !== 'block-smash') {
+            if (bossPhase < 2 && bossParts.find(part => part.id === 'left')?.alive) drawBossHand(bossHands[0]);
+            if (bossPhase < 2 && bossParts.find(part => part.id === 'right')?.alive) drawBossHand(bossHands[1]);
+        }
+        if (!isBossPhase3()) drawBossEye();
         drawBossTelegraphs();
+        drawBossPhase3TelekinesisGrip();
         for (let star of bossAttackStars) drawBossStar(star);
         ctx.restore();
     }
@@ -5827,7 +8822,7 @@
             hudIntroProgress = 0;
         }
 
-        let partOrder = { left: 0, right: 1, eye: 2 };
+        let partOrder = { eye: 0, left: 1, right: 2 };
         for (let part of bossParts) {
             let fill = fills[part.id];
             if (!fill) continue;
@@ -5848,6 +8843,32 @@
         }
 
         if (bossHudWindow) {
+            bossHudWindow.classList.toggle('phase3-merged', isBossLevel() && bossPhase >= 2);
+        }
+        if (isBossLevel() && bossPhase >= 2) {
+            let finalPart = getActiveBossPart();
+            let visualRatio = finalPart && finalPart.maxHp > 0 ? Math.max(0, Math.min(finalPart.hp / finalPart.maxHp, 1)) : 0;
+            if (bossPhase3RefillTimer > 0) {
+                visualRatio = 1 - Math.max(bossPhase3RefillTimer, 0) / BOSS_PHASE3_REFILL_DURATION;
+                visualRatio = 1 - Math.pow(1 - Math.max(0, Math.min(visualRatio, 1)), 3);
+            }
+            if (fills.left) {
+                fills.left.style.width = '0%';
+                fills.left.style.opacity = '0';
+            }
+            if (fills.right) {
+                fills.right.style.width = '0%';
+                fills.right.style.opacity = '0';
+            }
+            if (fills.eye) {
+                fills.eye.style.width = `${Math.round(visualRatio * 100)}%`;
+                fills.eye.style.opacity = '1';
+                fills.eye.style.background = 'linear-gradient(90deg, #ff3030, #ff99cc, #fff06a)';
+                if (fills.eye.parentElement) fills.eye.parentElement.style.opacity = '1';
+            }
+        }
+
+        if (bossHudWindow) {
             let windowProgress = isBossLevel() ? Math.min(hudIntroProgress * 1.18, 1) : 1;
             bossHudWindow.style.clipPath = `inset(0 ${Math.round((1 - windowProgress) * 100)}% 0 0)`;
             bossHudWindow.style.opacity = `${windowProgress}`;
@@ -5862,6 +8883,7 @@
                 bossHudWindow.style.borderColor = '#ff99cc';
             }
         }
+
     }
 
     function update(dt) {
@@ -5929,6 +8951,21 @@
 
         updateDangerZoneState();
 
+        if (isBossPhase3Transforming()) {
+            updateBossFight(dt);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                if (particles[i].alpha <= 0) particles.splice(i, 1);
+            }
+            if (shakeAmount > 0) {
+                shakeAmount *= 0.95;
+                if (shakeAmount < 0.5) shakeAmount = 0;
+            }
+            keys = {};
+            keysPressed = {};
+            return;
+        }
+
         if (!isTutorialLevel()) {
             survivalTimer += dt;
         }
@@ -5941,7 +8978,9 @@
         enemySpawnTimer -= dt;
         
         let activeEnemies = enemies.filter(e => !e.deleted && !e.locked).length;
-        if (!isTutorialLevel() && (activeEnemies === 0 || enemySpawnTimer <= 0)) {
+        let shouldSpawnEnemy = !isTutorialLevel()
+            && (isBossPhase3() ? activeEnemies === 0 : (activeEnemies === 0 || enemySpawnTimer <= 0));
+        if (shouldSpawnEnemy) {
             let newEnemy = new EnemyPiece();
             
             // 바닥(가장 아래쪽 블록)이 히든 영역(row 0~2) 내부의 위쪽에 위치하도록 y좌표 조정
@@ -5953,15 +8992,31 @@
                 }
             }
             newEnemy.y = 30 - (maxR + 1) * BLOCK_SIZE;
+            if (isBossLevel() && !isBossPhase3()) {
+                newEnemy.y -= BLOCK_SIZE * 3;
+            }
             
             enemies.push(newEnemy);
             enemySpawnTimer = getCurrentSpawnInterval();
         }
         
-        player.update(dt);
+        if (isBossLevel() && bossPhaseRoarTimer > 0 && bossPhase >= 1 && !isBossPhase3PlayerControlled()) {
+            player.vx = 0;
+            player.vy = 0;
+            keys = {};
+        } else if (isBossPhase3Transforming()) {
+            player.vx = 0;
+            player.vy = 0;
+            keys = {};
+        } else if (isBossPhase3PlayerControlled()) {
+            player.vx = 0;
+            player.vy = 0;
+        } else {
+            player.update(dt);
+        }
         updatePlayerIdleTimer(dt);
         updateBossFight(dt);
-        if (!isTutorialLevel() || getTutorialStepKey() === 'laser') {
+        if ((!isTutorialLevel() || getTutorialStepKey() === 'laser') && (!isBossLevel() || bossPhase === 0)) {
             updateLaserAttack(dt);
         }
         
@@ -5990,6 +9045,8 @@
             if (particles[i].alpha <= 0) particles.splice(i, 1);
         }
         updateFloatingScoreTexts(dt);
+        updateComboTimer(dt);
+        updatePhase3ComboUi();
         
         if (shakeAmount > 0) {
             shakeAmount *= 0.95; // 0.9에서 0.95로 변경하여 흔들림 유지 시간을 훨씬 길게 연장
@@ -6001,10 +9058,10 @@
             if (hardDropTrails[i].life <= 0) hardDropTrails.splice(i, 1);
         }
 
-        // 플레이어 모드일 때 F키 누르면 홀드된 블록 꺼내어 조종 모드 변환
-        if (controlMode === 'CHARACTER' && keysPressed['KeyF'] && heldPieceType) {
-            keysPressed['KeyF'] = false; // 키 입력 이벤트 소모
+        // 플레이어 모드일 때 F/C키 누르면 홀드된 블록 꺼내어 조종 모드 변환
+        if (controlMode === 'CHARACTER' && consumeHoldKeyPressed() && heldPieceType) {
             let swappedType = heldPieceType;
+            playSfx('holdRetrieve');
             heldPieceType = null;
             spawnHeldPiece(swappedType);
         }
@@ -6114,7 +9171,8 @@
         }
 
         // 레이저 공격 렌더링
-        if (!tutorial.sceneHidden && laserAttack.phase === 'telegraph') {
+        let showStandardLaser = !isBossLevel() || bossPhase === 0;
+        if (showStandardLaser && !tutorial.sceneHidden && laserAttack.phase === 'telegraph') {
             let blinkOn = Math.floor(performance.now() / 80) % 2 === 0;
             if (blinkOn) {
                 ctx.strokeStyle = 'rgba(255, 60, 60, 0.9)';
@@ -6126,7 +9184,7 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
             }
-        } else if (!tutorial.sceneHidden && laserAttack.phase === 'fire') {
+        } else if (showStandardLaser && !tutorial.sceneHidden && laserAttack.phase === 'fire') {
             let beamY = laserAttack.y - laserAttack.thickness / 2;
             ctx.fillStyle = 'rgba(255, 20, 20, 0.9)';
             ctx.fillRect(laserAttack.x, beamY, laserAttack.width, laserAttack.thickness);
@@ -6160,7 +9218,7 @@
                 let bottomY = enemy.y + (maxR + 1) * BLOCK_SIZE;
                 
                 // 블록이 완전히 화면에 보이기 전(히든 영역)일 때만 연출
-                if (bottomY <= HIDDEN_ROWS * BLOCK_SIZE) {
+                if (!isBossPhase3() && bottomY <= HIDDEN_ROWS * BLOCK_SIZE) {
                     drawEnemySpawnWarning(enemy);
                 }
             }
@@ -6178,14 +9236,18 @@
         let uiCombo = document.getElementById('ui-combo');
         let uiProgress = document.getElementById('ui-progress');
         let tutorialUi = isTutorialLevel() || levelClearSequence.tutorialStyle;
+        let hideBossGameplayUi = isBossLevel();
+        let scorePanel = document.querySelector('.score-panel');
 
-        if (uiScoreLabel) uiScoreLabel.style.display = tutorialUi ? 'none' : 'block';
-        if (uiScore) uiScore.style.display = tutorialUi ? 'none' : 'block';
-        if (uiTargetLabel) uiTargetLabel.style.display = (tutorialUi || isBossLevel()) ? 'none' : 'block';
-        if (uiTarget) uiTarget.style.display = (tutorialUi || isBossLevel()) ? 'none' : 'block';
-        if (uiComboLabel) uiComboLabel.style.display = tutorialUi ? 'none' : 'block';
-        if (uiCombo) uiCombo.style.display = tutorialUi ? 'none' : 'block';
-        if (uiProgressLabel) uiProgressLabel.style.display = 'block';
+        if (scorePanel) scorePanel.style.display = hideBossGameplayUi ? 'none' : '';
+
+        if (uiScoreLabel) uiScoreLabel.style.display = (tutorialUi || hideBossGameplayUi) ? 'none' : 'block';
+        if (uiScore) uiScore.style.display = (tutorialUi || hideBossGameplayUi) ? 'none' : 'block';
+        if (uiTargetLabel) uiTargetLabel.style.display = (tutorialUi || hideBossGameplayUi) ? 'none' : 'block';
+        if (uiTarget) uiTarget.style.display = (tutorialUi || hideBossGameplayUi) ? 'none' : 'block';
+        if (uiComboLabel) uiComboLabel.style.display = (tutorialUi || hideBossGameplayUi) ? 'none' : 'block';
+        if (uiCombo) uiCombo.style.display = (tutorialUi || hideBossGameplayUi) ? 'none' : 'block';
+        if (uiProgressLabel) uiProgressLabel.style.display = hideBossGameplayUi ? 'none' : 'block';
 
         if (uiScoreLabel) uiScoreLabel.innerText = 'SCORE';
         if (uiTargetLabel) {
@@ -6201,6 +9263,7 @@
             uiCombo.style.color = comboCount > 0 ? '#ff99cc' : '#fff';
         }
         if (uiProgress) {
+            uiProgress.style.display = hideBossGameplayUi ? 'none' : 'block';
             let tutorialProgress = TUTORIAL_STEPS.length > 1
                 ? Math.max(0, Math.min(tutorial.stepIndex / (TUTORIAL_STEPS.length - 1), 1))
                 : 0;
@@ -6291,6 +9354,7 @@
         // 사망 전조(깔림 대기) 슬로우모션 모드 파이프라인
         if (isDying && !isGameOver) {
             let unscaledDt = dt;
+            updateDeathHeartbeat(unscaledDt);
             deathTimer += unscaledDt;
             dt = unscaledDt * 0.05; // 5% 초극단적 슬로우 모션
             if (deathTimer >= DEATH_DURATION) {
@@ -6306,7 +9370,6 @@
     
     // 초기 시작
     showMenuScreenNow();
-    renderLevelList();
     updateLevelHeader();
     requestAnimationFrame(gameLoop);
     </script>

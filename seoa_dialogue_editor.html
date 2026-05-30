@@ -96,12 +96,15 @@
             position: relative;
             z-index: 2;
             --seoa-scale: 1;
+            --seoa-emotion-x: 0px;
             --seoa-y: 0px;
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
             image-rendering: auto;
-            transform: translateY(var(--seoa-y, 0px)) scale(var(--seoa-scale, 1));
+            transform:
+                translate(var(--seoa-emotion-x, 0px), var(--seoa-y, 0px))
+                scale(var(--seoa-scale, 1));
             transform-origin: center bottom;
             transition:
                 opacity 0.18s ease,
@@ -110,21 +113,24 @@
 
         #seoa-image.switching {
             opacity: 0.25;
-            transform: translateY(calc(var(--seoa-y, 0px) + 8px)) scale(calc(var(--seoa-scale, 1) * 0.98));
+            transform:
+                translate(var(--seoa-emotion-x, 0px), calc(var(--seoa-y, 0px) + 8px))
+                scale(calc(var(--seoa-scale, 1) * 0.98));
         }
 
         .demon-wrap {
             position: absolute;
-            right: clamp(24px, 8vw, 138px);
-            bottom: 150px;
+            right: clamp(22px, 7vw, 116px);
+            bottom: 158px;
             z-index: 3;
-            width: min(28vw, 310px);
-            height: min(58vh, 560px);
+            width: min(30vw, 360px);
+            height: min(70vh, 720px);
             display: flex;
             align-items: flex-end;
             justify-content: center;
             opacity: 0.96;
             filter: drop-shadow(-9px 9px 0 #000);
+            transform: translateX(var(--demon-x, 0px));
             transform-origin: center bottom;
             transition:
                 opacity 0.24s ease,
@@ -135,108 +141,34 @@
         .demon-wrap.inactive-speaker {
             opacity: 0.44;
             filter: brightness(0.34) saturate(0.6) drop-shadow(-6px 6px 0 #000);
-            transform: scale(0.9);
+            transform: translateX(var(--demon-x, 0px)) scale(0.9);
         }
 
-        .demon-shadow {
+        .demon-wrap::after {
+            content: "";
             position: absolute;
-            left: 12%;
-            right: 10%;
-            bottom: 8px;
-            height: 20px;
-            background: rgba(0, 0, 0, 0.55);
+            left: 22%;
+            right: 12%;
+            bottom: 0;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.56);
             transform: skewX(18deg);
             filter: blur(1px);
         }
 
-        .demon-silhouette {
-            position: relative;
-            width: 72%;
-            height: 82%;
-            align-self: flex-end;
-        }
-
-        .demon-head {
-            position: absolute;
-            left: 50%;
-            top: 8%;
-            width: 34%;
-            aspect-ratio: 0.78;
-            background: linear-gradient(180deg, #180008, #050004 72%);
-            border: 3px solid rgba(255, 42, 42, 0.45);
-            border-radius: 45% 45% 38% 38%;
-            box-shadow:
-                inset 0 -16px 20px rgba(0, 0, 0, 0.72),
-                0 0 24px rgba(255, 0, 0, 0.28);
-            transform: translateX(-50%);
-        }
-
-        .demon-head::before,
-        .demon-head::after {
-            content: "";
-            position: absolute;
-            top: -24%;
-            width: 34%;
-            height: 42%;
-            background: linear-gradient(180deg, #39000a, #070004);
-            border: 3px solid rgba(255, 45, 45, 0.5);
-            box-shadow: 0 0 16px rgba(255, 0, 0, 0.3);
-        }
-
-        .demon-head::before {
-            left: -14%;
-            clip-path: polygon(80% 0, 100% 100%, 0 92%);
-            transform: rotate(-18deg);
-        }
-
-        .demon-head::after {
-            right: -14%;
-            clip-path: polygon(20% 0, 100% 92%, 0 100%);
-            transform: rotate(18deg);
-        }
-
-        .demon-eyes {
-            position: absolute;
-            left: 24%;
-            right: 24%;
-            top: 45%;
-            height: 6%;
-            background:
-                linear-gradient(90deg, #ff3030 0 32%, transparent 32% 68%, #ff3030 68% 100%);
-            box-shadow: 0 0 18px #ff3030;
-            animation: demonEyePulse 1.7s steps(2, end) infinite;
-        }
-
-        .demon-body {
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            width: 68%;
-            height: 68%;
-            background:
-                radial-gradient(circle at 50% 16%, rgba(255, 30, 30, 0.2), rgba(255, 30, 30, 0) 28%),
-                linear-gradient(180deg, #130006, #030003 78%);
-            border: 3px solid rgba(255, 30, 30, 0.28);
-            border-radius: 42% 42% 14% 14%;
-            clip-path: polygon(22% 0, 78% 0, 100% 100%, 0 100%);
-            box-shadow: inset 0 0 32px rgba(0, 0, 0, 0.86);
-            transform: translateX(-50%);
-        }
-
-        .demon-shoulders {
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            width: 100%;
-            height: 46%;
-            background: linear-gradient(180deg, rgba(58, 0, 10, 0.9), #020002);
-            clip-path: polygon(12% 20%, 88% 20%, 100% 100%, 0 100%);
-            transform: translateX(-50%);
-        }
-
-        @keyframes demonEyePulse {
-            0%, 62%, 100% { opacity: 0.72; }
-            64%, 76% { opacity: 1; }
+            #demon-image {
+                position: relative;
+                z-index: 2;
+                width: 138%;
+                max-width: none;
+                max-height: 100%;
+                object-fit: contain;
+                object-position: center bottom;
+                image-rendering: auto;
+                filter: brightness(0.92) contrast(1.18) saturate(1.12) drop-shadow(0 0 18px rgba(255, 20, 35, 0.5));
+                transform: translateY(var(--demon-y, 0px)) scale(var(--demon-scale, 1));
+                transform-origin: center bottom;
+                transition: transform 0.18s cubic-bezier(0.18, 0.9, 0.22, 1);
         }
 
         .game-ui-preview {
@@ -394,7 +326,7 @@
             left: var(--dialogue-left, 44px);
             right: var(--dialogue-right, 44px);
             bottom: var(--dialogue-bottom, 34px);
-            min-height: var(--dialogue-min-height, 122px);
+            height: var(--dialogue-min-height, 122px);
             padding: 18px 20px 18px;
             background: #161628;
             border: 4px solid #444;
@@ -735,8 +667,8 @@
             .demon-wrap {
                 right: 2px;
                 bottom: 150px;
-                width: min(48vw, 260px);
-                height: 430px;
+                width: min(45vw, 240px);
+                height: 420px;
             }
 
             aside {
@@ -786,14 +718,7 @@
                 <img id="seoa-image" src="Resources/Seoa_basic.png" alt="Seoa emotion preview">
             </div>
             <div class="demon-wrap inactive-speaker" aria-hidden="true">
-                <div class="demon-shadow"></div>
-                <div class="demon-silhouette">
-                    <div class="demon-shoulders"></div>
-                    <div class="demon-body"></div>
-                    <div class="demon-head">
-                        <div class="demon-eyes"></div>
-                    </div>
-                </div>
+                <img id="demon-image" src="Resources/Firefly.png" alt="">
             </div>
         </div>
 
@@ -834,16 +759,28 @@
                 <input id="ui-seoa-y" type="range" min="-120" max="220" step="1" value="52">
             </label>
 
-            <label>창 하단(px): <span id="dialogue-bottom-value">34</span>
-                <input id="ui-dialogue-bottom" type="range" min="0" max="160" step="1" value="34">
+            <label>악마 크기: <span id="demon-scale-value">1.00</span>
+                <input id="ui-demon-scale" type="range" min="0.6" max="1.6" step="0.01" value="1.00">
             </label>
 
-            <label>창 왼쪽(px): <span id="dialogue-left-value">44</span>
-                <input id="ui-dialogue-left" type="range" min="0" max="220" step="1" value="44">
+            <label>악마 X(px): <span id="demon-x-value">0</span>
+                <input id="ui-demon-x" type="range" min="-220" max="220" step="1" value="0">
             </label>
 
-            <label>창 오른쪽(px): <span id="dialogue-right-value">44</span>
-                <input id="ui-dialogue-right" type="range" min="0" max="220" step="1" value="44">
+            <label>악마 Y(px): <span id="demon-y-value">-130</span>
+                <input id="ui-demon-y" type="range" min="-180" max="180" step="1" value="-130">
+            </label>
+
+            <label>창 하단(px): <span id="dialogue-bottom-value">131</span>
+                <input id="ui-dialogue-bottom" type="range" min="0" max="160" step="1" value="131">
+            </label>
+
+            <label>창 왼쪽(px): <span id="dialogue-left-value">165</span>
+                <input id="ui-dialogue-left" type="range" min="0" max="220" step="1" value="165">
+            </label>
+
+            <label>창 오른쪽(px): <span id="dialogue-right-value">115</span>
+                <input id="ui-dialogue-right" type="range" min="0" max="220" step="1" value="115">
             </label>
 
             <label>창 높이(px): <span id="dialogue-height-value">122</span>
@@ -904,24 +841,38 @@
         const emotionAssets = {
             basic: {
                 label: '기본',
-                src: 'Resources/Seoa_basic.png'
+                src: 'Resources/Seoa_basic.png',
+                xOffset: 0,
+                yOffset: 0,
+                scaleOffset: 0
             },
             excited: {
                 label: '신남',
-                src: 'Resources/Seoa_Exited.png'
+                src: 'Resources/Seoa_Exited.png',
+                xOffset: -4,
+                yOffset: -6,
+                scaleOffset: 0
             },
             surprised: {
                 label: '놀람',
                 src: 'Resources/Seoa_Suprized.png',
-                scaleOffset: -0.42
+                xOffset: 6,
+                yOffset: -18,
+                scaleOffset: -0.45
             },
             angry: {
                 label: '화남',
-                src: 'Resources/Seoa_angry.png'
+                src: 'Resources/Seoa_angry.png',
+                xOffset: -16,
+                yOffset: 0,
+                scaleOffset: 0
             },
             sad: {
                 label: '슬픔',
-                src: 'Resources/Seoa_sad.png'
+                src: 'Resources/Seoa_sad.png',
+                xOffset: -13,
+                yOffset: 0,
+                scaleOffset: 0
             }
         };
 
@@ -984,6 +935,9 @@
             seoaScale: document.getElementById('ui-seoa-scale'),
             seoaX: document.getElementById('ui-seoa-x'),
             seoaY: document.getElementById('ui-seoa-y'),
+            demonScale: document.getElementById('ui-demon-scale'),
+            demonX: document.getElementById('ui-demon-x'),
+            demonY: document.getElementById('ui-demon-y'),
             dialogueBottom: document.getElementById('ui-dialogue-bottom'),
             dialogueLeft: document.getElementById('ui-dialogue-left'),
             dialogueRight: document.getElementById('ui-dialogue-right'),
@@ -1033,6 +987,11 @@
                     xPx: Number(uiInputs.seoaX.value),
                     yPx: Number(uiInputs.seoaY.value)
                 },
+                demon: {
+                    scale: Number(uiInputs.demonScale.value),
+                    xPx: Number(uiInputs.demonX.value),
+                    yPx: Number(uiInputs.demonY.value)
+                },
                 dialogueBox: {
                     leftPx: Number(uiInputs.dialogueLeft.value),
                     rightPx: Number(uiInputs.dialogueRight.value),
@@ -1056,17 +1015,32 @@
             };
         }
 
+        function getCodexDialogueConfig() {
+            return {
+                id: dialogueId.value.trim() || 'untitled_dialogue',
+                title: dialogueTitle.value.trim() || '제목 없는 대화',
+                lines: lines.map(line => ({
+                    speaker: normalizeSpeaker(line.speaker),
+                    text: line.text,
+                    note: line.note
+                }))
+            };
+        }
+
         function getCodexText() {
             return [
-                '아래 Seoa/악마 대화 스택과 ui 값을 main.html 인트로 대화모드에 그대로 반영해줘.',
+                '아래 Seoa/악마 대화 스택을 main.html 대화모드에 반영해줘. 이미지 크기/위치/UI 값은 main.html에 이미 있는 설정을 그대로 사용해줘.',
                 '',
-                JSON.stringify(getDialogueConfig(), null, 2)
+                JSON.stringify(getCodexDialogueConfig(), null, 2)
             ].join('\n');
         }
 
         function applyUiConfig() {
             const ui = getUiConfig();
             seoaWrap.style.setProperty('--seoa-x', `${ui.seoa.xPx}px`);
+            demonWrap.style.setProperty('--demon-x', `${ui.demon.xPx}px`);
+            demonWrap.style.setProperty('--demon-scale', ui.demon.scale);
+            demonWrap.style.setProperty('--demon-y', `${ui.demon.yPx}px`);
             dialogueBox.style.setProperty('--dialogue-left', `${ui.dialogueBox.leftPx}px`);
             dialogueBox.style.setProperty('--dialogue-right', `${ui.dialogueBox.rightPx}px`);
             dialogueBox.style.setProperty('--dialogue-bottom', `${ui.dialogueBox.bottomPx}px`);
@@ -1075,6 +1049,9 @@
             document.getElementById('seoa-scale-value').textContent = ui.seoa.scale.toFixed(2);
             document.getElementById('seoa-x-value').textContent = ui.seoa.xPx;
             document.getElementById('seoa-y-value').textContent = ui.seoa.yPx;
+            document.getElementById('demon-scale-value').textContent = ui.demon.scale.toFixed(2);
+            document.getElementById('demon-x-value').textContent = ui.demon.xPx;
+            document.getElementById('demon-y-value').textContent = ui.demon.yPx;
             document.getElementById('dialogue-left-value').textContent = ui.dialogueBox.leftPx;
             document.getElementById('dialogue-right-value').textContent = ui.dialogueBox.rightPx;
             document.getElementById('dialogue-bottom-value').textContent = ui.dialogueBox.bottomPx;
@@ -1090,9 +1067,13 @@
             const asset = emotionAssets[emotion] || emotionAssets.basic;
             const ui = getUiConfig();
             const scale = getScaleForEmotion(emotion);
+            const xOffset = asset.xOffset || 0;
+            const yOffset = asset.yOffset || 0;
+            const yPx = ui.seoa.yPx + yOffset;
             if (seoaImage.getAttribute('src') === asset.src) {
                 seoaImage.style.setProperty('--seoa-scale', scale);
-                seoaImage.style.setProperty('--seoa-y', `${ui.seoa.yPx}px`);
+                seoaImage.style.setProperty('--seoa-emotion-x', `${xOffset}px`);
+                seoaImage.style.setProperty('--seoa-y', `${yPx}px`);
                 return;
             }
 
@@ -1100,7 +1081,8 @@
             setTimeout(() => {
                 seoaImage.src = asset.src;
                 seoaImage.style.setProperty('--seoa-scale', scale);
-                seoaImage.style.setProperty('--seoa-y', `${ui.seoa.yPx}px`);
+                seoaImage.style.setProperty('--seoa-emotion-x', `${xOffset}px`);
+                seoaImage.style.setProperty('--seoa-y', `${yPx}px`);
                 void seoaImage.offsetWidth;
                 seoaImage.classList.remove('switching');
             }, 90);

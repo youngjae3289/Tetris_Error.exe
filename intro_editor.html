@@ -220,6 +220,37 @@
             animation: introTextScanline 0.22s steps(2, end) infinite;
         }
 
+        .phase3-guide {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: var(--phase3-guide-y, 50vh);
+            z-index: 4;
+            padding: 0 24px;
+            color: #ff3030;
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(24px, var(--phase3-guide-size, 3vw), 152px);
+            line-height: 1.35;
+            text-align: center;
+            white-space: pre-line;
+            text-shadow:
+                0 0 8px rgba(255, 48, 48, 0.9),
+                0 0 18px rgba(255, 48, 48, 0.58),
+                4px 4px 0 #000;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(var(--phase3-guide-x, 0vw), -50%) scale(0.92);
+        }
+
+        .phase3-guide.show {
+            animation: phase3GuideBurst var(--phase3-guide-duration, 1350ms) cubic-bezier(0.18, 0.9, 0.22, 1) both;
+        }
+
+        .phase3-guide.previewing {
+            opacity: 1;
+            transform: translate(var(--phase3-guide-x, 0vw), -50%) scale(1);
+        }
+
         @keyframes introBurst {
             0% { transform: translateY(18px) scale(0.82); opacity: 1; }
             18% { opacity: 1; }
@@ -232,6 +263,13 @@
             0% { opacity: calc(var(--stripe-opacity, 0.8) - 0.08); transform: translateY(0); }
             50% { opacity: var(--stripe-opacity, 0.8); transform: translateY(1px); }
             100% { opacity: calc(var(--stripe-opacity, 0.8) - 0.04); transform: translateY(0); }
+        }
+
+        @keyframes phase3GuideBurst {
+            0% { opacity: 0; transform: translate(var(--phase3-guide-x, 0vw), calc(-50% + 18px)) scale(0.72); filter: blur(2px); }
+            16% { opacity: 1; transform: translate(var(--phase3-guide-x, 0vw), -50%) scale(1.06); filter: blur(0); }
+            68% { opacity: 1; transform: translate(var(--phase3-guide-x, 0vw), -50%) scale(1); }
+            100% { opacity: 0; transform: translate(var(--phase3-guide-x, 0vw), -50%) scale(0.22); filter: blur(1px); }
         }
 
         aside {
@@ -278,6 +316,16 @@
             color: #fff;
             background: #050508;
             border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        textarea {
+            min-height: 84px;
+            padding: 10px;
+            color: #fff;
+            background: #050508;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            line-height: 1.6;
+            resize: vertical;
         }
 
         input[type="range"] {
@@ -354,6 +402,8 @@
             <div class="intro-stage" id="stage">
                 <div class="intro-text" id="intro-text" data-text="3">3</div>
             </div>
+            <div class="phase3-guide" id="phase3-guide">2분 안에 악마를 쓰러뜨리세요!
+방향키 사용 가능</div>
         </div>
     </main>
 
@@ -393,11 +443,35 @@
             <input id="start-duration" type="range" min="500" max="2200" step="50" value="1050">
         </label>
 
+        <h2>페이즈 3 안내문구</h2>
+
+        <label>안내 문구
+            <textarea id="phase3-guide-text" rows="3">2분 안에 악마를 쓰러뜨리세요!
+방향키 사용 가능</textarea>
+        </label>
+
+        <label>안내 Y 위치(vh): <span id="phase3-guide-y-value">50</span>
+            <input id="phase3-guide-y" type="range" min="12" max="82" step="0.5" value="50">
+        </label>
+
+        <label>안내 X 위치(vw): <span id="phase3-guide-x-value">0</span>
+            <input id="phase3-guide-x" type="range" min="-36" max="36" step="0.5" value="0">
+        </label>
+
+        <label>안내 크기(vw): <span id="phase3-guide-size-value">3</span>
+            <input id="phase3-guide-size" type="range" min="1.8" max="8" step="0.1" value="3">
+        </label>
+
+        <label>안내 표시 시간(ms): <span id="phase3-guide-duration-value">1350</span>
+            <input id="phase3-guide-duration" type="range" min="700" max="2800" step="50" value="1350">
+        </label>
+
         <div class="button-grid">
             <button onclick="playIntro()">PLAY FULL</button>
             <button onclick="replayCurrent()">REPLAY CURRENT</button>
             <button class="secondary" onclick="showPhase('3')">SHOW 3</button>
             <button class="secondary" onclick="showPhase('START!!')">SHOW START</button>
+            <button class="secondary" onclick="showPhase3Guide()">SHOW PHASE 3</button>
         </div>
 
         <button onclick="copyConfig()">COPY CONFIG</button>
@@ -409,6 +483,7 @@
     <script>
         const stage = document.getElementById('stage');
         const introText = document.getElementById('intro-text');
+        const phase3Guide = document.getElementById('phase3-guide');
         const phaseInput = document.getElementById('preview-phase');
         const yInput = document.getElementById('intro-y');
         const xInput = document.getElementById('intro-x');
@@ -416,11 +491,16 @@
         const stripeInput = document.getElementById('stripe-opacity');
         const numberDurationInput = document.getElementById('number-duration');
         const startDurationInput = document.getElementById('start-duration');
+        const phase3GuideTextInput = document.getElementById('phase3-guide-text');
+        const phase3GuideYInput = document.getElementById('phase3-guide-y');
+        const phase3GuideXInput = document.getElementById('phase3-guide-x');
+        const phase3GuideSizeInput = document.getElementById('phase3-guide-size');
+        const phase3GuideDurationInput = document.getElementById('phase3-guide-duration');
         const output = document.getElementById('output');
         const status = document.getElementById('status');
         let timers = [];
 
-        function getConfig() {
+        function getIntroConfig() {
             return {
                 yVh: Number(yInput.value),
                 xVw: Number(xInput.value),
@@ -431,6 +511,23 @@
             };
         }
 
+        function getPhase3GuideConfig() {
+            return {
+                text: phase3GuideTextInput.value,
+                xVw: Number(phase3GuideXInput.value),
+                yVh: Number(phase3GuideYInput.value),
+                sizeVw: Number(phase3GuideSizeInput.value),
+                durationMs: Number(phase3GuideDurationInput.value)
+            };
+        }
+
+        function getConfig() {
+            return {
+                intro: getIntroConfig(),
+                phase3Guide: getPhase3GuideConfig()
+            };
+        }
+
         function getDurationForText(text) {
             return text === 'START!!'
                 ? Number(startDurationInput.value)
@@ -438,18 +535,28 @@
         }
 
         function applyConfig() {
-            const config = getConfig();
+            const config = getIntroConfig();
+            const phase3GuideConfig = getPhase3GuideConfig();
             stage.style.setProperty('--intro-y', `${config.yVh}vh`);
             stage.style.setProperty('--intro-x', `${config.xVw}vw`);
             introText.style.setProperty('--intro-size', `${config.sizeVw}vw`);
             introText.style.setProperty('--stripe-opacity', config.stripeOpacity);
+            phase3Guide.textContent = phase3GuideConfig.text;
+            phase3Guide.style.setProperty('--phase3-guide-y', `${phase3GuideConfig.yVh}vh`);
+            phase3Guide.style.setProperty('--phase3-guide-x', `${phase3GuideConfig.xVw}vw`);
+            phase3Guide.style.setProperty('--phase3-guide-size', `${phase3GuideConfig.sizeVw}vw`);
+            phase3Guide.style.setProperty('--phase3-guide-duration', `${phase3GuideConfig.durationMs}ms`);
             document.getElementById('y-value').textContent = config.yVh;
             document.getElementById('x-value').textContent = config.xVw;
             document.getElementById('size-value').textContent = config.sizeVw.toFixed(1).replace('.0', '');
             document.getElementById('stripe-value').textContent = config.stripeOpacity.toFixed(2);
             document.getElementById('number-duration-value').textContent = config.numberDurationMs;
             document.getElementById('start-duration-value').textContent = config.startDurationMs;
-            output.value = JSON.stringify(config, null, 2);
+            document.getElementById('phase3-guide-y-value').textContent = phase3GuideConfig.yVh;
+            document.getElementById('phase3-guide-x-value').textContent = phase3GuideConfig.xVw;
+            document.getElementById('phase3-guide-size-value').textContent = phase3GuideConfig.sizeVw.toFixed(1).replace('.0', '');
+            document.getElementById('phase3-guide-duration-value').textContent = phase3GuideConfig.durationMs;
+            output.value = JSON.stringify(getConfig(), null, 2);
         }
 
         function clearTimers() {
@@ -459,6 +566,7 @@
 
         function showText(text, color, duration) {
             applyConfig();
+            phase3Guide.classList.remove('show', 'previewing');
             introText.textContent = text;
             introText.dataset.text = text;
             introText.style.setProperty('--intro-color', color);
@@ -468,6 +576,17 @@
             introText.classList.add('intro-text');
             phaseInput.value = text;
             status.textContent = `${text} 미리보기 중`;
+        }
+
+        function showPhase3Guide(animate = true) {
+            clearTimers();
+            applyConfig();
+            introText.textContent = '';
+            introText.dataset.text = '';
+            phase3Guide.classList.remove('show', 'previewing');
+            void phase3Guide.offsetWidth;
+            phase3Guide.classList.add(animate ? 'show' : 'previewing');
+            status.textContent = animate ? '페이즈 3 안내문구 미리보기 중' : '페이즈 3 안내문구 위치 조정 중';
         }
 
         function showPhase(text) {
@@ -482,7 +601,7 @@
         function playIntro() {
             clearTimers();
             applyConfig();
-            const config = getConfig();
+            const config = getIntroConfig();
             const phases = [
                 { text: '3', color: '#fff06a', duration: config.numberDurationMs },
                 { text: '2', color: '#fff06a', duration: config.numberDurationMs },
@@ -512,17 +631,33 @@
             });
         }
 
-        [yInput, xInput, sizeInput, stripeInput, numberDurationInput, startDurationInput].forEach(input => {
+        [
+            yInput,
+            xInput,
+            sizeInput,
+            stripeInput,
+            numberDurationInput,
+            startDurationInput,
+            phase3GuideTextInput,
+            phase3GuideYInput,
+            phase3GuideXInput,
+            phase3GuideSizeInput,
+            phase3GuideDurationInput
+        ].forEach(input => {
             input.addEventListener('input', () => {
                 applyConfig();
-                replayCurrent();
+                if (input.id.startsWith('phase3-guide')) {
+                    showPhase3Guide(false);
+                } else {
+                    replayCurrent();
+                }
             });
         });
 
         phaseInput.addEventListener('change', () => showPhase(phaseInput.value));
 
         applyConfig();
-        showPhase('3');
+        showPhase3Guide(false);
     </script>
 </body>
 </html>
