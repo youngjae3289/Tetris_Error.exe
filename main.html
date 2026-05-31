@@ -546,7 +546,13 @@
             inset: 0;
             width: 100vw;
             height: 100vh;
-            padding: clamp(28px, 5vw, 64px);
+            --title-stage-left: min(0px, calc(50vw - 88.842vh));
+            --title-stage-top: min(0px, calc(50vh - 28.14vw));
+            --title-logo-left: calc(var(--title-stage-left) + max(4.63vw, 8.226vh));
+            --title-logo-top: calc(var(--title-stage-top) + max(0.636vw, 1.13vh));
+            --title-logo-width: max(46.418vw, 82.477vh);
+            --title-prompt-offset: max(33.6vw, 59.72vh);
+            padding: 0;
             border: 0;
             background:
                 radial-gradient(circle at 18% 22%, rgba(255, 80, 190, 0.18), rgba(255, 80, 190, 0) 30%),
@@ -591,13 +597,14 @@
         }
 
         .title-logo-wrap {
-            position: relative;
+            position: absolute;
+            left: var(--title-logo-left);
+            top: var(--title-logo-top);
             z-index: 1;
-            width: min(64vw, 720px);
-            max-width: 82vh;
-            margin-top: clamp(8px, 3vh, 34px);
-            margin-left: clamp(0px, 1vw, 18px);
-            animation: titleLogoBoot 1.05s steps(2, end) both, titleLogoFloat 3.2s ease-in-out 1.05s infinite;
+            width: var(--title-logo-width);
+            max-width: none;
+            margin: 0;
+            animation: titleLogoBoot 1.05s steps(2, end) both;
         }
 
         .title-logo {
@@ -635,9 +642,9 @@
         .title-screen .ui-copy,
         .title-press-prompt {
             z-index: 1;
-            width: min(64vw, 720px);
-            max-width: 82vh;
-            margin-left: clamp(0px, 1vw, 18px);
+            width: var(--title-logo-width);
+            max-width: none;
+            margin: 0;
         }
 
         .title-screen .ui-copy {
@@ -656,6 +663,9 @@
         }
 
         .title-press-prompt {
+            position: absolute;
+            left: var(--title-logo-left);
+            top: calc(var(--title-logo-top) + var(--title-prompt-offset));
             color: #ff99cc;
             font-size: clamp(8px, 1.2vw, 12px);
             letter-spacing: 2px;
@@ -1510,8 +1520,8 @@
 
         @keyframes titleBgDrift {
             0% { background-position: center, center, 50% 50%; }
-            50% { background-position: center, center, 52% 49%; }
-            100% { background-position: center, center, 48% 51%; }
+            50% { background-position: center, center, 50% 50%; }
+            100% { background-position: center, center, 50% 50%; }
         }
 
         @keyframes titleDataSweep {
@@ -1529,32 +1539,32 @@
             }
             10% {
                 filter: brightness(0.08) contrast(3) saturate(0.4);
-                background-position: center, center, 48% 52%;
+                background-position: center, center, 50% 50%;
                 transform: translate(-4px, 0);
             }
             18% {
                 filter: brightness(1.85) contrast(1.9) saturate(1.8) hue-rotate(24deg);
-                background-position: center, center, 55% 45%;
+                background-position: center, center, 50% 50%;
                 transform: translate(5px, -2px);
             }
             28% {
                 filter: brightness(0.04) contrast(3.2) saturate(0.2);
-                background-position: center, center, 43% 57%;
+                background-position: center, center, 50% 50%;
                 transform: translate(-6px, 2px);
             }
             42% {
                 filter: brightness(1.35) contrast(1.7) saturate(1.4) hue-rotate(-18deg);
-                background-position: center, center, 53% 50%;
+                background-position: center, center, 50% 50%;
                 transform: translate(3px, 0);
             }
             56% {
                 filter: brightness(0.18) contrast(2.4) saturate(0.7);
-                background-position: center, center, 46% 48%;
+                background-position: center, center, 50% 50%;
                 transform: translate(-2px, -1px);
             }
             72% {
                 filter: brightness(1.22) contrast(1.2) saturate(1.12);
-                background-position: center, center, 51% 49%;
+                background-position: center, center, 50% 50%;
                 transform: translate(1px, 0);
             }
             100% {
@@ -1874,8 +1884,8 @@
             right: clamp(22px, 7vw, 116px);
             bottom: 158px;
             z-index: 3;
-            width: min(30vw, 360px);
-            height: min(70vh, 720px);
+            width: min(36vw, 430px);
+            height: min(74vh, 760px);
             display: none;
             align-items: flex-end;
             justify-content: center;
@@ -1931,7 +1941,7 @@
         #demon-dialogue-image {
             position: relative;
             z-index: 2;
-            width: 138%;
+            width: 142%;
             max-width: none;
             max-height: 100%;
             object-fit: contain;
@@ -1945,8 +1955,8 @@
 
         .demon-dialogue-character.silhouette {
             right: clamp(18px, 4vw, 72px);
-            width: min(22vw, 250px);
-            height: min(58vh, 610px);
+            width: min(36vw, 430px);
+            height: min(74vh, 760px);
             filter: drop-shadow(-7px 7px 0 #000);
             opacity: 0.82;
         }
@@ -2705,8 +2715,8 @@
         speakerLabels: { DEMON: '???' },
         ui: {
             seoa: { scale: 1.62, xPx: 0, yPx: 52 },
-            demon: { scale: 0.58, xPx: 34, yPx: -72 },
-            dialogueBox: { leftPx: 165, rightPx: 115, bottomPx: 131, minHeightPx: 122 }
+            demon: { scale: 1.18, xPx: 34, yPx: -42 },
+            dialogueBox: { leftPx: 165, rightPx: 115, bottomPx: 101, minHeightPx: 152 }
         },
         lines: [
             { emotion: 'excited', speaker: 'SEOA', text: '좋아, 이대로 다 깨보자고!', note: '살짝씩 점프를 뛰는 텍스트연출' },
@@ -2726,8 +2736,8 @@
         title: '보스 엔딩',
         ui: {
             seoa: { scale: 1.62, xPx: 0, yPx: 52 },
-            demon: { scale: 0.72, xPx: 0, yPx: -130 },
-            dialogueBox: { leftPx: 165, rightPx: 115, bottomPx: 131, minHeightPx: 122 }
+            demon: { scale: 1.28, xPx: 0, yPx: -82 },
+            dialogueBox: { leftPx: 165, rightPx: 115, bottomPx: 101, minHeightPx: 152 }
         },
         lines: [
             { emotion: 'basic', speaker: 'SEOA', text: '휴.. 드디어 끝난건가?', note: '떨리는 느낌의 텍스트' },
@@ -5463,7 +5473,6 @@
             event.stopPropagation();
         }
         if (seoaDialogue.closing) return true;
-        playDialogueSfx();
 
         let tokens = getCurrentDialogueTokens();
         if (seoaDialogue.visibleTokens < tokens.length) {
@@ -5474,6 +5483,8 @@
         if (performance.now() - seoaDialogue.completedAt < SEOA_DIALOGUE_FORCE_HOLD_MS) {
             return true;
         }
+
+        playDialogueSfx();
 
         if (seoaDialogue.lineIndex < seoaDialogue.config.lines.length - 1) {
             startSeoaDialogueLine(seoaDialogue.lineIndex + 1);
