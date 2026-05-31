@@ -2667,6 +2667,7 @@
     Object.keys(SFX_CONFIG).forEach(key => {
         sfxTracks[key] = new Audio(SFX_CONFIG[key].src);
     });
+    const activeSfxTracks = {};
     Object.keys(bgmTracks).forEach(key => {
         bgmTracks[key].loop = false;
         bgmTracks[key].preload = 'auto';
@@ -2829,7 +2830,31 @@
         if (!source) return;
         let effect = source.cloneNode();
         effect.volume = SFX_CONFIG[key].volume;
-        effect.play().catch(() => {});
+        if (!activeSfxTracks[key]) activeSfxTracks[key] = new Set();
+        activeSfxTracks[key].add(effect);
+        let cleanup = () => {
+            activeSfxTracks[key]?.delete(effect);
+        };
+        effect.addEventListener('ended', cleanup, { once: true });
+        effect.play().catch(() => {
+            cleanup();
+        });
+    }
+
+    function stopSfx(key) {
+        let activeSet = activeSfxTracks[key];
+        if (activeSet) {
+            activeSet.forEach(track => {
+                track.pause();
+                track.currentTime = 0;
+            });
+            activeSet.clear();
+        }
+        let source = sfxTracks[key];
+        if (source) {
+            source.pause();
+            source.currentTime = 0;
+        }
     }
 
     function playStartSfx() {
@@ -3114,6 +3139,7 @@
         laneW: BLOCK_SIZE,
         comboStep: 0,
         hasImpacted: false,
+        lockedHandWarningArea: null,
         y: 210
     };
     let bossPhaseRoarTimer = 0;
@@ -3531,6 +3557,7 @@
             laneW: BLOCK_SIZE,
             comboStep: 0,
             hasImpacted: false,
+            lockedHandWarningArea: null,
             targetCol: 4,
             targetRow: ROWS - 1,
             y: 210
@@ -3561,6 +3588,7 @@
             bossAttack.type = 'idle';
             bossAttack.timer = 0;
             bossAttack.comboStep = 0;
+            bossAttack.lockedHandWarningArea = null;
             bossHandComboCooldown = 0;
             laserAttack.phase = 'idle';
             laserAttack.timer = 0;
@@ -3875,6 +3903,7 @@
                 bossAttack.phase = 'telegraph';
                 bossAttack.timer = 0;
                 bossAttack.comboStep = 0;
+                bossAttack.lockedHandWarningArea = null;
                 bossAttack.duration = 0.42;
                 return;
             }
@@ -4155,6 +4184,7 @@
         bossAttack.phase = 'idle';
         bossAttack.type = 'idle';
         bossAttack.timer = 0;
+        bossAttack.lockedHandWarningArea = null;
         laserAttack.phase = 'idle';
         laserAttack.cooldown = 999;
 
@@ -4290,8 +4320,9 @@
                 shakeAmount = Math.max(shakeAmount, 18);
             }
             applyBossAttackImpactIfReady();
-            let hitRect = getBossAttackHitRect();
-            if (hitRect && player && rectIntersect({ x: player.x, y: player.y, w: player.w, h: player.h }, hitRect)) {
+            let hitRects = getBossAttackHitRects();
+            let playerRect = player ? { x: player.x, y: player.y, w: player.w, h: player.h } : null;
+            if (playerRect && hitRects.some(hitRect => rectIntersect(playerRect, hitRect))) {
                 startDeathSequence(bossAttack.type === 'hand-combo' ? 'bossHandCombo' : 'boss');
             }
 
@@ -4300,12 +4331,16 @@
                     bossAttack.comboStep++;
                     bossAttack.phase = 'telegraph';
                     bossAttack.timer = 0;
+                    bossAttack.lockedHandWarningArea = bossAttack.comboStep === 2
+                        ? cloneRect(calculateBossHandWarningArea(bossAttack.comboStep))
+                        : null;
                     return;
                 }
                 let finishedHandCombo = bossAttack.type === 'hand-combo';
                 bossAttack.phase = 'idle';
                 bossAttack.type = 'idle';
                 bossAttack.timer = 0;
+                bossAttack.lockedHandWarningArea = null;
                 let baseInterval = bossPhase === 1 ? 1.8 : (currentLevel.bossAttackInterval || 4.5);
                 if (bossPhase === 1 && finishedHandCombo) {
                     bossHandComboCooldown = 20;
@@ -4315,23 +4350,27 @@
         }
     }
 
-    function getBossAttackHitRect() {
-        if (!isBossLevel() || bossAttack.phase !== 'fire') return null;
-        if (!isBossImpactWindow(bossAttack.timer, bossAttack.duration || getBossHandAttackDuration())) return null;
+    function getBossAttackHitRects() {
+        if (!isBossLevel() || bossAttack.phase !== 'fire') return [];
         if (bossAttack.type === 'hand-combo') {
-            return getBossHandWarningArea(bossAttack.comboStep);
+            return getBossHandComboHitRects();
         }
+        if (!isBossImpactWindow(bossAttack.timer, bossAttack.duration || getBossHandAttackDuration())) return [];
         if (bossAttack.type === 'vertical-laser') {
-            if (bossPhase !== 0) return null;
+            if (bossPhase !== 0) return [];
             let laserX = Number.isFinite(bossAttack.laneX)
                 ? Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossAttack.laneX))
                 : Math.max(0, Math.min(canvas.width - BLOCK_SIZE, bossEye.x - BLOCK_SIZE / 2));
-            return { x: laserX + 8, y: bossEye.y, w: BLOCK_SIZE - 16, h: canvas.height - bossEye.y };
+            return [{ x: laserX + 8, y: bossEye.y, w: BLOCK_SIZE - 16, h: canvas.height - bossEye.y }];
         }
         if (bossAttack.type === 'block-smash') {
-            return getBossBlockSmashWarningArea();
+            return [getBossBlockSmashWarningArea()];
         }
-        return null;
+        return [];
+    }
+
+    function getBossAttackHitRect() {
+        return getBossAttackHitRects()[0] || null;
     }
 
     function getBossHandAttackDuration() {
@@ -4351,6 +4390,58 @@
     function isBossImpactWindow(timer, duration) {
         if (bossAttack.type !== 'hand-combo' && bossAttack.type !== 'block-smash') return true;
         return timer >= getBossImpactTime(duration) && timer <= getBossImpactHoldEnd(duration);
+    }
+
+    function isBossHandMovingHitWindow(timer, duration) {
+        let impactTime = getBossImpactTime(duration);
+        let holdEnd = getBossImpactHoldEnd(duration);
+        return (timer > 0 && timer <= impactTime) || (timer > holdEnd && timer < duration);
+    }
+
+    function isBossClapImpactHitWindow(timer, duration) {
+        return timer >= getBossImpactTime(duration) && timer <= getBossImpactHoldEnd(duration);
+    }
+
+    function getBossHandDamageRect(rect, pose = 'fist', side = 0) {
+        if (!rect) return null;
+        if (pose === 'clap') {
+            if (side < 0) {
+                return {
+                    x: rect.x + rect.w * 0.66,
+                    y: rect.y + rect.h * 0.18,
+                    w: rect.w * 0.2,
+                    h: rect.h * 0.64
+                };
+            }
+            return {
+                x: rect.x - rect.w * 0.06,
+                y: rect.y + rect.h * 0.18,
+                w: rect.w * 0.2,
+                h: rect.h * 0.64
+            };
+        }
+        return {
+            x: rect.x + rect.w * 0.05,
+            y: rect.y + rect.h * 0.04,
+            w: rect.w * 0.9,
+            h: rect.h * 0.82
+        };
+    }
+
+    function getBossHandComboHitRects() {
+        let duration = bossAttack.duration || getBossHandAttackDuration();
+        if (bossAttack.comboStep === 2) {
+            if (!isBossClapImpactHitWindow(bossAttack.timer, duration)) return [];
+            let clapRects = getBossHandClapRects('fire', bossAttack.timer, duration);
+            return [
+                getBossHandDamageRect(clapRects.left, 'clap', -1),
+                getBossHandDamageRect(clapRects.right, 'clap', 1)
+            ].filter(Boolean);
+        }
+        if (!isBossHandMovingHitWindow(bossAttack.timer, duration)) return [];
+        let activeSide = bossAttack.comboStep === 0 ? -1 : 1;
+        let activeRect = getBossHandComboRect(bossAttack.comboStep, 'fire', bossAttack.timer, duration);
+        return [getBossHandDamageRect(activeRect, 'fist', activeSide)].filter(Boolean);
     }
 
     function applyBossAttackImpactIfReady() {
@@ -4455,7 +4546,7 @@
         } else {
             bossEye.targetX = bossPhase >= 1
             ? canvas.width / 2 + Math.sin(performance.now() / 520) * 14
-            : Math.max(92, Math.min(canvas.width - 92, px));
+            : Math.max(BLOCK_SIZE / 2, Math.min(canvas.width - BLOCK_SIZE / 2, px));
             let introOffsetY = bossIntro.active ? -190 * (1 - bossIntro.progress) : 0;
             bossEye.targetY = 138 + introOffsetY + Math.sin(performance.now() / 360) * 10;
             bossEye.x += (bossEye.targetX - bossEye.x) * Math.min(dt * 2.7, 1);
@@ -6251,6 +6342,7 @@
     }
 
     function showMenuScreenNow() {
+        clearGameOverAudioState();
         clearLevelClearSequence();
         stopTutorialLevel();
         playBgm('title');
@@ -6266,6 +6358,7 @@
     }
 
     function openLevelSelectNow() {
+        clearGameOverAudioState();
         clearLevelClearSequence();
         stopTutorialLevel();
         playBgm('title');
@@ -6475,6 +6568,7 @@
     }
 
     function resetRunState() {
+        clearGameOverAudioState();
         stopTutorialLevel();
         clearIntroSequence();
         clearLevelClearSequence();
@@ -6545,6 +6639,7 @@
         bossAttack.type = 'idle';
         bossAttack.timer = 0;
         bossAttack.comboStep = 0;
+        bossAttack.lockedHandWarningArea = null;
         laserAttack.phase = 'idle';
         laserAttack.cooldown = 999;
         document.body.classList.add('boss-fight', 'critical-zone');
@@ -6638,6 +6733,7 @@
     }
 
     function startLevel(levelIndex, options = {}) {
+        clearGameOverAudioState();
         playStartSfx();
         transitionScreen(() => startLevelNow(levelIndex, options));
     }
@@ -6760,6 +6856,19 @@
     
     let glitchIntensity = 0;
     let soulTextGlitchCooldown = 0;
+
+    function clearGameOverAudioState() {
+        stopSfx('gameOver');
+        stopSfx('soulTextGlitch');
+        stopSfx('soulStolenTitle');
+        stopSfx('deathHeartbeat');
+        glitchIntensity = 0;
+        soulTextGlitchCooldown = 0;
+        isGameOver = false;
+        isDying = false;
+        isSoulStolen = false;
+        deathHeartbeatTimer = 0;
+    }
     
     function updateGlitchLoop() {
         let desc = document.getElementById('crash-desc');
@@ -8193,7 +8302,23 @@
         };
     }
 
+    function cloneRect(rect) {
+        return rect ? { x: rect.x, y: rect.y, w: rect.w, h: rect.h } : null;
+    }
+
     function getBossHandWarningArea(step) {
+        if (
+            step === 2
+            && bossAttack.type === 'hand-combo'
+            && bossAttack.comboStep === 2
+            && bossAttack.lockedHandWarningArea
+        ) {
+            return cloneRect(bossAttack.lockedHandWarningArea);
+        }
+        return calculateBossHandWarningArea(step);
+    }
+
+    function calculateBossHandWarningArea(step) {
         if (step === 0) return { x: 0, y: 138, w: canvas.width / 2, h: canvas.height - 138 };
         if (step === 1) return { x: canvas.width / 2, y: 138, w: canvas.width / 2, h: canvas.height - 138 };
         let topRow = getBossTopStackedBlockRow();

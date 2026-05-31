@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D FBX Model Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            font-family: sans-serif;
+            user-select: none;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: #ffffff;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px black;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #dddddd;
+            pointer-events: none;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px black;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">FBX 3D Model Viewer<br/>Idle.fbx 및 Walking (1).fbx 불러오는 중...</div>
+    <div id="instructions">WASD: 이동 | 마우스 왼쪽 클릭 & 드래그: 시점 변경</div>
+    
+    <!-- Three.js Module Import -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "fflate": "https://unpkg.com/fflate@0.8.2/esm/browser.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        let camera, scene, renderer, character, mixer;
+        let walkAction, idleAction;
+        let controls;
+        const clock = new THREE.Clock();
+
+        const keys = { w: false, a: false, s: false, d: false };
+        const moveSpeed = 150.0; // 이동 속도
+        
+        init();
+        animate();
+
+        function init() {
+            const container = document.createElement( 'div' );
+            document.body.appendChild( container );
+
+            // Camera Setup
+            camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 4000 );
+            camera.position.set( 0, 250, 500 );
+
+            // Scene Setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0x222222 );
+            scene.fog = new THREE.Fog( 0x222222, 500, 2000 );
+
+            // Lighting Setup
+            const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444, 1.5 );
+            hemiLight.position.set( 0, 200, 0 );
+            scene.add( hemiLight );
+
+            const dirLight = new THREE.DirectionalLight( 0xffffff, 1.5 );
+            dirLight.position.set( 0, 200, 100 );
+            dirLight.castShadow = true;
+            dirLight.shadow.camera.top = 200;
+            dirLight.shadow.camera.bottom = - 200;
+            dirLight.shadow.camera.left = - 200;
+            dirLight.shadow.camera.right = 200;
+            scene.add( dirLight );
+
+            // 테트리스 방 만들기 함수
+            function createTetrisRoom() {
+                // 바닥
+                const floorMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+                const floor = new THREE.Mesh(new THREE.PlaneGeometry(8000, 8000), floorMat);
+                floor.rotation.x = -Math.PI / 2;
+                floor.receiveShadow = true;
+                scene.add(floor);
+
+                // 그리드 추가
+                const grid = new THREE.GridHelper( 8000, 80, 0x000000, 0x000000 );
+                grid.material.opacity = 0.3;
+                grid.material.transparent = true;
+                scene.add( grid );
+
+                // 테트리스 블록 생성 헬퍼
+                function addBlock(color, positions, offset, rotY = 0) {
+                    const group = new THREE.Group();
+                    const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.1 });
+                    const geo = new THREE.BoxGeometry(100, 100, 100);
+                    const edges = new THREE.EdgesGeometry(geo);
+                    const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+                    
+                    positions.forEach(pos => {
+                        const mesh = new THREE.Mesh(geo, mat);
+                        mesh.position.set(pos[0]*100, pos[1]*100, pos[2]*100);
+                        mesh.castShadow = true;
+                        mesh.receiveShadow = true;
+                        mesh.add(new THREE.LineSegments(edges, lineMat));
+                        group.add(mesh);
+                    });
+                    group.position.copy(offset);
+                    group.rotation.y = rotY;
+                    scene.add(group);
+                }
+
+                // 여러 테트리스 블록 배치 (바닥에 닿도록 y=50 기준)
+                addBlock(0x00FFFF, [[0,0,0], [0,1,0], [0,2,0], [0,3,0]], new THREE.Vector3(-500, 50, -500)); // I
+                addBlock(0xFFFF00, [[0,0,0], [1,0,0], [0,1,0], [1,1,0]], new THREE.Vector3(500, 50, 500), Math.PI/4);   // O
+                addBlock(0x800080, [[0,0,0], [-1,0,0], [1,0,0], [0,1,0]], new THREE.Vector3(0, 50, -800));   // T
+                addBlock(0xFFA500, [[0,0,0], [0,1,0], [0,2,0], [1,0,0]], new THREE.Vector3(-800, 50, 300), Math.PI/2);  // L
+                addBlock(0xFF0000, [[0,0,0], [-1,0,0], [0,1,0], [1,1,0]], new THREE.Vector3(800, 50, -300)); // Z
+                addBlock(0x0000FF, [[0,0,0], [0,1,0], [0,2,0], [-1,0,0]], new THREE.Vector3(-300, 50, 800), -Math.PI/6); // J
+                addBlock(0x00FF00, [[0,0,0], [1,0,0], [0,1,0], [-1,1,0]], new THREE.Vector3(1000, 50, 0)); // S
+            }
+            createTetrisRoom();
+
+            // ==========================================
+            // [FBX 로더 설정] - Idle.fbx 메인 모델 + Walking (1).fbx 애니메이션 병합
+            // ==========================================
+            const loader = new FBXLoader();
+            
+            // 1. 메인 텍스처 및 Idle 애니메이션 포함 모델 로드
+            const mainModelFile = 'Idle.fbx';
+            loader.load( mainModelFile, function ( object ) {
+                character = object;
+                mixer = new THREE.AnimationMixer( object );
+
+                // 모델 스케일 및 그림자 설정
+                // object.scale.set(0.01, 0.01, 0.01); // 필요시 크기 조정
+
+                object.traverse( function ( child ) {
+                    if ( child.isMesh ) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                } );
+                scene.add( object );
+
+                // 2. 대기(Idle) 애니메이션 재생 (Idle.fbx에 이미 포함됨)
+                if(object.animations && object.animations.length > 0) {
+                    idleAction = mixer.clipAction(object.animations[0]);
+                    idleAction.play(); // 기본적으로 Idle 재생
+                }
+
+                // 3. 걷기 애니메이션 로드
+                loader.load( 'Walking (1).fbx', function ( animObject ) {
+                    if(animObject.animations && animObject.animations.length > 0) {
+                        walkAction = mixer.clipAction(animObject.animations[0]);
+                    }
+                    document.getElementById('info').innerHTML = "FBX 모델 및 애니메이션 모두 로드 완료";
+                }, undefined, function(e) {
+                    console.error("Walking (1).fbx 로드 실패:", e);
+                });
+
+            }, undefined, function(e) {
+                console.error("메인 모델 로드 실패:", e);
+                document.getElementById('info').innerHTML = mainModelFile + " 를 찾을 수 없습니다.";
+            });
+
+            // Renderer Setup
+            renderer = new THREE.WebGLRenderer( { antialias: true } );
+            renderer.setPixelRatio( window.devicePixelRatio );
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.shadowMap.enabled = true;
+            container.appendChild( renderer.domElement );
+
+            // Controls Setup (마우스 시점)
+            controls = new OrbitControls( camera, renderer.domElement );
+            controls.target.set( 0, 100, 0 );
+            controls.enablePan = false; // 패닝 비활성화 (3인칭 유지용)
+            controls.maxPolarAngle = Math.PI / 2 - 0.05; // 바닥 아래로 카메라가 내려가지 않게
+            controls.update();
+            
+            // Keyboard Event Listeners
+            window.addEventListener( 'keydown', (e) => {
+                const key = e.key.toLowerCase();
+                if(keys.hasOwnProperty(key)) keys[key] = true;
+                updateAnimation();
+            } );
+            window.addEventListener( 'keyup', (e) => {
+                const key = e.key.toLowerCase();
+                if(keys.hasOwnProperty(key)) keys[key] = false;
+                updateAnimation();
+            } );
+
+            window.addEventListener( 'resize', onWindowResize );
+        }
+
+        let currentState = 'idle';
+
+        // 애니메이션 트랜지션 로직
+        function updateAnimation() {
+            if(!mixer) return;
+            const isMoving = keys.w || keys.a || keys.s || keys.d;
+            const targetState = isMoving ? 'walk' : 'idle';
+
+            if (currentState !== targetState) {
+                const prevAction = currentState === 'idle' ? idleAction : walkAction;
+                const nextAction = targetState === 'idle' ? idleAction : walkAction;
+
+                if (nextAction) {
+                    nextAction.reset();
+                    nextAction.play();
+                    
+                    if (prevAction) {
+                        prevAction.crossFadeTo(nextAction, 0.2, true);
+                    }
+                } else if (prevAction) {
+                    prevAction.fadeOut(0.2);
+                }
+
+                currentState = targetState;
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+
+        function animate() {
+            requestAnimationFrame( animate );
+
+            const delta = clock.getDelta();
+
+            // 애니메이션 믹서 업데이트
+            if ( mixer ) mixer.update( delta );
+
+            // 캐릭터 이동 및 회전 로직 (카메라 시점 기준 이동)
+            if ( character ) {
+                const isMoving = keys.w || keys.a || keys.s || keys.d;
+                if(isMoving) {
+                    // 카메라가 바라보는 전방 벡터 계산
+                    const cameraDirection = new THREE.Vector3();
+                    camera.getWorldDirection(cameraDirection);
+                    cameraDirection.y = 0; 
+                    cameraDirection.normalize();
+
+                    // 카메라의 우측 벡터 계산
+                    const cameraRight = new THREE.Vector3();
+                    cameraRight.crossVectors(camera.up, cameraDirection).normalize();
+
+                    // 키보드 입력에 따른 최종 이동 벡터
+                    const moveDir = new THREE.Vector3();
+                    if(keys.w) moveDir.add(cameraDirection);
+                    if(keys.s) moveDir.sub(cameraDirection);
+                    if(keys.a) moveDir.add(cameraRight);
+                    if(keys.d) moveDir.sub(cameraRight);
+
+                    if(moveDir.lengthSq() > 0) {
+                        moveDir.normalize();
+                        
+                        // 이동 전 현재 카메라의 오프셋 계산 (카메라 위치 - 타겟 위치)
+                        const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
+
+                        // 캐릭터 이동 적용
+                        const moveDist = moveSpeed * delta;
+                        character.position.addScaledVector(moveDir, moveDist);
+
+                        // 캐릭터가 이동하는 방향을 바라보게 자연스럽게 회전 (Slerp)
+                        const targetRotation = Math.atan2(moveDir.x, moveDir.z);
+                        let diff = targetRotation - character.rotation.y;
+                        diff = Math.atan2(Math.sin(diff), Math.cos(diff)); // 최단 거리 각도 보정
+                        character.rotation.y += diff * 10 * delta;
+
+                        // 3인칭 카메라 이동: 캐릭터를 따라가되 기존 마우스로 조작한 오프셋 유지
+                        controls.target.copy(character.position);
+                        controls.target.y += 100; // 바라보는 타겟의 Y축 높이 오프셋
+                        
+                        // 오프셋을 더해 카메라 위치 업데이트
+                        camera.position.copy(controls.target).add(offset);
+                    }
+                }
+            }
+            controls.update();
+            renderer.render( scene, camera );
+        }
+    </script>
+</body>
+</html>
