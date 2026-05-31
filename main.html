@@ -7,6 +7,11 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+        :root {
+            --game-font: 'Press Start 2P', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            --mono-font: 'Courier New', Consolas, 'Malgun Gothic', monospace;
+        }
+
         html, body { 
             margin: 0;
             padding: 0;
@@ -17,7 +22,7 @@
         body { 
             background-color: #1a1a2e; 
             color: #eee; 
-            font-family: 'Courier New', Consolas, monospace; 
+            font-family: var(--mono-font);
             overflow: hidden;
             image-rendering: pixelated; 
             transition: background-color 0.35s ease;
@@ -194,7 +199,7 @@
             display: none;
             flex-direction: column;
             gap: 8px;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             z-index: 14;
             pointer-events: none;
         }
@@ -352,7 +357,7 @@
             background: rgba(22, 22, 40, 0.94);
             border: 3px solid #ff3030;
             color: #fff06a;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             font-size: 18px;
             line-height: 1.3;
             text-align: center;
@@ -382,7 +387,7 @@
             flex-wrap: nowrap;
             gap: 8px;
             align-items: stretch;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             pointer-events: none;
         }
 
@@ -507,7 +512,7 @@
 
         #crash-title,
         #crash-desc {
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
         }
 
         .ui-shell {
@@ -771,7 +776,7 @@
         }
 
         .level-screen-head h1 {
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             font-size: clamp(20px, 2.2vw, 26px);
             margin: 0;
             color: #ff99cc;
@@ -795,7 +800,7 @@
                 4px 4px 0 #000,
                 0 0 14px rgba(255, 153, 204, 0.45);
             cursor: pointer;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
         }
 
         .level-back-icon::before {
@@ -897,7 +902,7 @@
             background-size: 100% 4px, auto;
             box-shadow: inset 0 0 0 2px #000, 5px 5px 0 #000;
             color: #ff3333;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             font-size: clamp(14px, 2vw, 24px);
             line-height: 1.65;
             text-align: center;
@@ -943,7 +948,7 @@
             padding: 16px 18px;
             min-height: clamp(68px, 8vh, 76px);
             text-align: left;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             font-size: 8px;
             line-height: 1.45;
             cursor: pointer;
@@ -1010,7 +1015,7 @@
             place-items: center;
             min-height: 44px;
             color: #ff99cc;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             font-size: 12px;
             line-height: 0.72;
             text-align: center;
@@ -1228,7 +1233,7 @@
             overflow: hidden;
             pointer-events: auto;
             background: rgba(0, 0, 0, 0.32);
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             text-align: center;
             transition: background 0.28s ease;
         }
@@ -1307,7 +1312,7 @@
             justify-content: center;
             overflow: hidden;
             background: #000;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             pointer-events: auto;
         }
 
@@ -1447,7 +1452,7 @@
             border: 4px solid #444;
             box-shadow: 8px 8px 0 #000, 0 0 20px rgba(255, 153, 204, 0.18);
             color: #fff;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             font-size: var(--cinematic-dialogue-font, 15px);
             line-height: 1.75;
             text-shadow: 3px 3px 0 #000;
@@ -1485,7 +1490,7 @@
             bottom: 12px;
             z-index: 2;
             color: #aaa;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             font-size: 10px;
             text-shadow: 2px 2px 0 #000;
             opacity: 0;
@@ -1728,7 +1733,7 @@
             position: relative;
             transform: translateY(18px) scale(0.92);
             opacity: 1;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             font-weight: 900;
             letter-spacing: 2px;
             white-space: nowrap;
@@ -1998,7 +2003,7 @@
             background: #161628;
             border: 4px solid #444;
             box-shadow: 8px 8px 0 #000;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             overflow: hidden;
         }
 
@@ -2119,7 +2124,7 @@
             gap: 18px;
             background: rgba(0, 0, 0, var(--tutorial-dim-opacity, 0.42));
             color: #fff;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             text-align: center;
             pointer-events: none;
             transition: background 0.62s ease;
@@ -2386,7 +2391,7 @@
         </div>
 
         <!-- SCORE UI -->
-        <div class="score-panel" style="background: rgba(22, 22, 40, 0.9); border: 4px solid #444; padding: 20px; text-align: right; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-100px); min-width: 140px; font-family: 'Press Start 2P', cursive; flex-direction: column;">
+        <div class="score-panel" style="background: rgba(22, 22, 40, 0.9); border: 4px solid #444; padding: 20px; text-align: right; box-shadow: 6px 6px 0px #000; align-self: center; transform: translateY(-100px); min-width: 140px; font-family: var(--game-font); flex-direction: column;">
             <div id="ui-score-label" style="font-size: 10px; color: #ff99cc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">SCORE</div>
             <div id="ui-score" style="font-size: 18px; color: #fff; margin-bottom: 24px; text-shadow: 3px 3px 0 #000;">0</div>
             
@@ -3285,7 +3290,7 @@
 
             ctx.save();
             ctx.globalAlpha = alpha;
-            ctx.font = '12px "Press Start 2P"';
+            ctx.font = '12px "Press Start 2P", "Malgun Gothic", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.shadowColor = '#fff06a';
@@ -5039,7 +5044,7 @@
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = '#fff';
-        ctx.font = '8px "Press Start 2P"';
+        ctx.font = '8px "Press Start 2P", "Malgun Gothic", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(cp.label, cp.x, cp.y + 1);
